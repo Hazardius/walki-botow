@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+    <form action="{{ url_for('send_code') }}" method=post class=send-code>
+      <dl>
+        <dt>Code:
+        <dd><textarea name=code rows=5 cols=40></textarea>
+        <dt>Language:
+        <dd><select name=lang>
+          <option value="c">C</option>
+          <option value="cpp">C++</option>
+          <option value="cis">C#</option>
+          <option value="java">Java</option>
+          <option value="pascal">Pascal</option>
+          <option value="python">Python</option>
+        </select>
+        <dd><input type=submit value=Send>
+      </dl>
+    </form>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  {% if profile %}
+  <h2>{{ profile }}</h2>
+  <p class=error><strong>Welcome:</strong> {{ username }}{% endif %}
+{% endblock %}

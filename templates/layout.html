@@ -1,0 +1,31 @@
+<!doctype html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bots Battles</title>
+  </head>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<div class=page>
+  <h1>Bots Battles</h1>
+  <div class=metanav>
+    {% if not session.logged_in %}
+      <a href="{{ url_for('register') }}">Register</a>
+    {% else %}
+      <a href="{{ url_for('battles') }}">Battles</a>
+      <a href="{{ url_for('tournaments') }}">Tournaments</a>
+      <a href="{{ url_for('user') }}">{{ username }}</a>
+    {% endif %}
+    {% if session.admin_box %}
+      <a href="{{ url_for('admin_box') }}">Admin Tools</a>
+    {% endif %}
+    {% if not session.logged_in %}
+      <a href="{{ url_for('login') }}">Log in</a>
+    {% else %}
+      <a href="{{ url_for('logout') }}">Log out</a>
+    {% endif %}
+  </div>
+  {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+  {% endfor %}
+  {% block body %}{% endblock %}
+</div>

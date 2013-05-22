@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <ul class=duels>
+  {% for duel in duels %}
+    <li><h2>{{ duel.nr }}</h2>
+  {% else %}
+    <li><em>You have no battles now.</em>
+  {% endfor %}
+  </ul>
+  <a href="{{ url_for('choose_oponent') }}">Start a duel</a>
+{% endblock %}
