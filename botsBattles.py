@@ -11,7 +11,7 @@ from urllib2 import URLError
 DEBUG = True
 SECRET_KEY = 'development_key'
 # localhost will be changed as the local network arise
-WEBSERVICE_IP = "http://localhost:8081"
+WEBSERVICE_IP = "http://77.65.54.170:8081"
 TESTING = False
 # list of allowed extensions
 ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe'])
