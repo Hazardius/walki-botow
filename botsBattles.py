@@ -25,6 +25,21 @@ app.config.from_object(__name__)
 # methods
 
 
+from BeautifulSoup import BeautifulSoup
+
+VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
+
+def sanitize_html(value):
+
+    soup = BeautifulSoup(value)
+
+    for tag in soup.findAll(True):
+        if tag.name not in VALID_TAGS:
+            tag.hidden = True
+
+    return soup.renderContents()
+
+
 def postToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
@@ -147,12 +162,12 @@ def register():
         # hashlib.sha224(text)
         mdpass = md5.new(request.form['password'])
         payload = {
-            "Login": request.form['username'],
-            "Password": mdpass.hexdigest(),
+            "Login": sanitize_HTML(request.form['username']),
+            "Password": sanitize_HTML(mdpass.hexdigest()),
             "Permissions": 0,
             "Groups": 0
-            # "Name": request.form['name'],
-            # "Surname": request.form['surname'],
+            # "Name": sanitize_HTML(request.form['name']),
+            # "Surname": sanitize_HTML(request.form['surname']),
             # "Email": request.form['e_mail'],
             # "Sex": request.form['sex']
         }
@@ -178,7 +193,7 @@ def login():
     if request.method == 'POST':
         mdpass = md5.new(request.form['password'])
         payload = {
-            "Login": request.form['username'],
+            "Login": sanitize_HTML(request.form['username']),
             "Password": mdpass.hexdigest(),
         }
         response = postToWebService(payload, "/login")
@@ -201,8 +216,8 @@ def login():
 @app.route('/duel', methods=['GET', 'POST'])
 def new_duel():
     error = None
-    register_battle(session['username'], request.form['oponent'],
-        request.form['game'])
+    register_battle(sanitize_HTML(session['username']), sanitize_HTML(request.form['oponent']),
+        sanitize_HTML(request.form['game']))
     return render_template('send_code.html', error=error)
 
 
@@ -214,7 +229,7 @@ def send_code():
 
 @app.route('/user/<nick>')
 def show_user_profile(nick):
-    response = getFromWebService("/" + nick + "/about")
+    response = getFromWebService("/" + sanitize_HTML(nick) + "/about")
     if response.get('Status') is True:
         return render_template('profile.html',
             username=session['username'], profile=nick)
@@ -246,9 +261,9 @@ def choose_oponent():
 def register_battle(login1, login2, gameName):
     error = None
     payload = {
-        "User1": login1,
-        "User2": login2,
-        "GameName": gameName
+        "User1": sanitize_HTML(login1),
+        "User2": sanitize_HTML(login2),
+        "GameName": sanitize_HTML(gameName)
     }
     response = postToWebService(payload, "/games/duels/registry")
     if response.get('Status') is True:
