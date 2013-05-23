@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block head %}
+  <script src="main.js" type="text/javascript"></script>
+{% endblock %}
 {% block body %}
   <h2>Register</h2>
   {% if error %}<p class=error>{{ error }}{% endif %}
@@ -10,7 +13,9 @@
       <dt>Password:
       <dd><input type="password" name="password" required>
       <dt>Confirm Password:
-      <dd><input type="password" name="password2" required>
+      <dd><input type="password" name="password2" required
+        onfocus="validatePass(document.getElementById('p1'), this);"
+        oninput="validatePass(document.getElementById('p1'), this);">
       <dt>Name:
       <dd><input type="text" name="Name" placeholder="f.e. John">
       <dt>Surname:

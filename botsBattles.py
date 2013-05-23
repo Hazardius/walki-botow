@@ -9,7 +9,7 @@ from urllib2 import URLError
 
 # configuration
 DEBUG = True
-SECRET_KEY = 'development_key'
+SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\x1f'
 # localhost will be changed as the local network arise
 WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
