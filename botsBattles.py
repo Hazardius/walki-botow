@@ -119,6 +119,13 @@ def getFromWebService(subpage):
     errorMessage = {"Status": False, "Komunikat": error}
     return errorMessage
 
+# error pages
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('error.html'), 404
+
 # page methods
 
 
@@ -166,11 +173,11 @@ def register():
             "Login": sanitize_html(request.form['username']),
             "Password": sanitize_html(mdpass.hexdigest()),
             "Permissions": 0,
-            "Groups": 0
-            # "Name": sanitize_HTML(request.form['name']),
-            # "Surname": sanitize_HTML(request.form['surname']),
-            # "Email": request.form['e_mail'],
-            # "Sex": request.form['sex']
+            "Groups": request.form['group'],
+            "Name": sanitize_html(request.form['name']),
+            "Surname": sanitize_html(request.form['surname']),
+            "Email": request.form['e_mail'],
+            "Sex": request.form['sex']
         }
         response = postToWebService(payload, "/user/registration")
         if response.get('Status') is True:
