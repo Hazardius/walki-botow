@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block head %}
-  <script src="main.js" type="text/javascript"></script>
+  <script src="templates/main.js" type="text/javascript"></script>
 {% endblock %}
 {% block body %}
   <h2>Register</h2>
@@ -17,9 +17,11 @@
         onfocus="validatePass(document.getElementById('p1'), this);"
         oninput="validatePass(document.getElementById('p1'), this);">
       <dt>Name:
-      <dd><input type="text" name="Name" placeholder="f.e. John">
+      <dd><input type="text" name="Name" placeholder="f.e. John"
+              x-moz-errormessage="Enter First Name">
       <dt>Surname:
-      <dd><input type="text" name="Surname" placeholder="f.e. Smith">
+      <dd><input type="text" name="Surname" placeholder="f.e. Smith"
+              x-moz-errormessage="Enter Second Name">
       <dt>e-mail address:
       <dd><input type="email" name="e_mail" placeholder="your_email@domain.com"
               required>
@@ -27,8 +29,8 @@
         <input type="radio" name="sex" value="male">Male<br>
         <input type="radio" name="sex" value="female">Female
       <dt>Group:<br>
-      <dd><input type="number" min="0" max="1" name="group">
-      <dd><input type=submit value="Register">
+      <dd><input type="number" min="0" max="1" name="group" required>
+      <dd><input type=submit value="Join Now!">
     </dl>
   </form>
 {% endblock %}
