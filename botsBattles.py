@@ -170,15 +170,12 @@ def battles():
 def register():
     error = None
     if request.method == 'POST':
-        # alternative hash:
-        # import hashlib
-        # hashlib.sha224(text)
         mdpass = md5.new(request.form['password'])
         payload = {
             "Login": sanitize_html(request.form['username']),
             "Password": sanitize_html(mdpass.hexdigest()),
             "Permissions": 0,
-            "Groups": request.form['group'],
+            "Groups": 0,
             "Name": sanitize_html(request.form['name']),
             "Surname": sanitize_html(request.form['surname']),
             "Email": request.form['e_mail'],
@@ -186,15 +183,8 @@ def register():
         }
         response = postToWebService(payload, "/user/registration")
         if response.get('Status') is True:
-            session['logged_in'] = True
-            if request.form['username'] is "admin":
-                session['admin_box'] = True
-            else:
-                session['admin_box'] = False
-            session['username'] = request.form['username']
-            session['pagination'] = 7
-            flash('You were logged in %s' % session['username'])
-            return redirect(url_for('news'))
+            return render_template('message.html',
+                message="Check your e-mail account!")
         else:
             error = response.get('Komunikat')
     return render_template('register.html', error=error)
@@ -239,6 +229,21 @@ def new_duel():
 def send_code():
     error = None
     return render_template('send_code.html', error=error)
+
+
+@app.route('/activation/<webHash>')
+def try_to_activate(webHash):
+    error = None
+    payload = {
+        "Hash": sanitize_html(webHash)
+    }
+    response = postToWebService(payload, "/registration/activation")
+    if response.get('Status') is True:
+        return render_template('message.html',
+            message="User successfuly activated!")
+    else:
+        error = response.get('Komunikat')
+    return render_template('message.html', message=error)
 
 
 @app.route('/user/<nick>')
