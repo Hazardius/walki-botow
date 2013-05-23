@@ -200,13 +200,9 @@ def login():
         response = postToWebService(payload, "/login")
         if response.get('Status') is True:
             session['logged_in'] = True
-            if request.form['username'] == 'admin':
-                session['admin_box'] = True
-            else:
-                session['admin_box'] = False
+            session['admin_box'] = response.get('Admin')
             session['username'] = request.form['username']
             session['pagination'] = 7
-            print str(session['admin_box']) + " " + session['username']
             flash('You were logged in %s' % session['username'])
             return redirect(url_for('news'))
         else:
