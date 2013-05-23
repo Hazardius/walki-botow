@@ -174,8 +174,6 @@ def register():
         payload = {
             "Login": sanitize_html(request.form['username']),
             "Password": mdpass.hexdigest(),
-            "Permissions": 0,
-            "Groups": 0,
             "Name": sanitize_html(request.form['name']),
             "Surname": sanitize_html(request.form['surname']),
             "Email": request.form['e_mail'],
