@@ -46,8 +46,8 @@ def postToWebService(payload, subpage):
     clen = len(data)
     req = urllib2.Request(WEBSERVICE_IP + subpage, data,
         {'Content-Type': 'application/json', 'Content-Length': clen})
-    response = urllib2.urlopen(req)
     try:
+        response = urllib2.urlopen(req)
         data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -76,8 +76,8 @@ def sendCompiledBotToWebService(fileData, subpage):
         data = file
         req = urllib2.Request(WEBSERVICE_IP + subpage, data,
             {'Content-Type': 'application/octet-stream '})
-        response = urllib2.urlopen(req)
         try:
+            response = urllib2.urlopen(req)
             data = json.load(response)
         except URLError, e:
             if hasattr(e, 'reason'):
@@ -100,8 +100,8 @@ def sendCompiledBotToWebService(fileData, subpage):
 
 def getFromWebService(subpage):
     req = urllib2.Request(WEBSERVICE_IP + subpage)
-    response = urllib2.urlopen(req)
     try:
+        response = urllib2.urlopen(req)
         data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
