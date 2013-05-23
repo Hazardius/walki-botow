@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block head %}
-  <script src="templates/main.js" type="text/javascript"></script>
+  <script src="{{ url_for('main_js') }}" type="text/javascript"></script>
 {% endblock %}
 {% block body %}
   <h2>Register</h2>

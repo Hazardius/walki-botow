@@ -137,6 +137,11 @@ def news():
         return render_template('news.html', username="")
 
 
+@app.route('/main.js')
+def main_js():
+    return render_template('main.js')
+
+
 @app.route('/tournaments')
 def tournaments():
     return render_template('tournaments.html', username=session['username'])
