@@ -173,7 +173,7 @@ def register():
         mdpass = md5.new(request.form['password'])
         payload = {
             "Login": sanitize_html(request.form['username']),
-            "Password": sanitize_html(mdpass.hexdigest()),
+            "Password": mdpass.hexdigest(),
             "Permissions": 0,
             "Groups": 0,
             "Name": sanitize_html(request.form['name']),
