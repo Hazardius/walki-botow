@@ -231,7 +231,7 @@ def try_to_activate(webHash):
     payload = {
         "Hash": sanitize_html(webHash)
     }
-    response = postToWebService(payload, "/registration/activation")
+    response = postToWebService(payload, "/user/registration/activation")
     if response.get('Status') is True:
         return render_template('message.html',
             message="User successfuly activated!")
