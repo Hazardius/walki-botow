@@ -2,6 +2,7 @@
 from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash
+from time import gmtime, strftime
 import json
 import md5
 import urllib2
@@ -44,23 +45,26 @@ def sanitize_html(value):
 def postToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
+    app.logger.debug("[POST]Connection with WS started: "
+        + strftime("%a, %d %b %Y %X +0000", gmtime()))
     req = urllib2.Request(WEBSERVICE_IP + subpage, data,
         {'Content-Type': 'application/json', 'Content-Length': clen})
     try:
         response = urllib2.urlopen(req)
+        app.logger.debug("[POST]Response received: "
+            + strftime("%a, %d %b %Y %X +0000", gmtime()))
         data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
-            print 'We failed to reach a server.'
             error = e.reason
-            print 'Reason: ', error
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
         elif hasattr(e, 'code'):
-            print 'The server couldn\'t fulfill the request.'
             error = e.code
-            print 'Error code: ', error
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
     except ValueError:
-        print 'Value Error has ben found.'
         error = response
+        app.logger.error('Value Error has been found.' + error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -82,41 +86,45 @@ def sendCompiledBotToWebService(fileData, subpage):
             data = json.load(response)
         except URLError, e:
             if hasattr(e, 'reason'):
-                print 'We failed to reach a server.'
                 error = e.reason
-                print 'Reason: ', error
+                app.logger.error('We failed to reach a server.\nReason: '
+                    + error)
             elif hasattr(e, 'code'):
-                print 'The server couldn\'t fulfill the request.'
                 error = e.code
-                print 'Error code: ', error
+                app.logger.error('The server couldn\'t fulfill the request.'
+                    + '\nError code:' + error)
         except ValueError:
-            print 'Value Error has ben found.'
             error = response
+            app.logger.error('Value Error has been found.' + error)
         else:
             return data
     else:
-        error = 'File not valid!'
+        error = 'File format not valid!'
+        app.logger.error(error)
     errorMessage = {"Status": False, "Komunikat": error}
     return errorMessage
 
 
 def getFromWebService(subpage):
     req = urllib2.Request(WEBSERVICE_IP + subpage)
+    app.logger.debug("[GET]Connection with WS started: "
+        + strftime("%a, %d %b %Y %X +0000", gmtime()))
     try:
         response = urllib2.urlopen(req)
+        app.logger.debug("[GET]Response received: "
+            + strftime("%a, %d %b %Y %X +0000", gmtime()))
         data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
-            print 'We failed to reach a server.'
             error = e.reason
-            print 'Reason: ', error
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
         elif hasattr(e, 'code'):
-            print 'The server couldn\'t fulfill the request.'
             error = e.code
-            print 'Error code: ', error
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
     except ValueError:
-        print 'Value Error has ben found.'
         error = response
+        app.logger.error('Value Error has been found.' + error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -166,11 +174,11 @@ def battles():
     if response.get('Status') is True:
         print response
         return render_template('battles.html', username=session['username'],
-            entries=response)
+            entries=response, cMessages=check_messages())
     else:
         error = response.get('Komunikat')
     return render_template('battles.html', username=session['username'],
-        error=error)
+        error=error, cMessages=check_messages())
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -220,7 +228,8 @@ def login():
 @app.route('/sendCode', methods=['GET', 'POST'])
 def send_code():
     error = None
-    return render_template('send_code.html', error=error)
+    return render_template('send_code.html', error=error,
+        cMessages=check_messages())
 
 
 @app.route('/activation/<webHash>')
