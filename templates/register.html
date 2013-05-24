@@ -9,19 +9,23 @@
     <dl>
       <dt>Username:
       <dd><input type="text" name="username" placeholder="Your nickname!"
-              autofocus required x-moz-errormessage="Enter Username">
+        autofocus required x-moz-errormessage="Enter Username"
+        onfocus="validateLength(this);" oninput="validateLength(this);"
+        size="10" maxlength="128">
       <dt>Password:
-      <dd><input type="password" name="password" required id="p1">
+      <dd><input type="password" name="password" required id="p1"
+        size="10" maxlength="128">
       <dt>Confirm Password:
       <dd><input type="password" name="password2" required
         onfocus="validatePass(document.getElementById('p1'), this);"
-        oninput="validatePass(document.getElementById('p1'), this);">
+        oninput="validatePass(document.getElementById('p1'), this);"
+        size="10" maxlength="128">
       <dt>Name:
       <dd><input type="text" name="name" placeholder="f.e. John"
-              x-moz-errormessage="Enter First Name">
+              x-moz-errormessage="Enter First Name" size="10" maxlength="128">
       <dt>Surname:
       <dd><input type="text" name="surname" placeholder="f.e. Smith"
-              x-moz-errormessage="Enter Second Name">
+              x-moz-errormessage="Enter Second Name" size="10" maxlength="128">
       <dt>e-mail address:
       <dd><input type="email" name="e_mail" placeholder="your_email@domain.com"
               required>
