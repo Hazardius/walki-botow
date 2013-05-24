@@ -1,25 +1,26 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  {% if games %}
+  <!--{% if games %}-->
   <form action="{{ url_for('new_duel') }}" method=post class=send-code>
     <dt>Game:
     <dd><select name=game>
-      {% for game in games %}
-      {% endfor %}
-      <option value="RCS">Rock-paper-scissors</option>
+    {% for game in games %}
+      <option value="{{ game }}" /> {{ game }}</option>
+    {% endfor %}
+      <option value="RPS">Rock-paper-scissors</option>
       <option value="TTT">Tic-Tac-Toe</option>
     </select>
     <ul class=users>
-      {% for user in users %}
-        <li><h2><input type="radio" name="oponent" />{{ user }}</h2>
-      {% else %}
-        <li><em>There are no more users now.</em>
-      {% endfor %}
+    {% for user in users %}
+      <li><h2><input type="radio" name="oponent" />{{ user }}</h2>
+    {% else %}
+      <li><em>There are no more users now.</em>
+    {% endfor %}
     </ul>
     <dd><input type=submit value=Invite>
   </form>
-  {% else %}
+  <!--{% else %}
     <dt> No games availible!
-  {% endif %}
+  {% endif %}-->
 {% endblock %}
