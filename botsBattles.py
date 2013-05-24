@@ -59,7 +59,8 @@ def postToWebService(payload, subpage):
             error = e.code
             print 'Error code: ', error
     except ValueError:
-        return render_template('dump.html', dump=response)
+        print 'Value Error has ben found.'
+        error = response
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -89,7 +90,8 @@ def sendCompiledBotToWebService(fileData, subpage):
                 error = e.code
                 print 'Error code: ', error
         except ValueError:
-            return render_template('dump.html', dump=response)
+            print 'Value Error has ben found.'
+            error = response
         else:
             return data
     else:
@@ -113,7 +115,8 @@ def getFromWebService(subpage):
             error = e.code
             print 'Error code: ', error
     except ValueError:
-        return render_template('dump.html', dump=response)
+        print 'Value Error has ben found.'
+        error = response
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -212,13 +215,6 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route('/duel', methods=['GET', 'POST'])
-def new_duel():
-    register_battle(sanitize_html(session['username']),
-        sanitize_html(request.form['oponent']),
-        sanitize_html(request.form['game']))
-
-
 @app.route('/sendCode', methods=['GET', 'POST'])
 def send_code():
     error = None
@@ -275,6 +271,13 @@ def choose_oponent():
         error=error)
 
 
+@app.route('/duel', methods=['GET', 'POST'])
+def new_duel():
+    return register_battle(sanitize_html(session['username']),
+        sanitize_html(request.form['oponent']),
+        sanitize_html(request.form['game']))
+
+
 def register_battle(login1, login2, gameName):
     error = None
     payload = {
@@ -287,8 +290,9 @@ def register_battle(login1, login2, gameName):
         flash("Successful registration of battle.")
         return redirect(url_for('news'))
     else:
-        error = "Major error of WebService!"
-    return redirect(url_for('battles'), error=error)
+        error = "Major error of WebService!" + str(response.get('Komunikat'))
+    return render_template('choose_oponent.html', username=session['username'],
+        error=error)
 
 
 @app.route('/admin_tools')
