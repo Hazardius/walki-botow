@@ -32,13 +32,10 @@ VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
 
 def sanitize_html(value):
-
     soup = BeautifulSoup(value)
-
     for tag in soup.findAll(True):
         if tag.name not in VALID_TAGS:
             tag.hidden = True
-
     return soup.renderContents()
 
 
@@ -172,7 +169,6 @@ def battles():
     # print response
     # I get only nr's of duels. It would be nice to get more info.
     if response.get('Status') is True:
-        print response
         return render_template('battles.html', username=session['username'],
             entries=response, cMessages=check_messages())
     else:
@@ -267,7 +263,6 @@ def choose_oponent():
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/list")
     if userRes.get('Status') is True:
-    #         print gamesRes
     #         games = []
         logins = []
         for i in range(1, session['pagination']):
