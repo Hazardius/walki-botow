@@ -15,6 +15,7 @@
       <a href="{{ url_for('battles') }}">Battles</a>
       <a href="{{ url_for('tournaments') }}">Tournaments</a>
       <a href="{{ url_for('user') }}">{{ username }}</a>
+      <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
     {% endif %}
     {% if session.admin_box %}
       <a href="{{ url_for('admin_box') }}">Admin Tools</a>

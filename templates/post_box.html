@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+  <ul class=messages>
+  {% for message in messages %}
+    <li><h2>{{ message.title }}</h2>
+  {% else %}
+    <li><em>No messages for you.</em>
+  {% endfor %}
+  </ul>
+{% endblock %}

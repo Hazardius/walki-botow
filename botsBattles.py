@@ -135,7 +135,8 @@ def not_found(error):
 @app.route('/')
 def news():
     if "username" in session:
-        return render_template('news.html', username=session['username'])
+        return render_template('news.html', username=session['username'],
+            cMessages=check_messages())
     else:
         return render_template('news.html', username="")
 
@@ -147,7 +148,8 @@ def main_js():
 
 @app.route('/tournaments')
 def tournaments():
-    return render_template('tournaments.html', username=session['username'])
+    return render_template('tournaments.html', username=session['username'],
+        cMessages=check_messages())
 
 
 @app.route('/user')
@@ -240,12 +242,12 @@ def try_to_activate(webHash):
 def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
-        return render_template('profile.html',
+        return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=nick)
     else:
         error = response.get('Komunikat')
     return render_template('profile.html', username=session['username'],
-        profile=nick, error=error)
+        profile=nick, error=error, cMessages=check_messages())
 
 
 @app.route('/choose_oponent')
@@ -264,11 +266,12 @@ def choose_oponent():
             if nextOne is not None:
                 logins.append(nextOne)
         return render_template('choose_oponent.html',
-            username=session['username'], users=logins)
+            cMessages=check_messages(), username=session['username'],
+            users=logins)
     else:
         error = userRes.get('Komunikat')
     return render_template('choose_oponent.html', username=session['username'],
-        error=error)
+        error=error, cMessages=check_messages())
 
 
 @app.route('/duel', methods=['GET', 'POST'])
@@ -290,14 +293,31 @@ def register_battle(login1, login2, gameName):
         flash("Successful registration of battle.")
         return redirect(url_for('news'))
     else:
-        error = "Major error of WebService!" + str(response.get('Komunikat'))
+        error = "Major error of WebService! " + str(response.get('Komunikat'))
     return render_template('choose_oponent.html', username=session['username'],
-        error=error)
+        error=error, cMessages=check_messages())
+
+
+def check_messages():
+    error = None
+    response = getFromWebService("/notice/" + session['username'] + "/new")
+    if response.get('Status') is True:
+        return response.get('Count')
+    else:
+        error = "Problem with messages! " + str(response.get('Komunikat'))
+    return error
 
 
 @app.route('/admin_tools')
 def admin_box():
-    return render_template('admin_tools.html', username=session['username'])
+    return render_template('admin_tools.html', username=session['username'],
+            cMessages=check_messages())
+
+
+@app.route('/post_box')
+def post_box():
+    return render_template('post_box.html', username=session['username'],
+            cMessages=check_messages())
 
 
 @app.route('/logout')
