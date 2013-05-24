@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <!--{% if games %}-->
+  <!--if games %}-->
   <form action="{{ url_for('new_duel') }}" method=post class=send-code>
     <dt>Game:
     <dd><select name=game>
@@ -20,7 +20,7 @@
     </ul>
     <dd><input type=submit value=Invite>
   </form>
-  <!--{% else %}
+  <!-- else %}
     <dt> No games availible!
-  {% endif %}-->
+   endif %}-->
 {% endblock %}
