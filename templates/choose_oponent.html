@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
+  {% if games %}
   <form action="{{ url_for('new_duel') }}" method=post class=send-code>
-  <!-- Currently hard coded. TODO: Dynamic game usage. -->
     <dt>Game:
     <dd><select name=game>
+      {% for game in games %}
+      {% endfor %}
       <option value="RCS">Rock-paper-scissors</option>
       <option value="TTT">Tic-Tac-Toe</option>
     </select>
@@ -17,4 +19,7 @@
     </ul>
     <dd><input type=submit value=Invite>
   </form>
+  {% else %}
+    <dt> No games availible!
+  {% endif %}
 {% endblock %}

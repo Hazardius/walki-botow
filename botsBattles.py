@@ -156,6 +156,7 @@ def user():
 def battles():
     error = None
     response = getFromWebService("/" + session['username'] + "/duels")
+    print response
     # I get only nr's of duels. It would be nice to get more info.
     if response.get('Status') is True:
         return render_template('battles.html', username=session['username'],
@@ -255,18 +256,22 @@ def show_user_profile(nick):
 @app.route('/choose_oponent')
 def choose_oponent():
     error = None
-    response = getFromWebService("/games/duels/" + session['username']
-    + "/0/list")
-    if response.get('Status') is True:
-        logins = []
-        for i in range(1, session['pagination']):
-            nextOne = response.get(str(i))
-            if nextOne is not None:
-                logins.append(nextOne)
-        return render_template('choose_oponent.html',
-            username=session['username'], users=logins)
+    gamesRes = getFromWebService("/games")
+    if gamesRes.get('Status') is True:
+        userRes = getFromWebService("/games/duels/" + session['username']
+        + "/0/list")
+        if userRes.get('Status') is True:
+            print gamesRes
+            games = []
+            logins = []
+            for i in range(1, session['pagination']):
+                nextOne = userRes.get(str(i))
+                if nextOne is not None:
+                    logins.append(nextOne)
+            return render_template('choose_oponent.html',
+                username=session['username'], users=logins)
     else:
-        error = response.get('Komunikat')
+        error = gamesRes.get('Komunikat')
     return render_template('choose_oponent.html', username=session['username'],
         error=error)
 
