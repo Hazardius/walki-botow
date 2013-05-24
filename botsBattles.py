@@ -132,7 +132,15 @@ def getFromWebService(subpage):
 
 @app.errorhandler(404)
 def not_found(error):
-    return render_template('error.html'), 404
+    return render_template('error.html', username=session['username'],
+        errorNo=404, errorMe="The page You're looking for isn't here!")
+
+
+@app.errorhandler(503)
+def app_error(error):
+    return render_template('error.html', username=session['username'],
+        errorNo=503, errorMe="Application have some problems."
+        + "Contact us to help solve them.\n" + error)
 
 # page methods
 
