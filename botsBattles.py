@@ -159,6 +159,7 @@ def battles():
     # print response
     # I get only nr's of duels. It would be nice to get more info.
     if response.get('Status') is True:
+        print response
         return render_template('battles.html', username=session['username'],
             entries=response)
     else:
@@ -213,11 +214,9 @@ def login():
 
 @app.route('/duel', methods=['GET', 'POST'])
 def new_duel():
-    error = None
     register_battle(sanitize_html(session['username']),
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
-    return render_template('send_code.html', error=error)
 
 
 @app.route('/sendCode', methods=['GET', 'POST'])
@@ -279,9 +278,9 @@ def choose_oponent():
 def register_battle(login1, login2, gameName):
     error = None
     payload = {
-        "User1": sanitize_html(login1),
-        "User2": sanitize_html(login2),
-        "GameName": sanitize_html(gameName)
+        "User1": login1,
+        "User2": login2,
+        "GameName": gameName
     }
     response = postToWebService(payload, "/games/duels/registry")
     if response.get('Status') is True:
