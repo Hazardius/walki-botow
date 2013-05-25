@@ -38,13 +38,9 @@ def allowed_codeFile(filename):
 
 
 def getFromWebService(subpage):
-    app.logger.debug("[GET]Connection with WS started: "
-        + strftime("%a, %d %b %Y %X +0000", gmtime()))
     try:
         f = requests.get(WEBSERVICE_IP + subpage)
         data = f.json()
-        app.logger.debug("[GET]Response received: "
-            + strftime("%a, %d %b %Y %X +0000", gmtime()))
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -60,6 +56,8 @@ def getFromWebService(subpage):
         elif hasattr(e, 'code'):
             error = e.code
             app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -69,15 +67,12 @@ def getFromWebService(subpage):
 def postToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
-    app.logger.debug("[POST]Connection with WS started: "
-        + strftime("%a, %d %b %Y %X +0000", gmtime()))
     try:
         f = requests.post(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen})
         data = f.json()
-        app.logger.debug("[POST]Response received: "
-            + strftime("%a, %d %b %Y %X +0000", gmtime()))
+    # strftime("%a, %d %b %Y %X +0000", gmtime())
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -93,6 +88,8 @@ def postToWebService(payload, subpage):
         elif hasattr(e, 'code'):
             error = e.code
             app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -258,6 +255,12 @@ def check_messages():
 
 @app.route('/post_box')
 def post_box():
+    error = None
+    response = getFromWebService("/notice/" + session['username'])
+    if response.get('Status') is True:
+        print response
+        return render_template('post_box.html', username=session['username'],
+            cMessages=check_messages(), messages=messages)
     return render_template('post_box.html', username=session['username'],
             cMessages=check_messages())
 
@@ -304,7 +307,6 @@ def battles():
                 battleInfo = getFromWebService("/games/" + str(nextOne)
                     + "/about")
                 if battleInfo.get('Status') is True:
-                    print battleInfo
                     battles.append(battleInfo)
         return render_template('battles.html', username=session['username'],
             entries=battles, cMessages=check_messages())
@@ -331,8 +333,45 @@ def choose_oponent():
         return render_template('choose_oponent.html',
             cMessages=check_messages(), username=session['username'],
             users=logins)
+    error = userRes.get('Komunikat')
+    return render_template('choose_oponent.html', username=session['username'],
+        error=error, cMessages=check_messages())
+
+
+@app.route('/invite', methods=['GET', 'POST'])
+def new_inv():
+    return invite_to_battle(sanitize_html(session['username']),
+        sanitize_html(request.form['oponent']),
+        sanitize_html(request.form['game']))
+
+
+def invite_to_battle(uFrom, uTo, gameName):
+    error = None
+    payload = {
+        "UserFrom": uFrom,
+        "UserTo": uTo,
+        "Game": gameName,
+        "Type": "Duel"
+    }
+    response = postToWebService(payload, "/notice/invitation")
+    if response.get('Status') is True:
+        flash("Successful invitation to the battle.")
+        return redirect(url_for('news'))
     else:
-        error = userRes.get('Komunikat')
+        error = "Major error of WebService! " + str(response.get('Komunikat'))
+    userRes = getFromWebService("/games/duels/" + session['username']
+        + "/0/list")
+    if userRes.get('Status') is True:
+        logins = []
+        for i in range(1, session['pagination']):
+            nextOne = userRes.get(str(i))
+            if nextOne is not None:
+                logins.append(nextOne)
+        return render_template('choose_oponent.html',
+            cMessages=check_messages(), username=session['username'],
+            users=logins, error=error)
+    else:
+        error = error + "\n" + userRes.get('Komunikat')
     return render_template('choose_oponent.html', username=session['username'],
         error=error, cMessages=check_messages())
 

@@ -3,7 +3,7 @@
   {% if error %}<p class=error>{{ error }}{% endif %}
   <!--if games %}-->
   {% if users %}
-      <form action="{{ url_for('new_duel') }}" method=post class=send-code>
+      <form action="{{ url_for('new_inv') }}" method=post class=send-code>
         <dt>Game:
         <dd><select name=game>
         {% for game in games %}
