@@ -219,9 +219,11 @@ def login():
             "Password": mdpass.hexdigest(),
         }
         response = postToWebService(payload, "/login")
+        print response
         if response.get('Status') is True:
             session['logged_in'] = True
-            session['admin_box'] = response.get('Admin')
+            if response.get('Groups') is 1:
+                session['admin_box'] = True
             session['username'] = request.form['username']
             session['pagination'] = 7
             flash('You were logged in %s' % session['username'])
