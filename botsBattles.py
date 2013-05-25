@@ -106,7 +106,7 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
-def sendCompiledBotToWebService(fileData, subpage):
+def sendFileToWebService(fileData, subpage):
     if file and allowed_codeFile(file.filename):
         data = file
         req = urllib2.Request(WEBSERVICE_IP + subpage, data,
@@ -446,8 +446,10 @@ def send_code(idG, game):
                     error=error, cMessages=check_messages())
             else:
                 error = response
-        elif request.form['codeForm'] == 'file':
-            error = "FILE chosen!"
+        #elif request.form['codeForm'] == 'file':
+        #    print request.form['file']
+        #    response = sendFileToWebService(request.form['file'],
+        #        "/code/upload/" + game + "/" + idG + "/" + session['username'])
     return render_template('message.html', message="Something's wrong! :'(",
         error=error, cMessages=check_messages())
 
