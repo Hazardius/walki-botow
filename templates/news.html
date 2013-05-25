@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class=entries>
-  {% for entry in entries %}
+  <ul class=news>
+  {% for entry in news %}
     <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
   {% else %}
-    <li><em>Nothing new here.</em>
+    <li><em>No news here!</em>
   {% endfor %}
   </ul>
 {% endblock %}

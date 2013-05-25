@@ -165,11 +165,14 @@ def main_js():
 
 @app.route('/')
 def news():
+    news = [{"title": "2013-05-26: Tests launched!", "text": "Tests are"
+        + " officially launched. Our team is working on bringing the service"
+        + " as soon as possible to the state friendly to users."}]
     if "username" in session:
         return render_template('news.html', username=session['username'],
-            cMessages=check_messages())
+            cMessages=check_messages(), news=news)
     else:
-        return render_template('news.html', username="")
+        return render_template('news.html', username="", news=news)
 
 # page methods - registration and login
 
