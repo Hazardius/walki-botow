@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <ul class=duels>
-  {% for duel in entries %}
-    <li><h2>{{ duel }}</h2>
+  <ul class=battles>
+  {% for battle in battles %}
+    <li><h2>{{ battle.Type }} in {{ battle.GameName }}:
+        <b>{{ battle.Player1 }}</b> vs. <b>{{ battle.Player2 }}</b></h2>
   {% else %}
     <li><em>You have no battles now.</em>
   {% endfor %}

@@ -315,9 +315,9 @@ def battles():
                 battleInfo = getFromWebService("/games/" + str(nextOne)
                     + "/about")
                 if battleInfo.get('Status') is True:
-                    battles.append(battleInfo)
+                    battles.append(dict(battleInfo))
         return render_template('battles.html', username=session['username'],
-            entries=battles, cMessages=check_messages())
+            battles=battles, cMessages=check_messages())
     else:
         error = response.get('Komunikat')
     return render_template('battles.html', username=session['username'],
