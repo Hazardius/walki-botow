@@ -2,7 +2,7 @@
 from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash
-from time import gmtime, strftime
+# from time import gmtime, strftime
 from BeautifulSoup import BeautifulSoup
 import json
 import md5
@@ -314,6 +314,7 @@ def battles():
             if nextOne is not None:
                 battleInfo = getFromWebService("/games/" + str(nextOne)
                     + "/about")
+                battleInfo.update({'Nr': nextOne})
                 if battleInfo.get('Status') is True:
                     battles.append(dict(battleInfo))
         return render_template('battles.html', username=session['username'],
@@ -385,6 +386,12 @@ def invite_to_battle(uFrom, uTo, gameName):
         error=error, cMessages=check_messages())
 
 
+@app.route('/no_duel', methods=['GET', 'POST'])
+def no_duel():
+    return render_template('post_box.html', username=session['username'],
+            cMessages=check_messages())
+
+
 @app.route('/duel', methods=['GET', 'POST'])
 def new_duel():
     return register_battle(sanitize_html(session['username']),
@@ -409,11 +416,34 @@ def register_battle(login1, login2, gameName):
         error=error, cMessages=check_messages())
 
 
-@app.route('/sendCode', methods=['GET', 'POST'])
-def send_code():
+@app.route('/view_battle/<int:number>/<game>')
+def view_battle(number, game):
+    return render_template('send_code.html', username=session['username'],
+        cMessages=check_messages(), number=number, game=game)
+
+
+@app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
+def send_code(idG, game):
     error = None
-    return render_template('send_code.html', error=error,
-        cMessages=check_messages())
+    if request.method == 'POST':
+        if request.form['codeForm'] == 'text':
+            payload = {
+                "From": session['username'],
+                "Language": request.form['lang'],
+                "GameID": idG,
+                "Game": game,
+                "Code": request.form['code']
+            }
+            response = postToWebService(payload, "/code/upload")
+            if response.get('Status') is True:
+                return render_template('message.html', message="Code sent!",
+                    error=error, cMessages=check_messages())
+            else:
+                error = response
+        elif request.form['codeForm'] == 'file':
+            error = "FILE chosen!"
+    return render_template('message.html', message="Something's wrong! :'(",
+        error=error, cMessages=check_messages())
 
 # page methods - tournaments
 

@@ -2,12 +2,14 @@
 {% block body %}
   {% if session.logged_in %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-    <form action="{{ url_for('send_code') }}" method=post class=send-code enctype=multipart/form-data >
+    {% if number %}<b>{{ number }}</b>
+    {% if game %}<b>{{ game }}</b>
+    <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post class=send-code enctype=multipart/form-data >
       <dl>
-        <dt>Code:
-        <dd><textarea name=code rows=5 cols=40></textarea>
-		<dt>File:
-		<dd><input type=file>
+        <dt><input type="radio" name="codeForm" value="text" required> Code:
+        <dd><textarea name=code rows=10 cols=80></textarea>
+        <dt><input type="radio" name="codeForm" value="file" required> File:
+        <dd><input type=file>
         <dt>Language:
         <dd><select name=lang>
           <option value="c">C</option>
@@ -19,6 +21,6 @@
         </select>
         <dd><input type=submit value=Send>
       </dl>
-    </form>
+    </form>{% endif %}{% endif %}
   {% endif %}
 {% endblock %}

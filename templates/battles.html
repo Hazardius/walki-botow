@@ -3,8 +3,10 @@
   {% if error %}<p class=error>{{ error }}{% endif %}
   <ul class=battles>
   {% for battle in battles %}
-    <li><h2>{{ battle.Type }} in {{ battle.GameName }}:
+    <li><a href="{{ url_for('view_battle', number=battle.Nr, game=battle.GameName) }}">
+        <h2><b>{{ battle.Nr }}</b> {{ battle.Type }} in {{ battle.GameName }}:
         <b>{{ battle.Player1 }}</b> vs. <b>{{ battle.Player2 }}</b></h2>
+        </a>
   {% else %}
     <li><em>You have no battles now.</em>
   {% endfor %}

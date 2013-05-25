@@ -4,7 +4,8 @@
   {% for message in messages %}
     <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
     {% if message.Type == "Invitation" %}
-      <button type="button">Accept!</button>
+      <button action="{{ url_for('new_duel') }}" method=post>Accept!</button>
+      <button action="{{ url_for('no_duel') }}" method=post>Nope!</button>
     {% endif %}
   {% else %}
     <li><em>You have no new messages.</em>
