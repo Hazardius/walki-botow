@@ -3,32 +3,34 @@ from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash
 from time import gmtime, strftime
+from BeautifulSoup import BeautifulSoup
 import json
 import md5
+import requests
+import socket
 import urllib2
 from urllib2 import URLError
 
 # configuration
 DEBUG = True
 SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\x1f'
+
 # localhost will be changed as the local network arise
 WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
+
 # list of allowed extensions
 ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
 ALLOWED_EXTENSIONS_IMAGE = set(['png', 'jpg', 'jpeg', 'gif'])
+
+VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
 # create our application
 app = Flask(__name__)
 app.config.from_object(__name__)
 
 # methods
-
-
-from BeautifulSoup import BeautifulSoup
-
-VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
 
 def sanitize_html(value):
@@ -44,13 +46,14 @@ def postToWebService(payload, subpage):
     clen = len(data)
     app.logger.debug("[POST]Connection with WS started: "
         + strftime("%a, %d %b %Y %X +0000", gmtime()))
-    req = urllib2.Request(WEBSERVICE_IP + subpage, data,
-        {'Content-Type': 'application/json', 'Content-Length': clen})
+    # req = urllib2.Request()
     try:
-        response = urllib2.urlopen(req)
+        f = requests.post(WEBSERVICE_IP + subpage, data=data,
+            headers={'Content-Type': 'application/json',
+            'Content-Length': clen})
+        data = f.json()
         app.logger.debug("[POST]Response received: "
             + strftime("%a, %d %b %Y %X +0000", gmtime()))
-        data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -97,10 +100,12 @@ def sendCompiledBotToWebService(fileData, subpage):
         except ValueError:
             if hasattr(e, 'reason'):
                 error = e.reason
-                app.logger.error('Value Error has been found.\nReason: ' + error)
+                app.logger.error('Value Error has been found.\nReason: '
+                    + error)
             elif hasattr(e, 'code'):
                 error = e.code
-                app.logger.error('Value Error has been found.\nError code:' + error)
+                app.logger.error('Value Error has been found.\nError code:'
+                    + error)
         else:
             return data
     else:
@@ -111,14 +116,15 @@ def sendCompiledBotToWebService(fileData, subpage):
 
 
 def getFromWebService(subpage):
-    req = urllib2.Request(WEBSERVICE_IP + subpage)
+    # req = urllib2.Request(WEBSERVICE_IP + subpage)
     app.logger.debug("[GET]Connection with WS started: "
         + strftime("%a, %d %b %Y %X +0000", gmtime()))
     try:
-        response = urllib2.urlopen(req)
+        f = requests.get(WEBSERVICE_IP + subpage)
+        data = f.json()
+        f.close()
         app.logger.debug("[GET]Response received: "
             + strftime("%a, %d %b %Y %X +0000", gmtime()))
-        data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -186,11 +192,18 @@ def user():
 def battles():
     error = None
     response = getFromWebService("/" + session['username'] + "/duels")
-    # print response
     # I get only nr's of duels. It would be nice to get more info.
     if response.get('Status') is True:
+        battles = []
+        for i in range(1, session['pagination']):
+            nextOne = response.get(str(i))
+            if nextOne is not None:
+                battleInfo = getFromWebService("/games/" + str(nextOne) + "/about")
+                if battleInfo.get('Status') is True:
+                    print battleInfo
+                    battles.append(battleInfo)
         return render_template('battles.html', username=session['username'],
-            entries=response, cMessages=check_messages())
+            entries=battles, cMessages=check_messages())
     else:
         error = response.get('Komunikat')
     return render_template('battles.html', username=session['username'],
