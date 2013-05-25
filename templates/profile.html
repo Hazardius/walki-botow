@@ -2,6 +2,8 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   {% if profile %}
-  <h2>{{ profile }}</h2>
-  <p class=error><strong>Welcome:</strong> {{ username }}{% endif %}
+  <h2>{{ profile.Name }} {{ profile.Surname }}</h2>
+  <strong>Welcome:</strong> {{ username }}<br>
+  {{ profile.Email }}<br>{{ profile.Sex }}
+  {% endif %}
 {% endblock %}

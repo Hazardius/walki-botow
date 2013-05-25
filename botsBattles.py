@@ -178,12 +178,15 @@ def news():
 def register():
     error = None
     if request.method == 'POST':
-        mdpass = md5.new(request.form['password'])
+        mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
         payload = {
-            "Login": sanitize_html(request.form['username']),
+            "Login": sanitize_html(request.form['username']
+                .encode('utf-8', 'ignore')),
             "Password": mdpass.hexdigest(),
-            "Name": sanitize_html(request.form['name']),
-            "Surname": sanitize_html(request.form['surname']),
+            "Name": sanitize_html(request.form['name']
+                .encode('utf-8', 'ignore')),
+            "Surname": sanitize_html(request.form['surname']
+                .encode('utf-8', 'ignore')),
             "Email": request.form['e_mail'],
             "Sex": request.form['sex']
         }
@@ -286,8 +289,9 @@ def user():
 def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
+        print response
         return render_template('profile.html', cMessages=check_messages(),
-            username=session['username'], profile=nick)
+            username=session['username'], profile=dict(response))
     else:
         error = response.get('Komunikat')
     return render_template('profile.html', username=session['username'],
@@ -317,7 +321,6 @@ def battles():
                 battleInfo = getFromWebService("/games/" + str(nextOne)
                     + "/about")
                 battleInfo.update({'Nr': nextOne})
-                print battleInfo
                 if battleInfo.get('Status') is True:
                     battles.append(dict(battleInfo))
         return render_template('battles.html', username=session['username'],
