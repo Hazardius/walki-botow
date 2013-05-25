@@ -59,9 +59,13 @@ def postToWebService(payload, subpage):
             error = e.code
             app.logger.error('The server couldn\'t fulfill the request.'
                 + '\nError code:' + error)
-    except ValueError:
-        error = response
-        app.logger.error('Value Error has been found.' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -91,8 +95,12 @@ def sendCompiledBotToWebService(fileData, subpage):
                 app.logger.error('The server couldn\'t fulfill the request.'
                     + '\nError code:' + error)
         except ValueError:
-            error = response
-            app.logger.error('Value Error has been found.' + error)
+            if hasattr(e, 'reason'):
+                error = e.reason
+                app.logger.error('Value Error has been found.\nReason: ' + error)
+            elif hasattr(e, 'code'):
+                error = e.code
+                app.logger.error('Value Error has been found.\nError code:' + error)
         else:
             return data
     else:
@@ -120,8 +128,12 @@ def getFromWebService(subpage):
             app.logger.error('The server couldn\'t fulfill the request.'
                 + '\nError code:' + error)
     except ValueError:
-        error = response
-        app.logger.error('Value Error has been found.' + error)
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
