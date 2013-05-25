@@ -258,11 +258,17 @@ def post_box():
     error = None
     response = getFromWebService("/notice/" + session['username'])
     if response.get('Status') is True:
-        print response
+        messages = []
+        for i in range(1, session['pagination']):
+            nextOne = response.get(str(i))
+            if nextOne is not None:
+                messages.append(dict(nextOne))
         return render_template('post_box.html', username=session['username'],
             cMessages=check_messages(), messages=messages)
+    else:
+        error = "ERROR"
     return render_template('post_box.html', username=session['username'],
-            cMessages=check_messages())
+            cMessages=check_messages(), error=error)
 
 # page methods - user profile
 
@@ -354,6 +360,7 @@ def invite_to_battle(uFrom, uTo, gameName):
         "Type": "Duel"
     }
     response = postToWebService(payload, "/notice/invitation")
+    print response
     if response.get('Status') is True:
         flash("Successful invitation to the battle.")
         return redirect(url_for('news'))

@@ -2,9 +2,12 @@
 {% block body %}
   <ul class=messages>
   {% for message in messages %}
-    <li><h2>{{ message.title }}</h2>
+    <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
+    {% if message.Type == "Invitation" %}
+      <button type="button">Accept!</button>
+    {% endif %}
   {% else %}
-    <li><em>No messages for you.</em>
+    <li><em>You have no new messages.</em>
   {% endfor %}
   </ul>
 {% endblock %}
