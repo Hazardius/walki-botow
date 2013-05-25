@@ -7,7 +7,8 @@
   {% block head %}{% endblock %}
   </head>
 <div class=page>
-  <h1>Bots Battles</h1>
+  <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" style="width: 50em;" width="1024">
+  <!--<h1>Bots Battles</h1>-->
   <div class=metanav>
     {% if not session.logged_in %}
       <a href="{{ url_for('register') }}">Register</a>
