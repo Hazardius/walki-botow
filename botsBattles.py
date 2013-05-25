@@ -7,7 +7,6 @@ from BeautifulSoup import BeautifulSoup
 import json
 import md5
 import requests
-import socket
 import urllib2
 from urllib2 import URLError
 
@@ -33,12 +32,38 @@ app.config.from_object(__name__)
 # methods
 
 
-def sanitize_html(value):
-    soup = BeautifulSoup(value)
-    for tag in soup.findAll(True):
-        if tag.name not in VALID_TAGS:
-            tag.hidden = True
-    return soup.renderContents()
+def allowed_codeFile(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_FILE
+
+
+def getFromWebService(subpage):
+    app.logger.debug("[GET]Connection with WS started: "
+        + strftime("%a, %d %b %Y %X +0000", gmtime()))
+    try:
+        f = requests.get(WEBSERVICE_IP + subpage)
+        data = f.json()
+        app.logger.debug("[GET]Response received: "
+            + strftime("%a, %d %b %Y %X +0000", gmtime()))
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+    else:
+        return data
+    errorMessage = {"Status": False, "Komunikat": error}
+    return errorMessage
 
 
 def postToWebService(payload, subpage):
@@ -46,7 +71,6 @@ def postToWebService(payload, subpage):
     clen = len(data)
     app.logger.debug("[POST]Connection with WS started: "
         + strftime("%a, %d %b %Y %X +0000", gmtime()))
-    # req = urllib2.Request()
     try:
         f = requests.post(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
@@ -75,9 +99,12 @@ def postToWebService(payload, subpage):
     return errorMessage
 
 
-def allowed_codeFile(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_FILE
+def sanitize_html(value):
+    soup = BeautifulSoup(value)
+    for tag in soup.findAll(True):
+        if tag.name not in VALID_TAGS:
+            tag.hidden = True
+    return soup.renderContents()
 
 
 def sendCompiledBotToWebService(fileData, subpage):
@@ -114,44 +141,7 @@ def sendCompiledBotToWebService(fileData, subpage):
     errorMessage = {"Status": False, "Komunikat": error}
     return errorMessage
 
-
-def getFromWebService(subpage):
-    # req = urllib2.Request(WEBSERVICE_IP + subpage)
-    app.logger.debug("[GET]Connection with WS started: "
-        + strftime("%a, %d %b %Y %X +0000", gmtime()))
-    try:
-        f = requests.get(WEBSERVICE_IP + subpage)
-        data = f.json()
-        f.close()
-        app.logger.debug("[GET]Response received: "
-            + strftime("%a, %d %b %Y %X +0000", gmtime()))
-    except URLError, e:
-        if hasattr(e, 'reason'):
-            error = e.reason
-            app.logger.error('We failed to reach a server.\nReason: ' + error)
-        elif hasattr(e, 'code'):
-            error = e.code
-            app.logger.error('The server couldn\'t fulfill the request.'
-                + '\nError code:' + error)
-    except ValueError:
-        if hasattr(e, 'reason'):
-            error = e.reason
-            app.logger.error('Value Error has been found.\nReason: ' + error)
-        elif hasattr(e, 'code'):
-            error = e.code
-            app.logger.error('Value Error has been found.\nError code:' + error)
-    else:
-        return data
-    errorMessage = {"Status": False, "Komunikat": error}
-    return errorMessage
-
 # error pages
-
-
-@app.errorhandler(404)
-def not_found(error):
-    return render_template('error.html', username=session['username'],
-        errorNo=404, errorMe="The page You're looking for isn't here!")
 
 
 @app.errorhandler(503)
@@ -160,7 +150,18 @@ def app_error(error):
         errorNo=503, errorMe="Application have some problems."
         + "Contact us to help solve them.\n" + error)
 
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('error.html', username=session['username'],
+        errorNo=404, errorMe="The page You're looking for isn't here!")
+
 # page methods
+
+
+@app.route('/main.js')
+def main_js():
+    return render_template('main.js')
 
 
 @app.route('/')
@@ -171,43 +172,7 @@ def news():
     else:
         return render_template('news.html', username="")
 
-
-@app.route('/main.js')
-def main_js():
-    return render_template('main.js')
-
-
-@app.route('/tournaments')
-def tournaments():
-    return render_template('tournaments.html', username=session['username'],
-        cMessages=check_messages())
-
-
-@app.route('/user')
-def user():
-    return show_user_profile(session['username'])
-
-
-@app.route('/battles')
-def battles():
-    error = None
-    response = getFromWebService("/" + session['username'] + "/duels")
-    # I get only nr's of duels. It would be nice to get more info.
-    if response.get('Status') is True:
-        battles = []
-        for i in range(1, session['pagination']):
-            nextOne = response.get(str(i))
-            if nextOne is not None:
-                battleInfo = getFromWebService("/games/" + str(nextOne) + "/about")
-                if battleInfo.get('Status') is True:
-                    print battleInfo
-                    battles.append(battleInfo)
-        return render_template('battles.html', username=session['username'],
-            entries=battles, cMessages=check_messages())
-    else:
-        error = response.get('Komunikat')
-    return render_template('battles.html', username=session['username'],
-        error=error, cMessages=check_messages())
+# page methods - registration and login
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -232,6 +197,21 @@ def register():
     return render_template('register.html', error=error)
 
 
+@app.route('/activation/<webHash>')
+def try_to_activate(webHash):
+    error = None
+    payload = {
+        "Hash": sanitize_html(webHash)
+    }
+    response = postToWebService(payload, "/user/registration/activation")
+    if response.get('Status') is True:
+        return render_template('message.html',
+            message="User successfuly activated!")
+    else:
+        error = response.get('Komunikat')
+    return render_template('message.html', message=error)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -254,26 +234,39 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route('/sendCode', methods=['GET', 'POST'])
-def send_code():
-    error = None
-    return render_template('send_code.html', error=error,
-        cMessages=check_messages())
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', "")
+    session.pop('pagination', 5)
+    session.pop('admin_box', None)
+    flash('You were logged out')
+    return redirect(url_for('news'))
+
+# page methods - messages system
 
 
-@app.route('/activation/<webHash>')
-def try_to_activate(webHash):
+def check_messages():
     error = None
-    payload = {
-        "Hash": sanitize_html(webHash)
-    }
-    response = postToWebService(payload, "/user/registration/activation")
+    response = getFromWebService("/notice/" + session['username'] + "/new")
     if response.get('Status') is True:
-        return render_template('message.html',
-            message="User successfuly activated!")
+        return response.get('Count')
     else:
-        error = response.get('Komunikat')
-    return render_template('message.html', message=error)
+        error = "Problem with messages! " + str(response.get('Komunikat'))
+    return error
+
+
+@app.route('/post_box')
+def post_box():
+    return render_template('post_box.html', username=session['username'],
+            cMessages=check_messages())
+
+# page methods - user profile
+
+
+@app.route('/user')
+def user():
+    return show_user_profile(session['username'])
 
 
 @app.route('/user/<nick>')
@@ -286,6 +279,39 @@ def show_user_profile(nick):
         error = response.get('Komunikat')
     return render_template('profile.html', username=session['username'],
         profile=nick, error=error, cMessages=check_messages())
+
+# page methods - admin box
+
+
+@app.route('/admin_tools')
+def admin_box():
+    return render_template('admin_tools.html', username=session['username'],
+            cMessages=check_messages())
+
+# page methods - battles
+
+
+@app.route('/battles')
+def battles():
+    error = None
+    response = getFromWebService("/" + session['username'] + "/duels")
+    # I get only nr's of duels. It would be nice to get more info.
+    if response.get('Status') is True:
+        battles = []
+        for i in range(1, session['pagination']):
+            nextOne = response.get(str(i))
+            if nextOne is not None:
+                battleInfo = getFromWebService("/games/" + str(nextOne)
+                    + "/about")
+                if battleInfo.get('Status') is True:
+                    print battleInfo
+                    battles.append(battleInfo)
+        return render_template('battles.html', username=session['username'],
+            entries=battles, cMessages=check_messages())
+    else:
+        error = response.get('Komunikat')
+    return render_template('battles.html', username=session['username'],
+        error=error, cMessages=check_messages())
 
 
 @app.route('/choose_oponent')
@@ -335,36 +361,21 @@ def register_battle(login1, login2, gameName):
         error=error, cMessages=check_messages())
 
 
-def check_messages():
+@app.route('/sendCode', methods=['GET', 'POST'])
+def send_code():
     error = None
-    response = getFromWebService("/notice/" + session['username'] + "/new")
-    if response.get('Status') is True:
-        return response.get('Count')
-    else:
-        error = "Problem with messages! " + str(response.get('Komunikat'))
-    return error
+    return render_template('send_code.html', error=error,
+        cMessages=check_messages())
+
+# page methods - tournaments
 
 
-@app.route('/admin_tools')
-def admin_box():
-    return render_template('admin_tools.html', username=session['username'],
-            cMessages=check_messages())
+@app.route('/tournaments')
+def tournaments():
+    return render_template('tournaments.html', username=session['username'],
+        cMessages=check_messages())
 
-
-@app.route('/post_box')
-def post_box():
-    return render_template('post_box.html', username=session['username'],
-            cMessages=check_messages())
-
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    session.pop('username', "")
-    session.pop('pagination', 5)
-    session.pop('admin_box', None)
-    flash('You were logged out')
-    return redirect(url_for('news'))
+# app start
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
