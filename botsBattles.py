@@ -315,6 +315,7 @@ def battles():
                 battleInfo = getFromWebService("/games/" + str(nextOne)
                     + "/about")
                 battleInfo.update({'Nr': nextOne})
+                print battleInfo
                 if battleInfo.get('Status') is True:
                     battles.append(dict(battleInfo))
         return render_template('battles.html', username=session['username'],
