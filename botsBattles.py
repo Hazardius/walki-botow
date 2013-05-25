@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 # all the imports
 from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash
 # from time import gmtime, strftime
 from BeautifulSoup import BeautifulSoup
+import MySQLdb
 import json
 import md5
 import requests
@@ -101,7 +104,7 @@ def sanitize_html(value):
     for tag in soup.findAll(True):
         if tag.name not in VALID_TAGS:
             tag.hidden = True
-    return soup.renderContents()
+    return MySQLdb.escape_string(soup.renderContents())
 
 
 def sendCompiledBotToWebService(fileData, subpage):
