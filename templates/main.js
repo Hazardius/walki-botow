@@ -6,9 +6,11 @@ function validatePass(p1, p2) {
     }
 }
 
-function validateLength(p1) {
+function validateUsername(p1) {
     if (p1.value.length < 4) {
         p1.setCustomValidity('Legth too small!');
+    } else if (/[a-zA-Z]/.test(p1.value) == false) {
+        p1.setCustomValidity('Strange letters used!');
     } else {
         p1.setCustomValidity('');
     }

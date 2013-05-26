@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block head %}
-  <script src="{{ url_for('main_js') }}" type="text/javascript"></script>
+  <script src="{{ url_for('main_js') }}" type="text/javascript" charset=utf-8"></script>
 {% endblock %}
 {% block body %}
   <h2>Register</h2>
@@ -10,7 +10,7 @@
       <dt>Username:
       <dd><input type="text" name="username" placeholder="Your nickname!"
         autofocus required x-moz-errormessage="Enter Username"
-        onfocus="validateLength(this);" oninput="validateLength(this);"
+        onfocus="validateUsername(this);" oninput="validateUsername(this);"
         size="10" maxlength="128">
       <dt>Password:
       <dd><input type="password" name="password" required id="p1"
