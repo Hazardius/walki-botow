@@ -1,4 +1,16 @@
-{% extends "layout.html" %}
-{% block body %}
-  <p class=error> <b>Error {{ errorNo }}:</b> {{ errorMe }}Page you're looking for is not here!
-{% endblock %}
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<?php header("Content-Type: text/html; charset=iso-8859-2"); ?>
+<!doctype html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bots Battles</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+<div class=page>
+  <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" style="width: 50em;" width="1024">
+  {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+  {% endfor %}
+  <p class=error> <b>Error {{ errorNo }}:</b> {{ errorMe }}
+</div>
