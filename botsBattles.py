@@ -98,6 +98,40 @@ def postToWebService(payload, subpage):
     return errorMessage
 
 
+def putToWebService(payload, subpage):
+    data = json.dumps(payload)
+    clen = len(data)
+    try:
+        print "before"
+        f = requests.put(WEBSERVICE_IP + subpage, data=data,
+            headers={'Content-Type': 'application/json',
+            'Content-Length': clen})
+        print f
+        data = f.json()
+        print "after parse"
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    else:
+        return data
+    errorMessage = {"Status": False, "Komunikat": error}
+    return errorMessage
+
+
 def sanitize_html(value):
     soup = BeautifulSoup(value)
     for tag in soup.findAll(True):
@@ -238,7 +272,6 @@ def login():
             "Password": mdpass.hexdigest(),
         }
         response = postToWebService(payload, "/login")
-        print response
         if response.get('Status') is True:
             session['logged_in'] = True
             if response.get('Groups') is 1:
@@ -307,7 +340,6 @@ def user():
 def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
-        print response
         return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=dict(response))
     else:
@@ -394,12 +426,11 @@ def invite_to_battle(uFrom, uTo, gameName):
         "Type": "Duel"
     }
     response = postToWebService(payload, "/notice/invitation")
-    print response
     if response.get('Status') is True:
         flash("Successful invitation to the battle.")
         return redirect(url_for('news'))
     else:
-        error = "Major error of WebService! " + str(response.get('Komunikat'))
+        error = str(response.get('Komunikat'))
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/list")
     if userRes.get('Status') is True:
@@ -417,37 +448,53 @@ def invite_to_battle(uFrom, uTo, gameName):
         error=error, cMessages=check_messages())
 
 
-@app.route('/no_duel', methods=['GET', 'POST'])
-def no_duel():
+@app.route('/no_duel/<int:gameId>', methods=['GET', 'POST'])
+def no_duel(gameId):
     if check_ws() is False:
         return ws_error()
-    return render_template('post_box.html', username=session['username'],
-            cMessages=check_messages())
+    return cancel_battle(gameId)
 
 
-@app.route('/duel', methods=['GET', 'POST'])
-def new_duel():
+def cancel_battle(gameId):
+    error = None
+    payload = {
+        "ID": gameId
+    }
+    response = putToWebService(payload, "/notice/invitation/decline")
+    if response.get('Status') is True:
+        flash("You refused that invitation.")
+        return redirect(url_for('news'))
+    else:
+        error = str(response.get('Komunikat'))
+    return render_template('news.html', username=session['username'],
+        error=error, cMessages=check_messages())
+
+
+@app.route('/duel/<opponent>/<game>/<int:gameId>', methods=['GET', 'POST'])
+def new_duel(opponent, game, gameId):
     if check_ws() is False:
         return ws_error()
     return register_battle(sanitize_html(session['username']),
-        sanitize_html(request.form['oponent']),
-        sanitize_html(request.form['game']))
+        sanitize_html(opponent),
+        sanitize_html(game),
+        gameId)
 
 
-def register_battle(login1, login2, gameName):
+def register_battle(login1, login2, gameName, gameId):
     error = None
     payload = {
         "User1": login1,
         "User2": login2,
-        "GameName": gameName
+        "GameName": gameName,
+        "ID": gameId
     }
     response = postToWebService(payload, "/games/duels/registry")
     if response.get('Status') is True:
-        flash("Successful registration of battle.")
+        flash("You accepted this invitation.")
         return redirect(url_for('news'))
     else:
-        error = "Major error of WebService! " + str(response.get('Komunikat'))
-    return render_template('choose_oponent.html', username=session['username'],
+        error = str(response.get('Komunikat'))
+    return render_template('news.html', username=session['username'],
         error=error, cMessages=check_messages())
 
 
