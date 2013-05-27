@@ -158,6 +158,11 @@ def not_found(error):
 # page methods
 
 
+def check_ws():
+    r = requests.head(WEBSERVICE_IP)
+    return r.status_code == 200
+
+
 @app.route('/main.js')
 def main_js():
     return render_template('main.js')
@@ -168,6 +173,8 @@ def news():
     news = [{"title": "2013-05-26: Tests launched!", "text": "Tests are"
         + " officially launched. Our team is working on bringing the service"
         + " as soon as possible to the state friendly to users."}]
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     if "username" in session:
         return render_template('news.html', username=session['username'],
             cMessages=check_messages(), news=news)
@@ -179,6 +186,8 @@ def news():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     if request.method == 'POST':
         mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
@@ -204,6 +213,8 @@ def register():
 
 @app.route('/activation/<webHash>')
 def try_to_activate(webHash):
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     payload = {
         "Hash": sanitize_html(webHash)
@@ -219,6 +230,8 @@ def try_to_activate(webHash):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     if request.method == 'POST':
         mdpass = md5.new(request.form['password'])
@@ -265,6 +278,8 @@ def check_messages():
 
 @app.route('/post_box')
 def post_box():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     response = getFromWebService("/notice/" + session['username'])
     if response.get('Status') is True:
@@ -285,6 +300,8 @@ def post_box():
 
 @app.route('/user')
 def user():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return show_user_profile(session['username'])
 
 
@@ -305,6 +322,8 @@ def show_user_profile(nick):
 
 @app.route('/admin_tools')
 def admin_box():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return render_template('admin_tools.html', username=session['username'],
             cMessages=check_messages())
 
@@ -313,9 +332,10 @@ def admin_box():
 
 @app.route('/battles')
 def battles():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     response = getFromWebService("/" + session['username'] + "/duels")
-    # I get only nr's of duels. It would be nice to get more info.
     if response.get('Status') is True:
         battles = []
         for i in range(1, session['pagination']):
@@ -336,6 +356,8 @@ def battles():
 
 @app.route('/choose_oponent')
 def choose_oponent():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     # gamesRes = getFromWebService("/games")
     # if gamesRes.get('Status') is True:
@@ -358,6 +380,8 @@ def choose_oponent():
 
 @app.route('/invite', methods=['GET', 'POST'])
 def new_inv():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return invite_to_battle(sanitize_html(session['username']),
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
@@ -397,12 +421,16 @@ def invite_to_battle(uFrom, uTo, gameName):
 
 @app.route('/no_duel', methods=['GET', 'POST'])
 def no_duel():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return render_template('post_box.html', username=session['username'],
             cMessages=check_messages())
 
 
 @app.route('/duel', methods=['GET', 'POST'])
 def new_duel():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return register_battle(sanitize_html(session['username']),
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
@@ -427,12 +455,16 @@ def register_battle(login1, login2, gameName):
 
 @app.route('/view_battle/<int:number>/<game>')
 def view_battle(number, game):
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return render_template('send_code.html', username=session['username'],
         cMessages=check_messages(), number=number, game=game)
 
 
 @app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
 def send_code(idG, game):
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     error = None
     if request.method == 'POST':
         if request.form['codeForm'] == 'text':
@@ -461,6 +493,8 @@ def send_code(idG, game):
 
 @app.route('/tournaments')
 def tournaments():
+    if check_ws() is False:
+        return render_template('message.html', message="WebService is offline!")
     return render_template('tournaments.html', username=session['username'],
         cMessages=check_messages())
 
