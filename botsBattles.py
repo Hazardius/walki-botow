@@ -529,7 +529,7 @@ def view_battle(number, game):
     if number == 1:
         return render_template('results.html', username=session['username'],
             cMessages=check_messages(), number=number, game=game)
-    #error = None
+    error = None
     #response = getFromWebService("/games/" + str(number) + "/info")
     #print response
     #if response.get('Status') is True:
