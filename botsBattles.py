@@ -526,7 +526,7 @@ def register_battle(login1, login2, gameName, gameId):
 def view_battle(number, game):
     if check_ws() is False:
         return ws_error()
-    if numer == 1:
+    if number == 1:
         return render_template('results.html', username=session['username'],
             cMessages=check_messages(), number=number, game=game)
     #error = None
