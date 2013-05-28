@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+    {% if number %}<b>{{ number }}</b>
+    {% if game %}<b>{{ game }}</b>
+    <h2>Logs: </h2>
+    <b>Player 1:</b> K
+    <b>Player 2:</b> K
+    <b>Player 1:</b> P
+    <b>Player 2:</b> K
+    <b>Player 1:</b> N
+    <b>Player 2:</b> K
+    <b>Results:</b> Draw
+  {% endif %}
+{% endblock %}
