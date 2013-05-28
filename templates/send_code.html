@@ -6,13 +6,16 @@
     {% if game %}<b>{{ game }}</b>
     <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post class=send-code enctype=multipart/form-data >
       <dl>
+        <dt>File Name:
+        <dd><input type="text" name="fileName" placeholder="Name of your file."
+          autofocus required x-moz-errormessage="Enter File Name"
+          size="15" maxlength="128">
         <dt><input type="radio" name="codeForm" value="text" required> Code:
         <dd><textarea name=code rows=10 cols=80></textarea>
         <!--<dt><input type="radio" name="codeForm" value="file" required> File:
         <dd><input type="file" name="file">-->
         <dt>Language:
         <dd><select name=lang>
-          <option value="c">C</option>
           <option value="cpp">C++</option>
           <option value="cis">C#</option>
           <option value="java">Java</option>

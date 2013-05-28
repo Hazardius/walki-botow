@@ -102,13 +102,10 @@ def putToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
     try:
-        print "before"
         f = requests.put(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen})
-        print f
         data = f.json()
-        print "after parse"
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -340,12 +337,39 @@ def user():
 def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
+        response.update({"nick": nick})
         return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=dict(response))
     else:
         error = response.get('Komunikat')
-    return render_template('profile.html', username=session['username'],
-        profile=nick, error=error, cMessages=check_messages())
+    return render_template('message.html', username=session['username'],
+        error=error, cMessages=check_messages())
+
+
+@app.route('/edit_profile/<edited>', methods=['GET', 'POST'])
+def edit_profile(edited):
+    if check_ws() is False:
+        return ws_error()
+    error = None
+    if request.method == 'POST':
+        payload = {
+            "Login": sanitize_html(edited),
+            "Name": sanitize_html(request.form['name']
+                .encode('utf-8', 'ignore')),
+            "Surname": sanitize_html(request.form['surname']
+                .encode('utf-8', 'ignore')),
+            "Email": request.form['e_mail'],
+            "Sex": request.form['sex'],
+            "Avatar": ""
+        }
+        response = postToWebService(payload, "/" + payload['Login'] + "/about")
+        if response.get('Status') is True:
+            return redirect(url_for('user'))
+        else:
+            error = response.get('Komunikat')
+    return render_template('edit_profile.html',
+        username=session['username'], error=error,
+        cMessages=check_messages(), edited=edited)
 
 # page methods - admin box
 
@@ -458,7 +482,7 @@ def no_duel(gameId):
 def cancel_battle(gameId):
     error = None
     payload = {
-        "ID": gameId
+        "invitationID": gameId
     }
     response = putToWebService(payload, "/notice/invitation/decline")
     if response.get('Status') is True:
@@ -502,6 +526,7 @@ def register_battle(login1, login2, gameName, gameId):
 def view_battle(number, game):
     if check_ws() is False:
         return ws_error()
+    error = None
     return render_template('send_code.html', username=session['username'],
         cMessages=check_messages(), number=number, game=game)
 
@@ -518,7 +543,8 @@ def send_code(idG, game):
                 "Language": request.form['lang'],
                 "GameID": idG,
                 "Game": game,
-                "Code": request.form['code']
+                "Code": request.form['code'],
+                "FileName": request.form['fileName']
             }
             response = postToWebService(payload, "/code/upload")
             if response.get('Status') is True:
