@@ -371,6 +371,34 @@ def edit_profile(edited):
         username=session['username'], error=error,
         cMessages=check_messages(), edited=edited)
 
+# page methods - users list
+
+
+@app.route('/users')
+def users():
+    return users_p(0)
+
+
+@app.route('/users/<int:page>')
+def users_p(page):
+    if check_ws() is False:
+        return ws_error()
+    error = None
+    userRes = getFromWebService("/games/duels/" + session['username']
+        + "/" + str(page) + "/list")
+    if userRes.get('Status') is True:
+        logins = []
+        for i in range(1, session['pagination']):
+            nextOne = userRes.get(str(i))
+            if nextOne is not None:
+                logins.append(nextOne)
+        return render_template('users.html',
+            cMessages=check_messages(), username=session['username'],
+            users=logins)
+    error = userRes.get('Komunikat')
+    return render_template('users.html', username=session['username'],
+        error=error, cMessages=check_messages())
+
 # page methods - admin box
 
 
