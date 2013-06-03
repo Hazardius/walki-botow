@@ -8,19 +8,19 @@
   <form action="{{ url_for('edit_profile', edited=edited) }}" method=post>
     <dl>
       <dt>Name:
-      <dd><input type="text" name="name" placeholder="f.e. John"
-              x-moz-errormessage="Enter First Name" size="10" maxlength="128">
+      <dd><input type="text" name="name" value="{{ profile.Name }}"
+              x-moz-errormessage="Enter First Name" size="20" maxlength="128">
       <dt>Surname:
-      <dd><input type="text" name="surname" placeholder="f.e. Smith"
-              x-moz-errormessage="Enter Second Name" size="10" maxlength="128">
+      <dd><input type="text" name="surname" value="{{ profile.Surname }}"
+              x-moz-errormessage="Enter Second Name" size="20" maxlength="128">
       <dt>Sex:<br>
         <input type="radio" name="sex" value="male" required>Male<br>
         <input type="radio" name="sex" value="female" required>Female
       <dt>e-mail address:
-      <dd><input type="email" name="e_mail" placeholder="your_email@domain.com"
+      <dd><input type="email" name="e_mail" value="{{ profile.Email }}"
               size="25" required>
       <dt>Avatar address:
-      <dd><input type="text" name="avatar" size="25" maxlength="128">
+      <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
       <dd><input type=submit value="Edit my data!">
     </dl>
   </form>

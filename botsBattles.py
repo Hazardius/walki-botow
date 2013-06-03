@@ -389,9 +389,15 @@ def edit_profile(edited):
             return redirect(url_for('user'))
         else:
             error = response.get('Komunikat')
-    return render_template('edit_profile.html',
-        username=session['username'], error=error,
-        cMessages=check_messages(), edited=edited)
+    response = getFromWebService("/" + sanitize_html(edited) + "/about")
+    if response.get('Status') is True:
+        response.update({"nick": edited})
+        return render_template('edit_profile.html',
+            username=session['username'], error=error,
+            cMessages=check_messages(), edited=edited, profile=dict(response))
+    else:
+        return render_template('message.html', username=session['username'],
+            error=error, cMessages=check_messages())
 
 # page methods - users list
 
