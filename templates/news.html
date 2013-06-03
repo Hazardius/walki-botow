@@ -2,7 +2,7 @@
 {% block body %}
   <ul class=news>
   {% for entry in news %}
-    <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+    <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}<br><br>
   {% else %}
     <li><em>No news here!</em>
   {% endfor %}

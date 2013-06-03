@@ -28,7 +28,6 @@ TESTING = False
 # list of allowed extensions
 ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
-ALLOWED_EXTENSIONS_IMAGE = set(['png', 'jpg', 'jpeg', 'gif'])
 
 VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
@@ -219,7 +218,10 @@ def main_js():
 
 @app.route('/')
 def news():
-    news = [{"title": "2013-05-26: Tests launched!", "text": "Tests are"
+    news = [{"title": "2013-06-03: Avatars!", "text": "Finally our project"
+        + " support avatars. Go to your profile page and edit your data to add"
+        + " your wonderfull avatar."},
+            {"title": "2013-05-26: Tests launched!", "text": "Tests are"
         + " officially launched. Our team is working on bringing the service"
         + " as soon as possible to the state friendly to users."}]
     if check_ws() is False:
