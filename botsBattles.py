@@ -422,10 +422,10 @@ def users_p(page):
                 logins.append(nextOne)
         return render_template('users.html',
             cMessages=check_messages(), username=session['username'],
-            users=logins)
+            users=logins, page=page)
     error = userRes.get('Komunikat')
     return render_template('users.html', username=session['username'],
-        error=error, cMessages=check_messages())
+        error=error, cMessages=check_messages(), page=page)
 
 # page methods - admin box
 

@@ -9,5 +9,11 @@
   {% else %}
     <li><em>There are no users now.</em>
   {% endfor %}
+  {% if users %}
+      {% if page>0 %}
+      <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br>
+      {% endif %}
+      <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
+  {% endif %}
   </ul>
 {% endblock %}
