@@ -23,7 +23,7 @@
       <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
     {% endif %}
     {% if session.admin_box %}
-      <a href="{{ url_for('admin_box') }}">Admin Tools</a>
+      <!--<a href="{{ url_for('admin_box') }}">Admin Tools</a>-->
     {% endif %}
     {% if not session.logged_in %}
       <a href="{{ url_for('login') }}">Log in</a>

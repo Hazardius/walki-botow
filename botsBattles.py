@@ -557,17 +557,16 @@ def register_battle(login1, login2, gameName, gameId):
 def view_battle(number, game):
     if check_ws() is False:
         return ws_error()
-    if number == 1:
-        return render_template('results.html', username=session['username'],
-            cMessages=check_messages(), number=number, game=game)
     error = None
-    #response = getFromWebService("/games/" + str(number) + "/info")
-    #print response
-    #if response.get('Status') is True:
-    #    return render_template('message.html', message="Code sent!",
-    #        error=error, cMessages=check_messages())
-    #else:
-    #    error = response
+    response = getFromWebService("/games/" + str(number) + "/info")
+    if response.get('Status') is True:
+        if (response.get('Finished') == 't'):
+            return render_template('view_battle.html',
+                username=session['username'], cMessages=check_messages(),
+                number=number, game=game, winner=response.get('Winner'),
+                error=error)
+    else:
+        error = response
     return render_template('send_code.html', username=session['username'],
         cMessages=check_messages(), number=number, game=game, error=error)
 
