@@ -16,6 +16,11 @@ from urllib2 import URLError
 DEBUG = True
 SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\x1f'
 
+import socket
+
+timeout = 15
+socket.setdefaulttimeout(timeout)
+
 # address of WebService server
 WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
@@ -515,17 +520,17 @@ def invite_to_battle(uFrom, uTo, gameName):
         error=error, cMessages=check_messages())
 
 
-@app.route('/no_duel/<int:gameId>', methods=['GET', 'POST'])
-def no_duel(gameId):
+@app.route('/no_duel/<int:invId>', methods=['GET', 'POST'])
+def no_duel(invId):
     if check_ws() is False:
         return ws_error()
-    return cancel_battle(gameId)
+    return cancel_battle(invId)
 
 
-def cancel_battle(gameId):
+def cancel_battle(invId):
     error = None
     payload = {
-        "invitationID": gameId
+        "invitationID": invId
     }
     response = putToWebService(payload, "/notice/invitation/decline")
     if response.get('Status') is True:
@@ -537,23 +542,23 @@ def cancel_battle(gameId):
         error=error, cMessages=check_messages())
 
 
-@app.route('/duel/<opponent>/<game>/<int:gameId>', methods=['GET', 'POST'])
-def new_duel(opponent, game, gameId):
+@app.route('/duel/<opponent>/<game>/<int:invId>', methods=['GET', 'POST'])
+def new_duel(opponent, game, invId):
     if check_ws() is False:
         return ws_error()
     return register_battle(sanitize_html(session['username']),
         sanitize_html(opponent),
         sanitize_html(game),
-        gameId)
+        invId)
 
 
-def register_battle(login1, login2, gameName, gameId):
+def register_battle(login1, login2, gameName, invId):
     error = None
     payload = {
         "User1": login1,
         "User2": login2,
         "GameName": gameName,
-        "ID": gameId
+        "ID": invId
     }
     response = postToWebService(payload, "/games/duels/registry")
     if response.get('Status') is True:

@@ -4,10 +4,10 @@
   {% for message in messages %}
     <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
     {% if message.Type == "Invitation" %}
-    <form method="link" action="{{ url_for('new_duel', opponent=message.Sender, game=message.GameName, gameId=message.ID) }}">
+    <form method="link" action="{{ url_for('new_duel', opponent=message.Sender, game=message.GameName, invId=message.ID) }}">
       <input type="submit" value="Accept!">
     </form>
-    <form method="link" action="{{ url_for('no_duel', gameId=message.ID) }}">
+    <form method="link" action="{{ url_for('no_duel', invId=message.ID) }}">
       <input type="submit" value="Decline!">
     </form>
     {% endif %}
