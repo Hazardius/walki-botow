@@ -60,6 +60,9 @@ def getFromWebService(subpage):
             app.logger.error('Value Error has been found.\nError code:' + error)
         else:
             error = e
+    except requests.exceptions.ConnectionError:
+        error = "Connection Error!"
+        app.logger.error(error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -92,6 +95,9 @@ def postToWebService(payload, subpage):
             app.logger.error('Value Error has been found.\nError code:' + error)
         else:
             error = e
+    except requests.exceptions.ConnectionError:
+        error = "Connection Error!"
+        app.logger.error(error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -123,6 +129,9 @@ def putToWebService(payload, subpage):
             app.logger.error('Value Error has been found.\nError code:' + error)
         else:
             error = e
+    except requests.exceptions.ConnectionError:
+        error = "Connection Error!"
+        app.logger.error(error)
     else:
         return data
     errorMessage = {"Status": False, "Komunikat": error}
@@ -163,6 +172,9 @@ def sendFileToWebService(fileData, subpage):
                 error = e.code
                 app.logger.error('Value Error has been found.\nError code:'
                     + error)
+        except requests.exceptions.ConnectionError:
+            error = "Connection Error!"
+            app.logger.error(error)
         else:
             return data
     else:
@@ -564,11 +576,12 @@ def view_battle(number, game):
             return render_template('view_battle.html',
                 username=session['username'], cMessages=check_messages(),
                 number=number, game=game, winner=response.get('Winner'),
-                error=error)
+                error=error, message=response.get('Message'))
     else:
         error = response
     return render_template('send_code.html', username=session['username'],
-        cMessages=check_messages(), number=number, game=game, error=error)
+        cMessages=check_messages(), number=number, game=game, error=error,
+        winner=response.get('Winner'), message=response.get('Message'))
 
 
 @app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
