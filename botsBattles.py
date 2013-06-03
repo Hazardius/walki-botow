@@ -375,7 +375,7 @@ def edit_profile(edited):
                 .encode('utf-8', 'ignore')),
             "Email": request.form['e_mail'],
             "Sex": request.form['sex'],
-            "Avatar": ""
+            "Avatar": request.form['avatar']
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
