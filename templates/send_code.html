@@ -8,14 +8,14 @@
     {% if winner %}Winner is <b>{{ winner }}</b>{% endif %}
     <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post class=send-code enctype=multipart/form-data >
       <dl>
+        <dt><input type="radio" name="codeForm" value="text" required> Code:
+        <dd><textarea name=code rows=10 cols=80></textarea>
         <dt>File Name:
         <dd><input type="text" name="fileName" placeholder="Name of your file."
           autofocus required x-moz-errormessage="Enter File Name"
           size="15" maxlength="128">
-        <dt><input type="radio" name="codeForm" value="text" required> Code:
-        <dd><textarea name=code rows=10 cols=80></textarea>
-        <!--<dt><input type="radio" name="codeForm" value="file" required> File:
-        <dd><input type="file" name="file">-->
+        <dt><input type="radio" name="codeForm" value="file" required> File:
+        <dd><input type="file" name="file">
         <dt>Language:
         <dd><select name=lang>
           <option value="cpp">C++</option>
@@ -24,7 +24,7 @@
           <option value="pascal">Pascal</option>
           <option value="python">Python</option>
         </select>
-        <dd><input type=submit value=Send>
+        <dd><input type=submit value=Upload>
       </dl>
     </form>{% endif %}{% endif %}
   {% endif %}

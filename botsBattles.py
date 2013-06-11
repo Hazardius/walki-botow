@@ -8,9 +8,11 @@ from flask import Flask, request, session, redirect, url_for, \
 from BeautifulSoup import BeautifulSoup
 import json
 import md5
+import os
 import requests
 import urllib2
 from urllib2 import URLError
+from werkzeug import secure_filename
 
 # configuration
 DEBUG = True
@@ -26,14 +28,16 @@ WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe'])
+ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe', 'java'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
+UPLOAD_FOLDER = '/temp'
 
 VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
 # create our application
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # methods
 
@@ -151,39 +155,36 @@ def sanitize_html(value):
 
 
 def sendFileToWebService(fileData, subpage):
-    if file and allowed_codeFile(file.filename):
-        data = file
-        req = urllib2.Request(WEBSERVICE_IP + subpage, data,
-            {'Content-Type': 'application/octet-stream '})
-        try:
-            response = urllib2.urlopen(req)
-            data = json.load(response)
-        except URLError, e:
-            if hasattr(e, 'reason'):
-                error = e.reason
-                app.logger.error('We failed to reach a server.\nReason: '
-                    + error)
-            elif hasattr(e, 'code'):
-                error = e.code
-                app.logger.error('The server couldn\'t fulfill the request.'
-                    + '\nError code:' + error)
-        except ValueError:
-            if hasattr(e, 'reason'):
-                error = e.reason
-                app.logger.error('Value Error has been found.\nReason: '
-                    + error)
-            elif hasattr(e, 'code'):
-                error = e.code
-                app.logger.error('Value Error has been found.\nError code:'
-                    + error)
-        except requests.exceptions.ConnectionError:
-            error = "Connection Error!"
-            app.logger.error(error)
-        else:
-            return data
-    else:
-        error = 'File format not valid!'
+    error = None
+    data = file
+    req = urllib2.Request(WEBSERVICE_IP + subpage, data,
+        {'Content-Type': 'application/octet-stream '})
+    try:
+        response = urllib2.urlopen(req)
+        data = json.load(response)
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: '
+                + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: '
+                + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:'
+                + error)
+    except requests.exceptions.ConnectionError:
+        error = "Connection Error!"
         app.logger.error(error)
+    else:
+        error = data
     errorMessage = {"Status": False, "Komunikat": error}
     return errorMessage
 
@@ -197,8 +198,13 @@ def ws_error():
 
 @app.errorhandler(404)
 def not_found(error):
-    return render_template('error.html', username=session['username'],
-        errorNo=404, errorMe="The page You're looking for isn't here!")
+    if (session['username']):
+        return render_template('error.html', username=session['username'],
+            errorNo=404, errorMe="The page You're looking for isn't here!")
+    else:
+        session['username'] = ""
+        return render_template('error.html', username=session['username'],
+            errorNo=404, errorMe="The page You're looking for isn't here!")
 
 # page methods
 
@@ -213,7 +219,7 @@ def check_ws():
 
 def check_perm(page):
     pageList = page.split('/')
-    print pageList
+    #print pageList
     if (pageList[0] == 'edit_profile'):
         #response = getFromWebService("/" + session['username'] + "/privacy")
         #if response.get('Status') is True:
@@ -661,10 +667,47 @@ def send_code(idG, game):
                     error=error, cMessages=check_messages())
             else:
                 error = response
-        #elif request.form['codeForm'] == 'file':
-        #    print request.form['file']
-        #    response = sendFileToWebService(request.form['file'],
-        #        "/code/upload/" + game + "/" + idG + "/" + session['username'])
+        elif request.form['codeForm'] == 'file':
+            codeFile = request.files['file']
+            if codeFile and allowed_codeFile(codeFile.filename):
+                filename = secure_filename(codeFile.filename)
+                #codeFile.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                #    filename))
+                subpage = ("/code/upload/" + game + "/" + str(idG) + "/" +
+                    session['username'] + "/" + filename)
+                data = file
+                try:
+                    files = {'file': (filename, data)}
+                    response = requests.post(WEBSERVICE_IP + subpage, files=files)
+                    print response
+                    data = json.load(response)
+                except URLError, e:
+                    if hasattr(e, 'reason'):
+                        error = e.reason
+                        app.logger.error('We failed to reach a server.\nReason: '
+                            + error)
+                    elif hasattr(e, 'code'):
+                        error = e.code
+                        app.logger.error('The server couldn\'t fulfill the request.'
+                            + '\nError code:' + error)
+                except ValueError:
+                    if hasattr(e, 'reason'):
+                        error = e.reason
+                        app.logger.error('Value Error has been found.\nReason: '
+                            + error)
+                    elif hasattr(e, 'code'):
+                        error = e.code
+                        app.logger.error('Value Error has been found.\nError code:'
+                            + error)
+                except requests.exceptions.ConnectionError:
+                    error = "Connection Error!"
+                    app.logger.error(error)
+                else:
+                    error = "UNKNOWN"
+                errorMessage = {"Status": False, "Komunikat": error}
+            else:
+                error = 'File format not valid!'
+                app.logger.error(error)
     return render_template('message.html', message="Something's wrong! :'(",
         error=error, cMessages=check_messages())
 
