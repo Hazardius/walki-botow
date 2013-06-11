@@ -6,7 +6,7 @@
   {% if profile.Avatar %}<img src = "{{ profile.Avatar }}" alt = "Users' Avatar"  height="150" width="150" />{% endif %}
   <h2>{{ profile.Name }} "{{ profile.nick }}" {{ profile.Surname }}</h2><br>
   {{ profile.Email }}<br>{{ profile.Sex }}
-  {% if profile.nick == username %}
+  {% if canEdit == True %}
   <br><br><a href="{{ url_for('edit_profile', edited=profile.nick) }}">Edit your profile.</a>
   {% endif %}
   {% endif %}

@@ -211,8 +211,23 @@ def check_ws():
     return r.status_code == 200
 
 
-def check_perm():
-    return False
+def check_perm(page):
+    pageList = page.split('/')
+    print pageList
+    if (pageList[0] == 'edit_profile'):
+        #response = getFromWebService("/" + session['username'] + "/privacy")
+        #if response.get('Status') is True:
+        #    print response
+        if session['admin_box'] is True:
+            return True
+        if (pageList[1] == session['username']):
+            return True
+        return False
+    elif (pageList[0] == 'messages'):
+        if (pageList[1] == session['username']):
+            return True
+        return False
+    return True
 
 
 @app.route('/main.js')
@@ -324,6 +339,9 @@ def logout():
 
 
 def check_messages():
+    if check_perm('messages/' + session['username']) is False:
+        return render_template('message.html',
+            message="You are not permitted to see that page!")
     error = None
     response = getFromWebService("/notice/" + session['username'] + "/new")
     if response.get('Status') is True:
@@ -364,11 +382,21 @@ def user():
 
 @app.route('/user/<nick>')
 def show_user_profile(nick):
+    if check_ws() is False:
+        return ws_error()
+    visibleEmail = False
+    response = getFromWebService("/" + sanitize_html(nick) + "/privacy")
+    if response.get('Status') is True:
+        visibleEmail = response.get('PublicEmail')
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
+        if visibleEmail is False:
+            response.update({'Email': ""})
+        canEdit = check_perm('edit_profile/' + nick)
         return render_template('profile.html', cMessages=check_messages(),
-            username=session['username'], profile=dict(response))
+            username=session['username'], profile=dict(response),
+            canEdit=canEdit)
     else:
         error = response.get('Komunikat')
     return render_template('message.html', username=session['username'],
@@ -379,7 +407,7 @@ def show_user_profile(nick):
 def edit_profile(edited):
     if check_ws() is False:
         return ws_error()
-    if check_perm() is False:
+    if check_perm('edit_profile/' + edited) is False:
         return render_template('message.html',
             message="You are not permitted to see that page!")
     error = None
