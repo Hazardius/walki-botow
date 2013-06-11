@@ -13,7 +13,9 @@
       {% if page>0 %}
       <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br>
       {% endif %}
-      <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
+      {% if next %}
+          <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
+      {% endif %}
   {% endif %}
   </ul>
 {% endblock %}

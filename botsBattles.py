@@ -211,6 +211,10 @@ def check_ws():
     return r.status_code == 200
 
 
+def check_perm():
+    return False
+
+
 @app.route('/main.js')
 def main_js():
     return render_template('main.js')
@@ -296,7 +300,10 @@ def login():
             if response.get('Groups') is 1:
                 session['admin_box'] = True
             session['username'] = request.form['username']
-            session['pagination'] = 7
+            response2 = getFromWebService("/" + request.form['username']
+                + "/other")
+            if response2.get('Status') is True:
+                session['pagination'] = response2.get('Pagination')
             flash('You were logged in %s' % session['username'])
             return redirect(url_for('news'))
         else:
@@ -308,7 +315,7 @@ def login():
 def logout():
     session.pop('logged_in', None)
     session.pop('username', "")
-    session.pop('pagination', 5)
+    session.pop('pagination', 25)
     session.pop('admin_box', None)
     flash('You were logged out')
     return redirect(url_for('news'))
@@ -372,6 +379,9 @@ def show_user_profile(nick):
 def edit_profile(edited):
     if check_ws() is False:
         return ws_error()
+    if check_perm() is False:
+        return render_template('message.html',
+            message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
         payload = {
@@ -420,12 +430,15 @@ def users_p(page):
             nextOne = userRes.get(str(i))
             if nextOne is not None:
                 logins.append(nextOne)
+        nextP = False
+        if logins.count == session['pagination']:
+            nextP = True
         return render_template('users.html',
             cMessages=check_messages(), username=session['username'],
-            users=logins, page=page)
+            users=logins, page=page, next=nextP)
     error = userRes.get('Komunikat')
     return render_template('users.html', username=session['username'],
-        error=error, cMessages=check_messages(), page=page)
+        error=error, cMessages=check_messages(), page=page, next=False)
 
 # page methods - admin box
 
