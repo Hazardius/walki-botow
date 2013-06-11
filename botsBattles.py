@@ -391,8 +391,10 @@ def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
-        if visibleEmail is False:
-            response.update({'Email': ""})
+        if nick != session['username']:
+            print 'TEST'
+            if visibleEmail is False:
+                response.update({'Email': ""})
         canEdit = check_perm('edit_profile/' + nick)
         return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=dict(response),
