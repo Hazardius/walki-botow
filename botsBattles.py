@@ -20,7 +20,7 @@ SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\
 
 import socket
 
-timeout = 15
+timeout = 10
 socket.setdefaulttimeout(timeout)
 
 # address of WebService server
@@ -159,9 +159,11 @@ def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
     try:
-        response = requests.post(WEBSERVICE_IP + subpage, data)
+        response = requests.post(WEBSERVICE_IP + subpage, data,
+            headers={'Content-Type': 'application/octet-stream'})
         print response
         data = json.load(response)
+        print data
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -199,7 +201,7 @@ def ws_error():
 
 @app.errorhandler(404)
 def not_found(error):
-    if (session['username']):
+    if (session['username'] is not None):
         return render_template('error.html', username=session['username'],
             errorNo=404, errorMe="The page You're looking for isn't here!")
     else:
@@ -234,6 +236,10 @@ def check_perm(page):
         if (pageList[1] == session['username']):
             return True
         return False
+    elif (pageList[0] == 'admin'):
+        if session['admin_box'] is True:
+            return True
+        return False
     return True
 
 
@@ -241,17 +247,19 @@ def check_perm(page):
 def main_js():
     return render_template('main.js')
 
+# page methods - news
+
 
 @app.route('/')
 def news():
+    if check_ws() is False:
+        return ws_error()
     news = [{"title": "2013-06-03: Avatars!", "text": "Finally our project"
         + " support avatars. Go to your profile page and edit your data to add"
         + " your wonderfull avatar."},
             {"title": "2013-05-26: Tests launched!", "text": "Tests are"
         + " officially launched. Our team is working on bringing the service"
         + " as soon as possible to the state friendly to users."}]
-    if check_ws() is False:
-        return ws_error()
     if "username" in session:
         return render_template('news.html', username=session['username'],
             cMessages=check_messages(), news=news)
@@ -347,14 +355,15 @@ def logout():
 
 def check_messages():
     if check_perm('messages/' + session['username']) is False:
-        return render_template('message.html',
+        return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
     error = None
     response = getFromWebService("/notice/" + session['username'] + "/new")
     if response.get('Status') is True:
         return response.get('Count')
     else:
-        error = "Problem with messages! " + str(response.get('Komunikat'))
+        # + str(response.get('Komunikat'))
+        error = "Problem with messages!"
     return error
 
 
@@ -399,7 +408,6 @@ def show_user_profile(nick):
     if response.get('Status') is True:
         response.update({"nick": nick})
         if nick != session['username']:
-            print 'TEST'
             if visibleEmail is False:
                 response.update({'Email': ""})
         canEdit = check_perm('edit_profile/' + nick)
@@ -417,7 +425,7 @@ def edit_profile(edited):
     if check_ws() is False:
         return ws_error()
     if check_perm('edit_profile/' + edited) is False:
-        return render_template('message.html',
+        return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
@@ -484,6 +492,9 @@ def users_p(page):
 def admin_box():
     if check_ws() is False:
         return ws_error()
+    if check_perm('admin') is False:
+        return render_template('message.html', cMessages=check_messages(),
+            message="You are not permitted to see that page!")
     return render_template('admin_tools.html', username=session['username'],
             cMessages=check_messages())
 
@@ -678,10 +689,6 @@ def send_code(idG, game):
                 locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                     filename)
                 locFilePath = os.path.normpath(locFilePath)
-                #with open(locFilePath, 'w+') as fdest:
-                    #import shutil
-                    #shutil.copyfileobj(codeFile, fdest)
-                    #fdest.truncate()
                 codeFile.save(locFilePath)
                 response = sendFileToWebService(locFilePath, "/code/upload/" +
                     game + "/" + str(idG) + "/" + session['username'] + "/" +
@@ -690,7 +697,7 @@ def send_code(idG, game):
                     print response
                     return render_template('message.html',
                         username=session['username'], error=error,
-                        message="File uploaded!")
+                        message="File uploaded!", cMessages=check_messages())
                 else:
                     error = response.get('Komunikat')
                 os.remove(locFilePath)
@@ -709,6 +716,35 @@ def tournaments():
         return ws_error()
     return render_template('tournaments.html', username=session['username'],
         cMessages=check_messages())
+
+
+@app.route('/new_tournament', methods=['GET', 'POST'])
+def new_tournament():
+    if check_perm('new_tournament') is False:
+        return render_template('message.html', cMessages=check_messages(),
+            message="You are not permitted to see that page!")
+    error = None
+    if request.method == 'POST':
+        payload = {
+            "TourName": request.form['name'],
+            "Name": request.form['game'],
+            "Description": request.form['description'],
+            "Rules": request.form['rules']
+        }
+        response = postToWebService(payload, "/games/tournaments/new")
+        if response.get('Status') is True:
+            return render_template('message.html', cMessages=check_messages(),
+                message="New tournament successfully created!", error=error)
+        else:
+            error = response
+    return render_template('new_tournament.html', username=session['username'],
+        cMessages=check_messages(), error=error)
+
+
+#@app.route('/sent_tournament')
+#def sent_tournament():
+    #return render_template('tournaments.html', username=session['username'],
+        #cMessages=check_messages())
 
 # app start
 

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+    <form action="{{ url_for('new_tournament') }}" method=post class=send-code enctype=multipart/form-data >
+      <dl>
+        <dt>Tournament Name:
+        <dd><input type="text" name="name" placeholder="Name of tournament."
+          autofocus required x-moz-errormessage="Enter the name!"
+          size="25" maxlength="128"><br>
+        <dt>Game:
+        <dd><select name=game>
+        {% for game in games %}
+          <option value="{{ game }}" /> {{ game }}</option>
+        {% endfor %}
+          <option value="KPN">Rock-paper-scissors</option>
+          <option value="TTT">Tic-Tac-Toe</option>
+        </select>
+        <dt>Description:
+        <dd><textarea name=description rows=10 cols=80 required x-moz-errormessage="Enter description!"></textarea>
+        <dt>Rules:
+        <dd><textarea name=rules rows=10 cols=80 required x-moz-errormessage="Enter the rules!"></textarea>
+        <dd><input type=submit value=Send>
+      </dl>
+    </form>
+  {% endif %}
+{% endblock %}
