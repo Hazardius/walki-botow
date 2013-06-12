@@ -792,12 +792,6 @@ def new_tournament():
     return render_template('new_tournament.html', username=session['username'],
         cMessages=check_messages(), error=error)
 
-
-#@app.route('/sent_tournament')
-#def sent_tournament():
-    #return render_template('tournaments.html', username=session['username'],
-        #cMessages=check_messages())
-
 # app start
 
 if __name__ == '__main__':
