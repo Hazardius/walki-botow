@@ -10,7 +10,7 @@ import json
 import md5
 import os
 import requests
-import urllib2
+#import urllib2
 from urllib2 import URLError
 from werkzeug import secure_filename
 
@@ -28,9 +28,9 @@ WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe', 'java'])
+ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe', 'java', 'txt'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
-UPLOAD_FOLDER = '/temp'
+UPLOAD_FOLDER = 'temp'
 
 VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 
@@ -38,6 +38,7 @@ VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
 # methods
 
@@ -59,7 +60,7 @@ def getFromWebService(subpage):
             error = e.code
             app.logger.error('The server couldn\'t fulfill the request.'
                 + '\nError code:' + error)
-    except ValueError:
+    except ValueError, e:
         if hasattr(e, 'reason'):
             error = e.reason
             app.logger.error('Value Error has been found.\nReason: ' + error)
@@ -154,37 +155,37 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
-def sendFileToWebService(fileData, subpage):
+def sendFileToWebService(filename, subpage):
     error = None
-    data = file
-    req = urllib2.Request(WEBSERVICE_IP + subpage, data,
-        {'Content-Type': 'application/octet-stream '})
+    data = open(filename, 'rb')
     try:
-        response = urllib2.urlopen(req)
+        response = requests.post(WEBSERVICE_IP + subpage, data)
+        print response
         data = json.load(response)
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
-            app.logger.error('We failed to reach a server.\nReason: '
-                + error)
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
         elif hasattr(e, 'code'):
             error = e.code
             app.logger.error('The server couldn\'t fulfill the request.'
                 + '\nError code:' + error)
-    except ValueError:
+    except ValueError, e:
         if hasattr(e, 'reason'):
             error = e.reason
-            app.logger.error('Value Error has been found.\nReason: '
-                + error)
+            app.logger.error('Value Error has been found.\nReason: ' + error)
         elif hasattr(e, 'code'):
             error = e.code
-            app.logger.error('Value Error has been found.\nError code:'
-                + error)
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    except AttributeError, e:
+        error = "No JSON as a response.\nResponse: " + str(response)
     except requests.exceptions.ConnectionError:
         error = "Connection Error!"
         app.logger.error(error)
     else:
-        error = data
+        return data
     errorMessage = {"Status": False, "Komunikat": error}
     return errorMessage
 
@@ -634,11 +635,13 @@ def view_battle(number, game):
     error = None
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
-        if (response.get('Finished') == 't'):
+        if response.get('Finished') is True:
+            gameLog = getFromWebService("/code/" + str(number) + "/" + game +
+                "/log")
             return render_template('view_battle.html',
                 username=session['username'], cMessages=check_messages(),
                 number=number, game=game, winner=response.get('Winner'),
-                error=error, message=response.get('Message'))
+                error=error, message=response.get('Message'), log=gameLog)
     else:
         error = response
     return render_template('send_code.html', username=session['username'],
@@ -670,45 +673,31 @@ def send_code(idG, game):
         elif request.form['codeForm'] == 'file':
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
+                print codeFile
                 filename = secure_filename(codeFile.filename)
-                #codeFile.save(os.path.join(app.config['UPLOAD_FOLDER'],
-                #    filename))
-                subpage = ("/code/upload/" + game + "/" + str(idG) + "/" +
-                    session['username'] + "/" + filename)
-                data = file
-                try:
-                    files = {'file': (filename, data)}
-                    response = requests.post(WEBSERVICE_IP + subpage, files=files)
+                locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    filename)
+                locFilePath = os.path.normpath(locFilePath)
+                #with open(locFilePath, 'w+') as fdest:
+                    #import shutil
+                    #shutil.copyfileobj(codeFile, fdest)
+                    #fdest.truncate()
+                codeFile.save(locFilePath)
+                response = sendFileToWebService(locFilePath, "/code/upload/" +
+                    game + "/" + str(idG) + "/" + session['username'] + "/" +
+                    filename)
+                if response.get('Status') is True:
                     print response
-                    data = json.load(response)
-                except URLError, e:
-                    if hasattr(e, 'reason'):
-                        error = e.reason
-                        app.logger.error('We failed to reach a server.\nReason: '
-                            + error)
-                    elif hasattr(e, 'code'):
-                        error = e.code
-                        app.logger.error('The server couldn\'t fulfill the request.'
-                            + '\nError code:' + error)
-                except ValueError:
-                    if hasattr(e, 'reason'):
-                        error = e.reason
-                        app.logger.error('Value Error has been found.\nReason: '
-                            + error)
-                    elif hasattr(e, 'code'):
-                        error = e.code
-                        app.logger.error('Value Error has been found.\nError code:'
-                            + error)
-                except requests.exceptions.ConnectionError:
-                    error = "Connection Error!"
-                    app.logger.error(error)
+                    return render_template('message.html',
+                        username=session['username'], error=error,
+                        message="File uploaded!")
                 else:
-                    error = "UNKNOWN"
-                errorMessage = {"Status": False, "Komunikat": error}
+                    error = response.get('Komunikat')
+                os.remove(locFilePath)
             else:
                 error = 'File format not valid!'
                 app.logger.error(error)
-    return render_template('message.html', message="Something's wrong! :'(",
+    return render_template('message.html', username=session['username'],
         error=error, cMessages=check_messages())
 
 # page methods - tournaments

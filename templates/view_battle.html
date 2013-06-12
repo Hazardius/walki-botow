@@ -6,5 +6,6 @@
     {% if game %}<b>{{ game }}</b><br>
     {% if message %}{{ message }}{% endif %}<br>
     {% if winner %}Winner is <b>{{ winner }}</b>{% endif %}{% endif %}{% endif %}
+    {% if log %} Game log: {{ log }} {% endif %}
   {% endif %}
 {% endblock %}
