@@ -647,8 +647,46 @@ def view_battle(number, game):
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
         if response.get('Finished') is True:
-            gameLog = getFromWebService("/code/" + str(number) + "/" + game +
-                "/log")
+            try:
+                conError = ""
+                r = requests.get(WEBSERVICE_IP + "/code/" + game + "/"
+                    + str(number) + "/log", stream=True)
+                if r.status_code == 200:
+                    locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                        "log" + session['username'] + ".txt")
+                    locFilePath = os.path.normpath(locFilePath)
+                    with open(locFilePath, 'wb') as f:
+                        for chunk in r.iter_content():
+                            f.write(chunk)
+                    with open(locFilePath, 'r') as content_file:
+                        conError = content_file.read()
+                    os.remove(locFilePath)
+                else:
+                    conError = "Wrong code of response: " + str(f.status_code)
+            except URLError, e:
+                if hasattr(e, 'reason'):
+                    conError = e.reason
+                    app.logger.error('We failed to reach a server.\nReason: '
+                        + conError)
+                elif hasattr(e, 'code'):
+                    conError = e.code
+                    app.logger.error('The server couldn\'t fulfill the request.'
+                        + '\nError code:' + conError)
+            except ValueError, e:
+                if hasattr(e, 'reason'):
+                    conError = e.reason
+                    app.logger.error('Value Error has been found.\nReason: '
+                        + conError)
+                elif hasattr(e, 'code'):
+                    conError = e.code
+                    app.logger.error('Value Error has been found.\nError code:'
+                        + conError)
+                else:
+                    conError = e
+            except requests.exceptions.ConnectionError:
+                conError = "Connection Error!"
+                app.logger.error(conError)
+            gameLog = conError
             return render_template('view_battle.html',
                 username=session['username'], cMessages=check_messages(),
                 number=number, game=game, winner=response.get('Winner'),
@@ -733,6 +771,20 @@ def new_tournament():
         }
         response = postToWebService(payload, "/games/tournaments/new")
         if response.get('Status') is True:
+            tourID = response.get('ID')
+            payload = {
+                "RegBegin": request.form['bDate'].replace("T", " ") + ":00",
+                "RegEnd": request.form['eDate'].replace("T", " ") + ":00",
+                "RegType": request.form['regType'],
+                "MaxPlayers": request.form['maxPl'],
+                "Start": request.form['sDate'].replace("T", " ") + ":00",
+                "TourID": tourID,
+                "Type": request.form['tourType']
+            }
+            print payload
+            response2 = postToWebService(payload, "/games/tournaments/"
+                + str(tourID) + "/info")
+            print response2
             return render_template('message.html', cMessages=check_messages(),
                 message="New tournament successfully created!", error=error)
         else:
