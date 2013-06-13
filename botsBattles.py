@@ -318,8 +318,7 @@ def news():
         return render_template('news.html', username=session['username'],
             cMessages=check_messages(), news=news)
     else:
-        return render_template('news.html', username=session['username'],
-            news=news)
+        return render_template('news.html', news=news)
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
