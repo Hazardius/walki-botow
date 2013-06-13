@@ -306,7 +306,7 @@ def news():
             "/retrieve")
     news = []
     for i in range(1, response.get('Count') + 1):
-        response2 = getAtomFromWebService(i)
+        response2 = getAtomFromWebService(response.get(str(i)))
         oneNews = {}
         for field in response2:
             shortTag = field.tag.split('}')[1]
