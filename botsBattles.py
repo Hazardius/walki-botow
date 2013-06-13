@@ -4,13 +4,11 @@
 from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash
-# from time import gmtime, strftime
 from BeautifulSoup import BeautifulSoup
 import json
 import md5
 import os
 import requests
-#import urllib2
 from urllib2 import URLError
 from werkzeug import secure_filename
 import xml.etree.ElementTree as ET
@@ -29,7 +27,7 @@ WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'c', 'cs', 'p'])
+ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'cs', 'p'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
 UPLOAD_FOLDER = 'temp'
 
@@ -76,7 +74,7 @@ def getAtomFromWebService(newsID):
         app.logger.error(error)
     else:
         return data
-    errorMessage = {"Status": False, "Komunikat": error}
+    errorMessage = {"Status": False, "Message": error}
     return errorMessage
 
 
@@ -106,7 +104,7 @@ def getFromWebService(subpage):
         app.logger.error(error)
     else:
         return data
-    errorMessage = {"Status": False, "Komunikat": error}
+    errorMessage = {"Status": False, "Message": error}
     return errorMessage
 
 
@@ -140,7 +138,7 @@ def postToWebService(payload, subpage):
         app.logger.error(error)
     else:
         return data
-    errorMessage = {"Status": False, "Komunikat": error}
+    errorMessage = {"Status": False, "Message": error}
     return errorMessage
 
 
@@ -174,7 +172,7 @@ def putToWebService(payload, subpage):
         app.logger.error(error)
     else:
         return data
-    errorMessage = {"Status": False, "Komunikat": error}
+    errorMessage = {"Status": False, "Message": error}
     return errorMessage
 
 
@@ -217,7 +215,7 @@ def sendFileToWebService(filename, subpage):
         app.logger.error(error)
     else:
         return data
-    errorMessage = {"Status": False, "Komunikat": error}
+    errorMessage = {"Status": False, "Message": error}
     return errorMessage
 
 # error pages
@@ -407,7 +405,7 @@ def register():
             return render_template('message.html',
                 message="Check your e-mail account!")
         else:
-            error = response.get('Komunikat')
+            error = response.get('Message')
     return render_template('register.html', error=error)
 
 
@@ -426,7 +424,7 @@ def try_to_activate(webHash):
         return render_template('message.html',
             message="User successfuly activated!")
     else:
-        error = response.get('Komunikat')
+        error = response.get('Message')
     return render_template('message.html', message=error)
 
 
@@ -466,7 +464,7 @@ def login():
                 flash('You were logged in %s' % session['username'])
                 return redirect(url_for('news'))
             else:
-                error = response.get('Komunikat')
+                error = response.get('Message')
         return render_template('login.html', error=error)
 
 
@@ -491,7 +489,6 @@ def check_messages():
     if response.get('Status') is True:
         return response.get('Count')
     else:
-        # + str(response.get('Komunikat'))
         error = "Problem with messages!"
     return error
 
@@ -546,7 +543,7 @@ def show_user_profile(nick):
             username=session['username'], profile=dict(response),
             canEdit=canEdit)
     else:
-        error = response.get('Komunikat')
+        error = response.get('Message')
     return render_template('message.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -580,7 +577,7 @@ def edit_profile(edited):
         if response.get('Status') is True:
             return redirect(url_for('show_user_profile', nick=payload['Login']))
         else:
-            error = response.get('Komunikat')
+            error = response.get('Message')
     response = getFromWebService("/" + sanitize_html(edited) + "/about")
     if response.get('Status') is True:
         response.update({"nick": edited})
@@ -620,7 +617,7 @@ def users_p(page):
         return render_template('users.html',
             cMessages=check_messages(), username=session['username'],
             users=logins, page=page, next=nextP)
-    error = userRes.get('Komunikat')
+    error = userRes.get('Message')
     return render_template('users.html', username=session['username'],
         error=error, cMessages=check_messages(), page=page, next=False)
 
@@ -663,7 +660,7 @@ def battles():
         return render_template('battles.html', username=session['username'],
             battles=battles, cMessages=check_messages())
     else:
-        error = response.get('Komunikat')
+        error = response.get('Message')
     return render_template('battles.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -689,7 +686,7 @@ def choose_oponent():
         return render_template('choose_oponent.html',
             cMessages=check_messages(), username=session['username'],
             users=logins)
-    error = userRes.get('Komunikat')
+    error = userRes.get('Message')
     return render_template('choose_oponent.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -718,7 +715,7 @@ def invite_to_battle(uFrom, uTo, gameName):
         flash("Successful invitation to the battle.")
         return redirect(url_for('news'))
     else:
-        error = str(response.get('Komunikat'))
+        error = response.get('Message')
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/list")
     if userRes.get('Status') is True:
@@ -731,7 +728,7 @@ def invite_to_battle(uFrom, uTo, gameName):
             cMessages=check_messages(), username=session['username'],
             users=logins, error=error)
     else:
-        error = error + "\n" + userRes.get('Komunikat')
+        error = error + "\n" + userRes.get('Message')
     return render_template('choose_oponent.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -755,7 +752,7 @@ def cancel_battle(invId):
         flash("You refused that invitation.")
         return redirect(url_for('news'))
     else:
-        error = str(response.get('Komunikat'))
+        error = response.get('Message')
     return render_template('news.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -779,7 +776,7 @@ def register_battle(invId):
         flash("You accepted this invitation.")
         return redirect(url_for('news'))
     else:
-        error = str(response.get('Komunikat'))
+        error = response.get('Message')
     return render_template('news.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -860,13 +857,14 @@ def send_code(idG, game):
     error = None
     if request.method == 'POST':
         if request.form['codeForm'] == 'text':
+            exten = request.form['lang']
             payload = {
                 "From": session['username'],
-                "Language": request.form['lang'],
+                "Language": exten,
                 "GameID": idG,
                 "Game": game,
                 "Code": request.form['code'],
-                "FileName": request.form['fileName']
+                "FileName": str(idG) + str(game) + session['username'] + exten
             }
             response = postToWebService(payload, "/code/upload")
             if response.get('Status') is True:
@@ -892,7 +890,7 @@ def send_code(idG, game):
                         username=session['username'], error=error,
                         message="File uploaded!", cMessages=check_messages())
                 else:
-                    error = response.get('Komunikat')
+                    error = response.get('Message')
                 os.remove(locFilePath)
             else:
                 error = 'File format not valid!'
