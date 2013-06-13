@@ -229,8 +229,8 @@ def ws_error():
 
 
 def ban_error():
-    return render_template('error.html', errorNo=666,
-        errorMe="You are banned!")
+    return render_template('error.html', errorNo=403,
+        errorMe="Your IP is banned!")
 
 
 @app.errorhandler(404)
@@ -765,7 +765,7 @@ def new_duel(invId):
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    return register_battle(sanitize_html(session['username']), invId)
+    return register_battle(invId)
 
 
 def register_battle(invId):
