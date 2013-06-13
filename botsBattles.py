@@ -679,7 +679,9 @@ def view_battle(number, game):
                     #with open(locFilePath, 'r') as content_file:
                         #conError = content_file.read()
                     #os.remove(locFilePath)
+                    #conError = ("<br />".join(zmienna.split("\n")))
                     conError = zmienna
+                    #print conError
                 else:
                     conError = "Wrong code of response: " + str(r.status_code)
             except URLError, e:
