@@ -230,14 +230,12 @@ def ws_error():
 
 @app.errorhandler(404)
 def not_found(error):
-    try:
-        username = session['username']
-        return render_template('error.html', username=username,
-            errorNo=404, errorMe="The page You're looking for isn't here!")
-    except KeyError:
-        session['username'] = ""
+    if "username" in session:
         return render_template('error.html', username=session['username'],
             errorNo=404, errorMe="The page You're looking for isn't here!")
+    else:
+        return render_template('error.html', errorNo=404,
+            errorMe="The page You're looking for isn't here!")
 
 # page methods
 
@@ -256,27 +254,22 @@ def check_perm(page):
         #response = getFromWebService("/" + session['username'] + "/privacy")
         #if response.get('Status') is True:
         #    print response
-        try:
+        if "admin_box" in session:
             if session['admin_box'] is True:
                 return True
+        if "username" in session:
             if (pageList[1] == session['username']):
                 return True
-            return False
-        except KeyError:
-            try:
-                if (pageList[1] == session['username']):
-                    return True
-                return False
-            except KeyError:
-                return False
         return False
     elif (pageList[0] == 'messages'):
-        if (pageList[1] == session['username']):
-            return True
+        if "username" in session:
+            if (pageList[1] == session['username']):
+                return True
         return False
     elif (pageList[0] == 'admin'):
-        if session['admin_box'] is True:
-            return True
+        if "admin_box" in session:
+            if session['admin_box'] is True:
+                return True
         return False
     return True
 
@@ -292,12 +285,10 @@ def main_js():
 def news():
     if check_ws() is False:
         return ws_error()
-    if "username" in session:
-        username = session['username']
+    if "pagination" in session:
         response = getFromWebService("/news/" + str(0) + "/" + str(session[
             'pagination']) + "/retrieve")
     else:
-        username = ""
         response = getFromWebService("/news/" + str(0) + "/" + str(25) +
             "/retrieve")
     news = []
@@ -323,8 +314,12 @@ def news():
                 info = field.text
             oneNews.update({shortTag: info})
         news.append(oneNews)
-    return render_template('news.html', username=username,
-        cMessages=check_messages(), news=news)
+    if "username" in session:
+        return render_template('news.html', username=session['username'],
+            cMessages=check_messages(), news=news)
+    else:
+        return render_template('news.html', username=session['username'],
+            news=news)
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
@@ -456,7 +451,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    session.pop('username', "")
+    session.pop('username', None)
     session.pop('pagination', 25)
     session.pop('admin_box', None)
     flash('You were logged out')
