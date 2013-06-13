@@ -29,7 +29,7 @@ WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'c', 'cs', 'pas'])
+ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'c', 'cs', 'p'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
 UPLOAD_FOLDER = 'temp'
 
@@ -530,8 +530,12 @@ def edit_profile(edited):
     if check_ws() is False:
         return ws_error()
     if check_perm('edit_profile/' + edited) is False:
-        return render_template('message.html', cMessages=check_messages(),
-            message="You are not permitted to see that page!")
+        if "username" in session:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are not permitted to see that page!")
+        else:
+            return render_template('message.html',
+                message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
         payload = {
