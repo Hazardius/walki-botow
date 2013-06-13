@@ -201,10 +201,11 @@ def ws_error():
 
 @app.errorhandler(404)
 def not_found(error):
-    if (session['username'] is not None):
-        return render_template('error.html', username=session['username'],
+    try:
+        username = session['username']
+        return render_template('error.html', username=username,
             errorNo=404, errorMe="The page You're looking for isn't here!")
-    else:
+    except KeyError:
         session['username'] = ""
         return render_template('error.html', username=session['username'],
             errorNo=404, errorMe="The page You're looking for isn't here!")
@@ -227,10 +228,19 @@ def check_perm(page):
         #response = getFromWebService("/" + session['username'] + "/privacy")
         #if response.get('Status') is True:
         #    print response
-        if session['admin_box'] is True:
-            return True
-        if (pageList[1] == session['username']):
-            return True
+        try:
+            if session['admin_box'] is True:
+                return True
+            if (pageList[1] == session['username']):
+                return True
+            return False
+        except KeyError:
+            try:
+                if (pageList[1] == session['username']):
+                    return True
+                return False
+            except KeyError:
+                return False
         return False
     elif (pageList[0] == 'messages'):
         if (pageList[1] == session['username']):
@@ -317,28 +327,36 @@ def try_to_activate(webHash):
 def login():
     if check_ws() is False:
         return ws_error()
-    error = None
-    if request.method == 'POST':
-        mdpass = md5.new(request.form['password'])
-        payload = {
-            "Login": sanitize_html(request.form['username']),
-            "Password": mdpass.hexdigest(),
-        }
-        response = postToWebService(payload, "/login")
-        if response.get('Status') is True:
-            session['logged_in'] = True
-            if response.get('Groups') is 1:
-                session['admin_box'] = True
-            session['username'] = request.form['username']
-            response2 = getFromWebService("/" + request.form['username']
-                + "/other")
-            if response2.get('Status') is True:
-                session['pagination'] = response2.get('Pagination')
-            flash('You were logged in %s' % session['username'])
-            return redirect(url_for('news'))
+    try:
+        if session['logged_in'] is True:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are already logged in!")
         else:
-            error = response.get('Komunikat')
-    return render_template('login.html', error=error)
+            return render_template('message.html', cMessages=check_messages(),
+                message="Strange! Error no. 1. Let the admin know about it.")
+    except KeyError:
+        error = None
+        if request.method == 'POST':
+            mdpass = md5.new(request.form['password'])
+            payload = {
+                "Login": sanitize_html(request.form['username']),
+                "Password": mdpass.hexdigest(),
+            }
+            response = postToWebService(payload, "/login")
+            if response.get('Status') is True:
+                session['logged_in'] = True
+                if response.get('Groups') is 1:
+                    session['admin_box'] = True
+                session['username'] = request.form['username']
+                response2 = getFromWebService("/" + request.form['username']
+                    + "/other")
+                if response2.get('Status') is True:
+                    session['pagination'] = response2.get('Pagination')
+                flash('You were logged in %s' % session['username'])
+                return redirect(url_for('news'))
+            else:
+                error = response.get('Komunikat')
+        return render_template('login.html', error=error)
 
 
 @app.route('/logout')
@@ -391,8 +409,6 @@ def post_box():
 
 @app.route('/user')
 def user():
-    if check_ws() is False:
-        return ws_error()
     return show_user_profile(session['username'])
 
 
