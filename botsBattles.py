@@ -228,6 +228,11 @@ def ws_error():
         errorMe="WebService is not responding!")
 
 
+def ban_error():
+    return render_template('error.html', errorNo=666,
+        errorMe="You are banned!")
+
+
 @app.errorhandler(404)
 def not_found(error):
     if "username" in session:
@@ -274,6 +279,13 @@ def check_perm(page):
     return True
 
 
+def is_ban():
+    print request.remote_addr
+    if (request.head('REMOTE_ADDR') == '95.108.86.12'):
+        return False
+    return False
+
+
 @app.route('/main.js')
 def main_js():
     return render_template('main.js')
@@ -285,6 +297,8 @@ def main_js():
 def news():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     if "pagination" in session:
         response = getFromWebService("/news/" + str(0) + "/" + str(session[
             'pagination']) + "/retrieve")
@@ -326,6 +340,8 @@ def news():
 def add_news():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     if check_perm('admin') is False:
         return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
@@ -371,6 +387,8 @@ def add_news():
 def register():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ws_error()
     error = None
     if request.method == 'POST':
         mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
@@ -398,6 +416,8 @@ def register():
 def try_to_activate(webHash):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ws_error()
     error = None
     payload = {
         "Hash": sanitize_html(webHash)
@@ -415,6 +435,8 @@ def try_to_activate(webHash):
 def login():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     try:
         if session['logged_in'] is True:
             return render_template('message.html', cMessages=check_messages(),
@@ -478,6 +500,8 @@ def check_messages():
 def post_box():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     response = getFromWebService("/notice/" + session['username'])
     if response.get('Status') is True:
@@ -505,6 +529,8 @@ def user():
 def show_user_profile(nick):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     visibleEmail = False
     response = getFromWebService("/" + sanitize_html(nick) + "/privacy")
     if response.get('Status') is True:
@@ -529,6 +555,8 @@ def show_user_profile(nick):
 def edit_profile(edited):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     if check_perm('edit_profile/' + edited) is False:
         if "username" in session:
             return render_template('message.html', cMessages=check_messages(),
@@ -575,6 +603,8 @@ def users():
 def users_p(page):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/" + str(page) + "/list")
@@ -601,6 +631,8 @@ def users_p(page):
 def admin_box():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     if check_perm('admin') is False:
         return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
@@ -614,6 +646,8 @@ def admin_box():
 def battles():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     response = getFromWebService("/" + session['username'] + "/duels")
     if response.get('Status') is True:
@@ -638,6 +672,8 @@ def battles():
 def choose_oponent():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     # gamesRes = getFromWebService("/games")
     # if gamesRes.get('Status') is True:
@@ -662,6 +698,8 @@ def choose_oponent():
 def new_inv():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     return invite_to_battle(sanitize_html(session['username']),
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
@@ -702,6 +740,8 @@ def invite_to_battle(uFrom, uTo, gameName):
 def no_duel(invId):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     return cancel_battle(invId)
 
 
@@ -720,22 +760,18 @@ def cancel_battle(invId):
         error=error, cMessages=check_messages())
 
 
-@app.route('/duel/<opponent>/<game>/<int:invId>', methods=['GET', 'POST'])
-def new_duel(opponent, game, invId):
+@app.route('/duel/<int:invId>', methods=['GET', 'POST'])
+def new_duel(invId):
     if check_ws() is False:
         return ws_error()
-    return register_battle(sanitize_html(session['username']),
-        sanitize_html(opponent),
-        sanitize_html(game),
-        invId)
+    if is_ban() is True:
+        return ban_error()
+    return register_battle(sanitize_html(session['username']), invId)
 
 
-def register_battle(login1, login2, gameName, invId):
+def register_battle(invId):
     error = None
     payload = {
-        "User1": login1,
-        "User2": login2,
-        "GameName": gameName,
         "ID": invId
     }
     response = postToWebService(payload, "/games/duels/registry")
@@ -752,6 +788,8 @@ def register_battle(login1, login2, gameName, invId):
 def view_battle(number, game):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
@@ -817,6 +855,8 @@ def view_battle(number, game):
 def send_code(idG, game):
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     error = None
     if request.method == 'POST':
         if request.form['codeForm'] == 'text':
@@ -867,6 +907,8 @@ def send_code(idG, game):
 def tournaments():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     return render_template('tournaments.html', username=session['username'],
         cMessages=check_messages())
 
@@ -875,6 +917,8 @@ def tournaments():
 def new_tournament():
     if check_ws() is False:
         return ws_error()
+    if is_ban() is True:
+        return ban_error()
     if check_perm('admin') is False:
         return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
