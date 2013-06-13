@@ -577,7 +577,7 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            return redirect(url_for('user'))
+            return redirect(url_for('show_user_profile', nick=payload['Login']))
         else:
             error = response.get('Komunikat')
     response = getFromWebService("/" + sanitize_html(edited) + "/about")
