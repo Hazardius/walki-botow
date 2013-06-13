@@ -451,6 +451,7 @@ def login():
             payload = {
                 "Login": sanitize_html(request.form['username']),
                 "Password": mdpass.hexdigest(),
+                "IP": request.remote_addr
             }
             response = postToWebService(payload, "/login")
             if response.get('Status') is True:
