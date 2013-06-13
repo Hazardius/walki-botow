@@ -436,7 +436,7 @@ def login():
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    try:
+    if "logged_in" in session:
         if session['logged_in'] is True:
             return render_template('message.html', cMessages=check_messages(),
                 message="You are already logged in!",
@@ -444,7 +444,7 @@ def login():
         else:
             return render_template('message.html', cMessages=check_messages(),
                 message="Strange! Error no. 1. Let the admin know about it.")
-    except KeyError:
+    else:
         error = None
         if request.method == 'POST':
             mdpass = md5.new(request.form['password'])
