@@ -223,7 +223,6 @@ def check_ws():
 
 def check_perm(page):
     pageList = page.split('/')
-    #print pageList
     if (pageList[0] == 'edit_profile'):
         #response = getFromWebService("/" + session['username'] + "/privacy")
         #if response.get('Status') is True:
@@ -671,14 +670,18 @@ def view_battle(number, game):
                     locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         "log" + session['username'] + ".txt")
                     locFilePath = os.path.normpath(locFilePath)
-                    with open(locFilePath, 'wb') as f:
-                        for chunk in r.iter_content():
-                            f.write(chunk)
-                    with open(locFilePath, 'r') as content_file:
-                        conError = content_file.read()
-                    os.remove(locFilePath)
+                    zmienna = ""
+                    for chunk in r.iter_content():
+                        zmienna = zmienna + str(chunk)
+                    #with open(locFilePath, 'wb') as f:
+                        #for chunk in r.iter_content():
+                            #f.write(chunk)
+                    #with open(locFilePath, 'r') as content_file:
+                        #conError = content_file.read()
+                    #os.remove(locFilePath)
+                    conError = zmienna
                 else:
-                    conError = "Wrong code of response: " + str(f.status_code)
+                    conError = "Wrong code of response: " + str(r.status_code)
             except URLError, e:
                 if hasattr(e, 'reason'):
                     conError = e.reason
