@@ -280,9 +280,8 @@ def check_perm(page):
 
 
 def is_ban():
-    print request.remote_addr
-    if (request.head('REMOTE_ADDR') == '95.108.86.12'):
-        return False
+    if (request.remote_addr == '95.108.86.12'):
+        return True
     return False
 
 
