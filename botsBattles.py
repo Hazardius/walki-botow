@@ -161,9 +161,7 @@ def sendFileToWebService(filename, subpage):
     try:
         response = requests.post(WEBSERVICE_IP + subpage, data,
             headers={'Content-Type': 'application/octet-stream'})
-        print response
-        data = json.load(response)
-        print data
+        data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -743,7 +741,6 @@ def send_code(idG, game):
         elif request.form['codeForm'] == 'file':
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
-                print codeFile
                 filename = secure_filename(codeFile.filename)
                 locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                     filename)
@@ -753,7 +750,7 @@ def send_code(idG, game):
                     game + "/" + str(idG) + "/" + session['username'] + "/" +
                     filename)
                 if response.get('Status') is True:
-                    print response
+                    os.remove(locFilePath)
                     return render_template('message.html',
                         username=session['username'], error=error,
                         message="File uploaded!", cMessages=check_messages())
