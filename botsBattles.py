@@ -13,6 +13,7 @@ import requests
 #import urllib2
 from urllib2 import URLError
 from werkzeug import secure_filename
+import xml.etree.ElementTree as ET
 
 # configuration
 DEBUG = True
@@ -28,7 +29,7 @@ WEBSERVICE_IP = "http://77.65.54.170:9000"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['jar', 'exe', 'java', 'txt'])
+ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'c', 'cs', 'pas'])
 ALLOWED_EXTENSIONS_DOC = set(['zip'])
 UPLOAD_FOLDER = 'temp'
 
@@ -46,6 +47,37 @@ app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 def allowed_codeFile(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_FILE
+
+
+def getAtomFromWebService(newsID):
+    try:
+        f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
+            "?media=atom")
+        data = ET.fromstring(f.content)
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    except requests.exceptions.ConnectionError:
+        error = "Connection Error!"
+        app.logger.error(error)
+    else:
+        return data
+    errorMessage = {"Status": False, "Komunikat": error}
+    return errorMessage
 
 
 def getFromWebService(subpage):
@@ -86,7 +118,6 @@ def postToWebService(payload, subpage):
             headers={'Content-Type': 'application/json',
             'Content-Length': clen})
         data = f.json()
-    # strftime("%a, %d %b %Y %X +0000", gmtime())
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -261,17 +292,82 @@ def main_js():
 def news():
     if check_ws() is False:
         return ws_error()
-    news = [{"title": "2013-06-03: Avatars!", "text": "Finally our project"
-        + " support avatars. Go to your profile page and edit your data to add"
-        + " your wonderfull avatar."},
-            {"title": "2013-05-26: Tests launched!", "text": "Tests are"
-        + " officially launched. Our team is working on bringing the service"
-        + " as soon as possible to the state friendly to users."}]
     if "username" in session:
-        return render_template('news.html', username=session['username'],
-            cMessages=check_messages(), news=news)
+        username = session['username']
+        response = getFromWebService("/news/" + str(0) + "/" + str(session[
+            'pagination']) + "/retrieve")
     else:
-        return render_template('news.html', username="", news=news)
+        username = ""
+        response = getFromWebService("/news/" + str(0) + "/" + str(25) +
+            "/retrieve")
+    news = []
+    for i in range(1, response.get('Count') + 1):
+        response2 = getAtomFromWebService(i)
+        oneNews = {}
+        for field in response2:
+            shortTag = field.tag.split('}')[1]
+            if shortTag == "author":
+                for deepField in field:
+                    info = deepField.text
+            elif shortTag == "entry":
+                for deepField in field:
+                    shorterTag = deepField.tag.split('}')[1]
+                    if shorterTag == "published":
+                        shorterText = deepField.text.split('T')[0]
+                        oneNews.update({shorterTag: shorterText})
+                    elif shorterTag == "summary":
+                        oneNews.update({shorterTag: deepField.text})
+                    elif shorterTag == "title":
+                        info = deepField.text
+            else:
+                info = field.text
+            oneNews.update({shortTag: info})
+        news.append(oneNews)
+    return render_template('news.html', username=username,
+        cMessages=check_messages(), news=news)
+
+
+@app.route('/add_news', methods=['GET', 'POST'])
+def add_news():
+    if check_ws() is False:
+        return ws_error()
+    if check_perm('admin') is False:
+        return render_template('message.html', cMessages=check_messages(),
+            message="You are not permitted to see that page!")
+    error = None
+    if request.method == 'POST':
+        import time
+        dateTime = time.strftime("%Y-%m-%d", time.gmtime())
+        try:
+            pub = request.form['pubDate'].encode('ascii')
+        except KeyError:
+            pub = dateTime
+        try:
+            test = request.form['enaCom']
+            test = True
+        except KeyError:
+            test = False
+        payload = {
+            "Publish": pub,
+            "Created": dateTime,
+            "Title": sanitize_html(request.form['title']
+                .encode('utf-8', 'ignore')),
+            "Description": sanitize_html(request.form['shorDesc']
+                .encode('utf-8', 'ignore')),
+            "FullDescription": sanitize_html(request.form['longDesc']
+                .encode('utf-8', 'ignore')),
+            "Type": request.form['newsType'].encode('ascii'),
+            "Comments": test,
+            "Author": session['username'].encode('ascii')
+        }
+        response = postToWebService(payload, "/news/create")
+        if response.get('Status') is True:
+            return render_template('message.html', cMessages=check_messages(),
+                message="New news successfully created!", error=error)
+        else:
+            error = response
+    return render_template('add_news.html', username=session['username'],
+        cMessages=check_messages(), error=error)
 
 # page methods - registration and login
 
@@ -327,7 +423,8 @@ def login():
     try:
         if session['logged_in'] is True:
             return render_template('message.html', cMessages=check_messages(),
-                message="You are already logged in!")
+                message="You are already logged in!",
+                username=session['username'])
         else:
             return render_template('message.html', cMessages=check_messages(),
                 message="Strange! Error no. 1. Let the admin know about it.")
@@ -735,7 +832,8 @@ def send_code(idG, game):
             response = postToWebService(payload, "/code/upload")
             if response.get('Status') is True:
                 return render_template('message.html', message="Code sent!",
-                    error=error, cMessages=check_messages())
+                    error=error, cMessages=check_messages(),
+                    username=session['username'])
             else:
                 error = response
         elif request.form['codeForm'] == 'file':
@@ -776,7 +874,9 @@ def tournaments():
 
 @app.route('/new_tournament', methods=['GET', 'POST'])
 def new_tournament():
-    if check_perm('new_tournament') is False:
+    if check_ws() is False:
+        return ws_error()
+    if check_perm('admin') is False:
         return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
     error = None

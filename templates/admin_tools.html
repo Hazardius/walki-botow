@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <!--<a href="{{ url_for('choose_oponent') }}">Add news</a>-->
+  <a href="{{ url_for('add_news') }}">Add news</a><br />
   <a href="{{ url_for('new_tournament') }}">Create new tournament</a>
 {% endblock %}

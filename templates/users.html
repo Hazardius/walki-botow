@@ -5,13 +5,13 @@
   {% for user in users %}
     <li><a href="{{ url_for('show_user_profile', nick=user) }}">
         <h2><b>{{ user }}</b></h2>
-        </a><br>
+        </a>
   {% else %}
     <li><em>There are no users now.</em>
   {% endfor %}
   {% if users %}
       {% if page>0 %}
-      <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br>
+      <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br />
       {% endif %}
       {% if next %}
           <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>

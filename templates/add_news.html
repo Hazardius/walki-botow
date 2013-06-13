@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+    <form action="{{ url_for('add_news') }}" method=post >
+      <dl>
+        <dt>Title:
+        <dd><input type="text" name="title" placeholder="Title of news."
+          autofocus required x-moz-errormessage="Enter the title!"
+          size="25" maxlength="128"><br />
+        <dt>Publish date:
+        <dd><input type="date" name="pubDate">
+        <dt>Enable Comments <input type="checkbox" name="enaCom" value=true>
+        <dt>Short Info:
+        <dd><textarea name=shorDesc rows=5 cols=80 required x-moz-errormessage="Enter short description!"></textarea>
+        <dt>News:
+        <dd><textarea name=longDesc rows=15 cols=80 required x-moz-errormessage="Enter short description!"></textarea>
+        <dt>Tournament type:
+        <dd><select name=newsType>
+          <option value="General">General</option>
+          <option value="Tournaments">Tournament</option>
+        </select>
+        <dd><input type=submit value=Send>
+      </dl>
+    </form>
+  {% endif %}
+{% endblock %}
