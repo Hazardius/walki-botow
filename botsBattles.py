@@ -314,6 +314,7 @@ def news():
                 info = field.text
             oneNews.update({shortTag: info})
         news.append(oneNews)
+    news = sorted(news, key=lambda art: art['published'], reverse=True)
     if "username" in session:
         return render_template('news.html', username=session['username'],
             cMessages=check_messages(), news=news)
