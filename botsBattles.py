@@ -52,7 +52,6 @@ def getAtomFromWebService(newsID):
     try:
         f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
             "?media=atom", auth=HTTPDigestAuth('Flask', 'Hazardius'))
-        print f.content
         data = ET.fromstring(f.content)
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -74,7 +73,7 @@ def getAtomFromWebService(newsID):
     except ET.ParseError:
         error = "XML Parse error!"
     except requests.exceptions.ConnectionError:
-        error = "Connection Error!"
+        error = "[GetAtom]Connection Error!"
         app.logger.error(error)
     else:
         return data
@@ -105,7 +104,7 @@ def getFromWebService(subpage):
         else:
             error = e
     except requests.exceptions.ConnectionError:
-        error = "Connection Error!"
+        error = "[Get]Connection Error!"
         app.logger.error(error)
     else:
         return data
@@ -139,7 +138,7 @@ def postToWebService(payload, subpage):
         else:
             error = e
     except requests.exceptions.ConnectionError:
-        error = "Connection Error!"
+        error = "[Post]Connection Error!"
         app.logger.error(error)
     else:
         return data
@@ -173,7 +172,7 @@ def putToWebService(payload, subpage):
         else:
             error = e
     except requests.exceptions.ConnectionError:
-        error = "Connection Error!"
+        error = "[Put]Connection Error!"
         app.logger.error(error)
     else:
         return data
@@ -224,7 +223,7 @@ def sendFileToWebService(filename, subpage):
     except AttributeError, e:
         error = "No JSON as a response.\nResponse: " + str(response)
     except requests.exceptions.ConnectionError:
-        error = "Connection Error!"
+        error = "[SendFile]Connection Error!"
         app.logger.error(error)
     else:
         return data
@@ -420,7 +419,7 @@ def register():
                 .encode('utf-8', 'ignore')),
             "Surname": sanitize_html(request.form['surname']
                 .encode('utf-8', 'ignore')),
-            "Email": request.form['e_mail'],
+            "Email": sanitize_html(request.form['e_mail']),
             "Sex": request.form['sex']
         }
         response = postToWebService(payload, "/user/registration")
@@ -721,7 +720,7 @@ def new_inv():
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    return invite_to_battle(session['username'],
+    return invite_to_battle(sanitize_html(session['username']),
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
 
@@ -817,9 +816,9 @@ def view_battle(number, game):
         if response.get('Finished') is True:
             try:
                 conError = ""
-                r = requests.get(WEBSERVICE_IP + "/code/" + game + "/"
-                    + str(number) + "/log", stream=True, auth=HTTPDigestAuth(
-                    'Flask', 'Hazardius'))
+                r = requests.get(WEBSERVICE_IP + "/code/" + sanitize_html(game)
+                    + "/" + str(number) + "/log", stream=True,
+                    auth=HTTPDigestAuth('Flask', 'Hazardius'))
                 if r.status_code == 200:
                     locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         "log" + session['username'] + ".txt")
@@ -884,12 +883,13 @@ def send_code(idG, game):
         if request.form['codeForm'] == 'text':
             exten = request.form['lang']
             payload = {
-                "From": session['username'],
-                "Language": exten,
+                "From": sanitize_html(session['username']),
+                "Language": sanitize_html(exten),
                 "GameID": idG,
-                "Game": game,
+                "Game": sanitize_html(game),
                 "Code": sanitize_html(request.form['code']),
-                "FileName": str(idG) + str(game) + session['username'] + exten
+                "FileName": sanitize_html(str(idG) + str(game) + session[
+                    'username']) + "." + exten
             }
             response = postToWebService(payload, "/code/upload")
             if response.get('Status') is True:
@@ -977,13 +977,16 @@ def new_tournament():
         if response.get('Status') is True:
             tourID = response.get('ID')
             payload = {
-                "RegBegin": request.form['bDate'].replace("T", " ") + ":00",
-                "RegEnd": request.form['eDate'].replace("T", " ") + ":00",
-                "RegType": request.form['regType'],
+                "RegBegin": sanitize_html(request.form['bDate'].replace("T",
+                    " ") + ":00"),
+                "RegEnd": sanitize_html(request.form['eDate'].replace("T",
+                    " ") + ":00"),
+                "RegType": sanitize_html(request.form['regType']),
                 "MaxPlayers": request.form['maxPl'],
-                "Start": request.form['sDate'].replace("T", " ") + ":00",
+                "Start": sanitize_html(request.form['sDate'].replace("T",
+                    " ") + ":00"),
                 "TourID": tourID,
-                "Type": request.form['tourType']
+                "Type": sanitize_html(request.form['tourType'])
             }
             print payload
             response2 = postToWebService(payload, "/games/tournaments/"
