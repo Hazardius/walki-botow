@@ -564,6 +564,21 @@ def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
+        if 'Avatar' in response:
+            if response.get('Avatar') == response.get('Email'):
+                # Found a Gravatar
+                response.update({'Avatar': "http://www.gravatar.com/avatar/" +
+                    md5.new(response.get('Email').lower()).hexdigest()
+                    + "?s=150"})
+            if response.get('Avatar') == "":
+                # No avatar set - try to get Gravatar
+                response.update({'Avatar': "http://www.gravatar.com/avatar/" +
+                    md5.new(response.get('Email').lower()).hexdigest()
+                    + "?s=150"})
+        else:
+            # No avatar set - try to get Gravatar
+            response.update({'Avatar': "http://www.gravatar.com/avatar/" +
+                md5.new(response.get('Email').lower()).hexdigest() + "?s=150"})
         if nick != session['username']:
             if visibleEmail is False:
                 response.update({'Email': ""})
