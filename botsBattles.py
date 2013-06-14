@@ -292,8 +292,8 @@ def check_perm(page):
 
 def is_ban():
     #print str(request.remote_addr)
-    if (request.remote_addr == '95.108.86.12'):
-        return True
+    #if (request.remote_addr == '95.108.86.12'):
+        #return True
     return False
 
 
@@ -813,7 +813,6 @@ def view_battle(number, game):
     error = None
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
-        test = False
         if "Message" in response:
             if response.get('Message') == "Waiting for compilation":
                 return render_template('view_battle.html',
@@ -959,10 +958,22 @@ def tournaments():
         error=error, cMessages=check_messages())
 
 
-@app.route('/tournament/<int:id>')
-def tournament(id):
-    return render_template('message.html', cMessages=check_messages(),
-        message=("Page of tournament " + str(id)))
+@app.route('/tournament/<int:tourId>')
+def tournament(tourId):
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
+    if response.get('Status') is True:
+        tour = response
+        print tour
+        return render_template('tournament.html', tourId=tourId,
+            tour=tour, cMessages=check_messages(), username=session[
+            'username'], error=error)
+    return render_template('tournament.html', tourId=tourId,
+        cMessages=check_messages(), username=session['username'], error=error)
 
 
 @app.route('/new_tournament', methods=['GET', 'POST'])

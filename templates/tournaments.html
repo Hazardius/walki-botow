@@ -3,7 +3,7 @@
   {% if error %}<p class=error>{{ error }}{% endif %}
   <ul class=tournaments>
   {% for tournament in tours %}
-    <li><a href="{{ url_for('tournament', id=tournament.ID) }}">
+    <li><a href="{{ url_for('tournament', tourId=tournament.ID) }}">
       <h2>{{ tournament.Name }}</h2>
     </a>
   {% else %}

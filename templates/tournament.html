@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  {% if tour %}
+  <h2>{{ tour.TourName }}</h2>
+  <dt><b>Game: {{ tour.Name }}</b>
+  <dt>Description:<dd>{{ tour.Description }}
+  <dt>Rules:<dd>{{ tour.Rules }}
+  <br /><br />
+  {% endif %}
+{% endblock %}
