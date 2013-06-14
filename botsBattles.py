@@ -968,7 +968,6 @@ def tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         tour = response
-        print tour
         return render_template('tournament.html', tourId=tourId,
             tour=tour, cMessages=check_messages(), username=session[
             'username'], error=error)

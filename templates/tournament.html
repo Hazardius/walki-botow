@@ -4,8 +4,11 @@
   {% if tour %}
   <h2>{{ tour.TourName }}</h2>
   <dt><b>Game: {{ tour.Name }}</b>
+  <dt>Number of currently signed players:<dd>{{ tour.CurrPlayers }}/{{ tour.MaxPlayers }}
   <dt>Description:<dd>{{ tour.Description }}
   <dt>Rules:<dd>{{ tour.Rules }}
+  <dt>Registration type:<dd>{{ tour.RegType }}
+  <dt>End of registration:<dd>{{ tour.End }}
   <br /><br />
   {% endif %}
 {% endblock %}
