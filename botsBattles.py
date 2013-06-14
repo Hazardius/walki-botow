@@ -813,6 +813,13 @@ def view_battle(number, game):
     error = None
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
+        test = False
+        if "Message" in response:
+            if response.get('Message') == "Waiting for compilation":
+                return render_template('view_battle.html',
+                    username=session['username'], cMessages=check_messages(),
+                    number=number, game=game, winner=response.get('Winner'),
+                    error=error, message=response.get('Message'))
         if response.get('Finished') is True:
             try:
                 conError = ""
@@ -936,14 +943,16 @@ def tournaments():
     response = getFromWebService("/games/" + str(0) + "/" + str(session[
         'pagination']) + "/tournaments")
     if response.get('Status') is True:
-        tours = []
-        for i in range(1, response.get('Count') + 1):
-            nextOne = response.get(str(i))
-            if nextOne is not None:
-                tours.append(dict(nextOne))
-        tours = sorted(tours, key=lambda bat: bat['ID'])
-        return render_template('tournaments.html', username=session['username'],
-            tours=tours, cMessages=check_messages())
+        if response.get('Count') != 0:
+            tours = []
+            for i in range(1, response.get('Count') + 1):
+                nextOne = response.get(str(i))
+                if nextOne is not None:
+                    tours.append(dict(nextOne))
+            tours = sorted(tours, key=lambda bat: bat['ID'])
+            return render_template('tournaments.html',
+                username=session['username'], tours=tours,
+                cMessages=check_messages())
     else:
         error = response.get('Message')
     return render_template('tournaments.html', username=session['username'],
