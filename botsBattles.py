@@ -177,6 +177,9 @@ def putToWebService(payload, subpage):
 
 
 def sanitize_html(value):
+    value = value.replace("'", "")
+    value = value.replace('"', "")
+    value = value.replace("`", "")
     soup = BeautifulSoup(value)
     for tag in soup.findAll(True):
         if tag.name not in VALID_TAGS:
@@ -278,6 +281,7 @@ def check_perm(page):
 
 
 def is_ban():
+    print str(request.remote_addr) + "\n"
     if (request.remote_addr == '95.108.86.12'):
         return True
     return False
@@ -569,9 +573,9 @@ def edit_profile(edited):
                 .encode('utf-8', 'ignore')),
             "Surname": sanitize_html(request.form['surname']
                 .encode('utf-8', 'ignore')),
-            "Email": request.form['e_mail'],
+            "Email": sanitize_html(request.form['e_mail']),
             "Sex": request.form['sex'],
-            "Avatar": request.form['avatar']
+            "Avatar": sanitize_html(request.form['avatar'])
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
@@ -697,7 +701,7 @@ def new_inv():
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    return invite_to_battle(sanitize_html(session['username']),
+    return invite_to_battle(session['username'],
         sanitize_html(request.form['oponent']),
         sanitize_html(request.form['game']))
 
@@ -863,7 +867,7 @@ def send_code(idG, game):
                 "Language": exten,
                 "GameID": idG,
                 "Game": game,
-                "Code": request.form['code'],
+                "Code": sanitize_html(request.form['code']),
                 "FileName": str(idG) + str(game) + session['username'] + exten
             }
             response = postToWebService(payload, "/code/upload")
@@ -923,10 +927,10 @@ def new_tournament():
     error = None
     if request.method == 'POST':
         payload = {
-            "TourName": request.form['name'],
-            "Name": request.form['game'],
-            "Description": request.form['description'],
-            "Rules": request.form['rules']
+            "TourName": sanitize_html(request.form['name']),
+            "Name": sanitize_html(request.form['game']),
+            "Description": sanitize_html(request.form['description']),
+            "Rules": sanitize_html(request.form['rules'])
         }
         response = postToWebService(payload, "/games/tournaments/new")
         if response.get('Status') is True:
