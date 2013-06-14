@@ -3,7 +3,7 @@
 # all the imports
 from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
-     render_template, flash
+     render_template, flash, send_from_directory
 from BeautifulSoup import BeautifulSoup
 import json
 import md5
@@ -295,6 +295,13 @@ def is_ban():
     #if (request.remote_addr == '95.108.86.12'):
         #return True
     return False
+
+
+@app.route('/help/<gamefile>')
+def help(gamefile):
+    locFilePath = os.path.normpath(gamefile)
+    direct = os.path.normpath(app.config['UPLOAD_FOLDER'])
+    return send_from_directory(direct, locFilePath)
 
 
 @app.route('/main.js')
@@ -826,9 +833,9 @@ def view_battle(number, game):
                     + "/" + str(number) + "/log", stream=True,
                     auth=HTTPDigestAuth('Flask', 'Hazardius'))
                 if r.status_code == 200:
-                    locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                        "log" + session['username'] + ".txt")
-                    locFilePath = os.path.normpath(locFilePath)
+                    #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                        #"log" + session['username'] + ".txt")
+                    #locFilePath = os.path.normpath(locFilePath)
                     zmienna = ""
                     for chunk in r.iter_content():
                         zmienna = zmienna + str(chunk)

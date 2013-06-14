@@ -1,0 +1,32 @@
+Tworzenie bota do gry w Kółko i Krzyżyk
+a)  Rozpoczęcie rozgrywki
+Wymaga się od twórcy danego bota stworzenia tablicy dwuwymiarowej
+o wymiarach 3x3 w celu późniejszego odwzorowania ruchów rywala.
+Tablica powinna być indeksowana od zera, a nie od jedynki!!!
+
+Bot na samym początku rozgrywki otrzymuje na strumień wejściowy komunikat:
+1. Start, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Start\n.
+W tej sytuacji, to nasz bot zaczyna, a rywal czeka na wykonanie przez naszego bota ruchu.
+
+2. X Y, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco:
+X Y\n, gdzie X odpowiada pierwszemu wymiarowi tablicy dwuwymiarowej, a Y odpowiada drugiemu wymiarowi. Mówiąc innymi słowami, bot otrzymuje współrzędne ruchu przeciwnika, rozdzielone znakiem spacji.
+Zatem należy uwzględnić podczas tworzenia bota dwa możliwe scenariusze rozpoczęcia rozgrywki.
+b)  W trakcie rozgrywki
+Po rozpoczęciu rozgrywki (patrz podpunkt a) następuje gra turowa, czyli bot czeka na wykonanie ruchu przez rywala, a dopiero potem następuje jego kolej na dokonanie ruchu, podczas gdy rywal oczekuje wtedy na ruch naszego bota.
+W trakcie gry turowej nasz bot musi dokonywać kolejnych wyborów.
+Na wybór składają się dwie „współrzędne”, a dokładniej mówiąc dwa indeksy do tablicy dwuwymiarowej:
+X - współrzędna pierwszego wymiaru, liczba z zakresu 0-2,
+Y - współrzędna drugiego wymiaru, liczba z zakresu 0-2.
+Współrzędne te są rozdzielone znakiem spacji.
+Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej instrukcjami.
+Taktyka wyboru oraz analiza wyborów rywala pozostaje w kwestii twórcy danego bota.
+Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: X Y\n.
+Komunikat ten będziemy otrzymywać dopóki żaden z botów nie wygra zgodnie
+z zasadami gry w kółko i krzyżyk albo do momentu remisu.
+
+Oba wspomniane przed chwilą przypadki są opisane w podpunkcie c).
+c)  Zakończenie rozgrywki
+Rozgrywka kończy się w momencie wygrania jednego z botów lub remisem po wykonaniu 9 tur!
+Po wygraniu rozgrywki przez jednego z botów, bot otrzymuje na strumień wejściowy komunikat: Koniec, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Koniec\n.
+W wspomnianym przypadku, gdy żaden z botów nie wygra w przeciągu 9 ruchów, następuje remis i bot otrzymuje na strumień wejściowy komunikat: Remis, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Remis\n.
+Jeżeli nastąpi remis, to gra zostaje zakończona, po czym zostaje rozpoczęta od nowa.

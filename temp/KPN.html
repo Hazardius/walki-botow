@@ -1,0 +1,21 @@
+Tworzenie bota do gry w Kamień-Papier-Nożyce
+a)  Rozpoczęcie rozgrywki
+Bot na samym początku rozgrywki otrzymuje na strumień wejściowy komunikat: Start, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Start\n.
+b)  W trakcie rozgrywki
+Po komunikacie rozpoczynającym rozgrywkę (patrz podpunkt a), następuje kolej, żeby bot wybrał: kamień, papier lub nożyce.
+Stosuje się następujące oznaczenia:
+K - kamień,
+P - papier,
+N - nożyce.
+Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej oznaczeniami.
+Taktyka wyboru oraz analiza wyborów rywala pozostaje w kwestii twórcy danego bota.
+Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: K\n, lub P\n, lub N\n.
+Po dokonaniu wyborów przez oba boty i ich przesłaniu możemy otrzymać jeden z dwóch możliwych komunikatów:
+1. Jeżeli żaden z botów nie wygrał, to na strumień wejściowy otrzymamy identyczny komunikat jak podczas rozpoczęcia rozgrywki (patrz podpunkt a), czyli Start\n.
+Rozgrywka toczy się dalej, zatem postępujemy zgodnie z podpunktem b).
+
+2. Jeżeli jeden z botów wygra rozgrywkę, to na strumień wejściowy otrzymamy komunikat opisany w podpunkcie c).
+Rozgrywka ulega zakończeniu.
+c)  Zakończenie rozgrywki
+Rozgrywka toczy się do momentu aż któryś z botów wygra.
+Po wygraniu rozgrywki przez jednego z botów, bot otrzymuje na strumień wejściowy komunikat: Koniec, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Koniec\n.
