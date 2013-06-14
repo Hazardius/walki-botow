@@ -282,8 +282,8 @@ def check_perm(page):
 
 def is_ban():
     print str(request.remote_addr) + "\n"
-    if (request.remote_addr == '95.108.86.12'):
-        return True
+    #if (request.remote_addr == '95.108.86.12'):
+        #return True
     return False
 
 
@@ -661,6 +661,7 @@ def battles():
                 battleInfo.update({'Nr': nextOne})
                 if battleInfo.get('Status') is True:
                     battles.append(dict(battleInfo))
+        battles = sorted(battles, key=lambda bat: bat['Nr'])
         return render_template('battles.html', username=session['username'],
             battles=battles, cMessages=check_messages())
     else:

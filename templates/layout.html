@@ -6,7 +6,7 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   {% block head %}{% endblock %}
-  </head>
+  </head><!--
   <div id="fb-root"></div>
   <script>
       window.fbAsyncInit = function() {
@@ -57,7 +57,7 @@
        js.src = "//connect.facebook.net/pl_PL/all.js#xfbml=1&appId=133384910199574";
        ref.parentNode.insertBefore(js, ref);
       }(document, 'script', 'facebook-jssdk'));
-    </script>
+    </script>-->
 <div class=page>
   <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" style="width: 50em;" width="1024">
   <!--<h1>Bots Battles</h1>-->
