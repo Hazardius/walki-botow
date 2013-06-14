@@ -9,6 +9,7 @@ import json
 import md5
 import os
 import requests
+from requests.auth import HTTPDigestAuth
 from urllib2 import URLError
 from werkzeug import secure_filename
 import xml.etree.ElementTree as ET
@@ -23,7 +24,7 @@ timeout = 10
 socket.setdefaulttimeout(timeout)
 
 # address of WebService server
-WEBSERVICE_IP = "http://77.65.54.170:9000"
+WEBSERVICE_IP = "http://77.65.54.170:9005"
 TESTING = False
 
 # list of allowed extensions
@@ -50,7 +51,8 @@ def allowed_codeFile(filename):
 def getAtomFromWebService(newsID):
     try:
         f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
-            "?media=atom")
+            "?media=atom", auth=HTTPDigestAuth('Flask', 'Hazardius'))
+        print f.content
         data = ET.fromstring(f.content)
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -69,6 +71,8 @@ def getAtomFromWebService(newsID):
             app.logger.error('Value Error has been found.\nError code:' + error)
         else:
             error = e
+    except ET.ParseError:
+        error = "XML Parse error!"
     except requests.exceptions.ConnectionError:
         error = "Connection Error!"
         app.logger.error(error)
@@ -80,7 +84,8 @@ def getAtomFromWebService(newsID):
 
 def getFromWebService(subpage):
     try:
-        f = requests.get(WEBSERVICE_IP + subpage)
+        f = requests.get(WEBSERVICE_IP + subpage, auth=HTTPDigestAuth('Flask',
+            'Hazardius'))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -114,7 +119,7 @@ def postToWebService(payload, subpage):
     try:
         f = requests.post(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen})
+            'Content-Length': clen}, auth=HTTPDigestAuth('Flask', 'Hazardius'))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -148,7 +153,7 @@ def putToWebService(payload, subpage):
     try:
         f = requests.put(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen})
+            'Content-Length': clen}, auth=HTTPDigestAuth('Flask', 'Hazardius'))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -180,6 +185,10 @@ def sanitize_html(value):
     value = value.replace("'", "")
     value = value.replace('"', "")
     value = value.replace("`", "")
+    value = value.replace("$", "")
+    value = value.replace("^", "")
+    value = value.replace("&", "")
+    value = value.replace("*", "")
     soup = BeautifulSoup(value)
     for tag in soup.findAll(True):
         if tag.name not in VALID_TAGS:
@@ -192,7 +201,8 @@ def sendFileToWebService(filename, subpage):
     data = open(filename, 'rb')
     try:
         response = requests.post(WEBSERVICE_IP + subpage, data,
-            headers={'Content-Type': 'application/octet-stream'})
+            headers={'Content-Type': 'application/octet-stream'},
+            auth=HTTPDigestAuth('Flask', 'Hazardius'))
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -248,7 +258,8 @@ def not_found(error):
 
 def check_ws():
     try:
-        r = requests.head(WEBSERVICE_IP)
+        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask',
+            'Hazardius'))
     except requests.exceptions.ConnectionError:
         return False
     return r.status_code == 200
@@ -281,7 +292,7 @@ def check_perm(page):
 
 
 def is_ban():
-    print str(request.remote_addr) + "\n"
+    print str(request.remote_addr)
     #if (request.remote_addr == '95.108.86.12'):
         #return True
     return False
@@ -306,35 +317,43 @@ def news():
     else:
         response = getFromWebService("/news/" + str(0) + "/" + str(25) +
             "/retrieve")
-    news = []
-    for i in range(1, response.get('Count') + 1):
-        response2 = getAtomFromWebService(response.get(str(i)))
-        oneNews = {}
-        for field in response2:
-            shortTag = field.tag.split('}')[1]
-            if shortTag == "author":
-                for deepField in field:
-                    info = deepField.text
-            elif shortTag == "entry":
-                for deepField in field:
-                    shorterTag = deepField.tag.split('}')[1]
-                    if shorterTag == "published":
-                        shorterText = deepField.text.split('T')[0]
-                        oneNews.update({shorterTag: shorterText})
-                    elif shorterTag == "summary":
-                        oneNews.update({shorterTag: deepField.text})
-                    elif shorterTag == "title":
-                        info = deepField.text
-            else:
-                info = field.text
-            oneNews.update({shortTag: info})
-        news.append(oneNews)
-    news = sorted(news, key=lambda art: art['published'], reverse=True)
+    if response.get('Status') is True:
+        news = []
+        for i in range(1, response.get('Count') + 1):
+            response2 = getAtomFromWebService(response.get(str(i)))
+            if response2.get('Status') is True:
+                oneNews = {}
+                for field in response2:
+                    shortTag = field.tag.split('}')[1]
+                    if shortTag == "author":
+                        for deepField in field:
+                            info = deepField.text
+                    elif shortTag == "entry":
+                        for deepField in field:
+                            shorterTag = deepField.tag.split('}')[1]
+                            if shorterTag == "published":
+                                shorterText = deepField.text.split('T')[0]
+                                oneNews.update({shorterTag: shorterText})
+                            elif shorterTag == "summary":
+                                oneNews.update({shorterTag: deepField.text})
+                            elif shorterTag == "title":
+                                info = deepField.text
+                    else:
+                        info = field.text
+                    oneNews.update({shortTag: info})
+                news.append(oneNews)
+        news = sorted(news, key=lambda art: art['published'], reverse=True)
+        if "username" in session:
+            return render_template('news.html', username=session['username'],
+                cMessages=check_messages(), news=news)
+        else:
+            return render_template('news.html', news=news)
+    error = response.get('Message')
     if "username" in session:
         return render_template('news.html', username=session['username'],
-            cMessages=check_messages(), news=news)
+            cMessages=check_messages(), error=error)
     else:
-        return render_template('news.html', news=news)
+        return render_template('news.html', error=error)
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
@@ -799,7 +818,8 @@ def view_battle(number, game):
             try:
                 conError = ""
                 r = requests.get(WEBSERVICE_IP + "/code/" + game + "/"
-                    + str(number) + "/log", stream=True)
+                    + str(number) + "/log", stream=True, auth=HTTPDigestAuth(
+                    'Flask', 'Hazardius'))
                 if r.status_code == 200:
                     locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         "log" + session['username'] + ".txt")
@@ -912,8 +932,28 @@ def tournaments():
         return ws_error()
     if is_ban() is True:
         return ban_error()
+    error = None
+    response = getFromWebService("/games/" + str(0) + "/" + str(session[
+        'pagination']) + "/tournaments")
+    if response.get('Status') is True:
+        tours = []
+        for i in range(1, response.get('Count') + 1):
+            nextOne = response.get(str(i))
+            if nextOne is not None:
+                tours.append(dict(nextOne))
+        tours = sorted(tours, key=lambda bat: bat['ID'])
+        return render_template('tournaments.html', username=session['username'],
+            tours=tours, cMessages=check_messages())
+    else:
+        error = response.get('Message')
     return render_template('tournaments.html', username=session['username'],
-        cMessages=check_messages())
+        error=error, cMessages=check_messages())
+
+
+@app.route('/tournament/<int:id>')
+def tournament(id):
+    return render_template('message.html', cMessages=check_messages(),
+        message=("Page of tournament " + str(id)))
 
 
 @app.route('/new_tournament', methods=['GET', 'POST'])

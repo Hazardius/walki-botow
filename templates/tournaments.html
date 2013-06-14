@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class=entries>
-  {% for entry in entries %}
-    <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <ul class=tournaments>
+  {% for tournament in tours %}
+    <li><a href="{{ url_for('tournament', id=tournament.ID) }}">
+      <h2>{{ tournament.Name }}</h2>
+    </a>
   {% else %}
     <li><em>Here will be tournaments.</em>
   {% endfor %}
