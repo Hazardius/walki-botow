@@ -16,7 +16,7 @@
       {% if allG %}
         <dt>Group:
         {% for group in allG %}
-          <dd><input type="checkbox" name="group" value="{{ group.Name }}">{{ group.Name }}
+          <dd><input type="checkbox" name="group" value="{{ group }}">{{ group }}
         {% endfor %}
       {% endif %}
       <dt>Sex:<br />

@@ -606,6 +606,13 @@ def login():
             }
             response = postToWebService(payload, "/login")
             if response.get('Status') is True:
+                response2 = getFromWebService("/" + sanitize_html(request.form[
+                    'username']) + "/retrieve")
+                if response2.get('Status') is True:
+                    perCount = response2.get('Count')
+                    for i in range(1, perCount + 1):
+                        if response2.get(str(i)) == "Super admin":
+                            session['isSUDO'] = True
                 perCount = response.get('Count')
                 permissions = []
                 for i in range(1, perCount + 1):
@@ -628,6 +635,7 @@ def logout():
     session.pop('username', None)
     session.pop('pagination', 10)
     session.pop('permissions', None)
+    session.pop('isSUDO', None)
     flash('You were logged out')
     return redirect(url_for('news'))
 
@@ -695,7 +703,7 @@ def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
-        response2 = getFromWebService("/" + sanitize_html(nick) + "/groups")
+        response2 = getFromWebService("/" + sanitize_html(nick) + "/retrieve")
         allG = []
         if response2.get('Status') is True:
             perCount = response2.get('Count')
@@ -793,11 +801,11 @@ def edit_profile(edited):
                 groups = request.form.getlist("group")
                 num = 1
                 for group in groups:
-                    payload3.update({str(num): sanitize_html(group)})
-                    num = num + 1
+                        payload3.update({str(num): sanitize_html(group)})
+                        num = num + 1
                 payload3.update({"Count": (num - 1)})
                 response3 = postToWebService(payload3, "/" + payload['Login'] +
-                    "/groups")
+                    "/retrieve")
                 if response3.get('Status') is True:
                     session['redirected'] = True
                     return redirect(url_for('show_user_profile', nick=payload[
@@ -822,7 +830,12 @@ def edit_profile(edited):
                     perCount = response3.get('Count')
                     allG = []
                     for i in range(1, perCount + 1):
-                        allG.append(response3.get(str(i)))
+                        group = response3.get(str(i)).get('Name')
+                        if group == "Super admin":
+                            if 'isSUDO' in session:
+                                allG.append(group)
+                        else:
+                            allG.append(group)
                     return render_template('edit_profile.html',
                         username=session['username'], error=error,
                         edited=edited, cMessages=check_messages(),
