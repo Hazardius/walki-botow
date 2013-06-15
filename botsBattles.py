@@ -272,7 +272,7 @@ def check_spam():
         lastTime = 0.0
     session['lastTime'] = time.time()
     if lastTime:
-        if (session['lastTime'] - lastTime < 3.0):
+        if (session['lastTime'] - lastTime < 0.5):
             return False
     return True
 
@@ -1200,5 +1200,5 @@ def new_tournament():
 
 # app start
 
-if __name__ == '__main__':
+if __name__ == '____':
     app.run(host='0.0.0.0')
