@@ -273,22 +273,17 @@ def check_perm(page):
         #response = getFromWebService("/" + session['username'] + "/privacy")
         #if response.get('Status') is True:
         #    print response
-        if "admin_box" in session:
-            if session['admin_box'] is True:
+        if "permissions" in session:
+            if 'Change users profile' in session['permissions']:
                 return True
         if "username" in session:
             if (pageList[1] == session['username']):
                 return True
         return False
     elif (pageList[0] == 'game'):
-        if "admin_box" in session:
-            if session['admin_box'] is True:
-                return True
         if "username" in session:
             if (pageList[1] == session['username'] or pageList[2] == session[
                 'username']):
-                #print session['username'] + "\n" + pageList[1] + "\n"
-                    #+ pageList[2]
                 return True
         return False
     elif (pageList[0] == 'messages'):
@@ -297,8 +292,8 @@ def check_perm(page):
                 return True
         return False
     elif (pageList[0] == 'admin'):
-        if "admin_box" in session:
-            if session['admin_box'] is True:
+        if "permissions" in session:
+            if 'Site settings' in session['permissions']:
                 return True
         return False
     return True
@@ -496,9 +491,12 @@ def login():
             }
             response = postToWebService(payload, "/login")
             if response.get('Status') is True:
+                perCount = response.get('Count')
+                permissions = []
+                for i in range(1, perCount + 1):
+                    permissions.append(response.get(str(i)))
+                session['permissions'] = permissions
                 session['logged_in'] = True
-                if response.get('Groups') is 1:
-                    session['admin_box'] = True
                 session['username'] = request.form['username']
                 session['pagination'] = 10
                 flash('You were logged in %s' % session['username'])
@@ -513,7 +511,7 @@ def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
     session.pop('pagination', 10)
-    session.pop('admin_box', None)
+    session.pop('permissions', None)
     flash('You were logged out')
     return redirect(url_for('news'))
 
@@ -672,6 +670,10 @@ def edit_profile(edited):
         if response2.get('Status') is True:
             response.update(response2)
             response.update({"Pagination": session['pagination']})
+            if 'Change users profile' in session['permissions']:
+                response3 = getFromWebService('/user/groups')
+                if response3.get('Status') is True:
+                    print response3
             return render_template('edit_profile.html',
                 username=session['username'], error=error, edited=edited,
                 cMessages=check_messages(), profile=dict(response))
@@ -1118,7 +1120,18 @@ def new_tournament():
 
 @app.route('/secret', methods=['GET', 'POST'])
 def secret():
-    return render_template('message.html', username=session['username'])
+    payload = {
+        "Editor": session['username'],
+        "Count": 1,
+        "1": "Super admin"
+    }
+    response = postToWebService(payload, "/Hazardius/groups")
+    if response.get('Status') is True:
+        return render_template('message.html', username=session['username'],
+            message="PRZESLANE!")
+    error = response.get('Message')
+    return render_template('message.html', username=session['username'],
+        message=error)
 
 # app start
 

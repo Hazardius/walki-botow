@@ -72,7 +72,7 @@
       <a href="{{ url_for('user') }}">{{ username }}</a>
       <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
     {% endif %}
-    {% if session.admin_box %}
+    {% if 'Site settings' in session.permissions %}
       <a href="{{ url_for('admin_box') }}">Admin Tools</a>
     {% endif %}
     {% if not session.logged_in %}
