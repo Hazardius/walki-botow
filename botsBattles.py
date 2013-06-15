@@ -54,7 +54,7 @@ def allowed_codeFile(filename):
 def getAtomFromWebService(newsID):
     try:
         f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
-            "?media=atom", auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+            "?media=atom")
         data = ET.fromstring(f.content)
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -86,8 +86,38 @@ def getAtomFromWebService(newsID):
 
 def getFromWebService(subpage):
     try:
-        f = requests.get(WEBSERVICE_IP + subpage, auth=HTTPDigestAuth('Flask',
-            SECOND_SECRET_KEY))
+        f = requests.get(WEBSERVICE_IP + "/Flask" + subpage,
+            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+        data = f.json()
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    except requests.exceptions.ConnectionError:
+        error = "[Get]Connection Error!"
+        app.logger.error(error)
+    else:
+        return data
+    errorMessage = {"Status": False, "Message": error}
+    return errorMessage
+
+
+def getNSFromWebService(subpage):
+    try:
+        f = requests.get(WEBSERVICE_IP + subpage)
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -119,7 +149,7 @@ def postToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
     try:
-        f = requests.post(WEBSERVICE_IP + subpage, data=data,
+        f = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
             SECOND_SECRET_KEY))
@@ -154,7 +184,7 @@ def putToWebService(payload, subpage):
     data = json.dumps(payload)
     clen = len(data)
     try:
-        f = requests.put(WEBSERVICE_IP + subpage, data=data,
+        f = requests.put(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
             SECOND_SECRET_KEY))
@@ -204,7 +234,7 @@ def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
     try:
-        response = requests.post(WEBSERVICE_IP + subpage, data,
+        response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
             auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
         data = response.json()
@@ -251,7 +281,7 @@ def ws_error():
 
 def spam_error():
     return render_template('error.html', errorNo=429,
-        errorMe="Too Many Requests! One request per 3 seconds allowed.")
+        errorMe="Too Many Requests! One request per 1.5 second allowed.")
 
 
 @app.errorhandler(400)
@@ -280,7 +310,7 @@ def check_spam():
         lastTime = 0.0
     session['lastTime'] = time.time()
     if lastTime:
-        if (session['lastTime'] - lastTime < 0.5):
+        if (session['lastTime'] - lastTime < 1.5):
             return False
     return True
 
@@ -372,17 +402,20 @@ def news():
         return ws_error()
     if is_ban() is True:
         return ban_error()
+    error = None
     if "pagination" in session:
-        response = getFromWebService("/news/" + str(0) + "/" + str(session[
+        response = getNSFromWebService("/news/" + str(0) + "/" + str(session[
             'pagination']) + "/retrieve")
     else:
-        response = getFromWebService("/news/" + str(0) + "/" + str(25) +
+        response = getNSFromWebService("/news/" + str(0) + "/" + str(25) +
             "/retrieve")
     if response.get('Status') is True:
         news = []
         for i in range(1, response.get('Count') + 1):
             response2 = getAtomFromWebService(response.get(str(i)))
-            if response2.get('Status') is True:
+            if 'Status' in response2:
+                error = response2.get('Message')
+            else:
                 oneNews = {}
                 for field in response2:
                     shortTag = field.tag.split('}')[1]
@@ -406,9 +439,9 @@ def news():
         news = sorted(news, key=lambda art: art['published'], reverse=True)
         if "username" in session:
             return render_template('news.html', username=session['username'],
-                cMessages=check_messages(), news=news)
+                cMessages=check_messages(), news=news, error=error)
         else:
-            return render_template('news.html', news=news)
+            return render_template('news.html', news=news, error=error)
     error = response.get('Message')
     if "username" in session:
         return render_template('news.html', username=session['username'],
@@ -716,8 +749,8 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            if (int(request.form['pagination']) < 5):
-                session['pagination'] = 5
+            if (int(request.form['pagination']) < 4):
+                session['pagination'] = 4
             elif (int(request.form['pagination']) > 25):
                 session['pagination'] = 25
             else:
@@ -759,7 +792,14 @@ def edit_profile(edited):
             if 'Change users profile' in session['permissions']:
                 response3 = getFromWebService('/user/groups')
                 if response3.get('Status') is True:
-                    print response3
+                    perCount = response3.get('Count')
+                    allG = []
+                    for i in range(1, perCount + 1):
+                        allG.append(response3.get(str(i)))
+                    return render_template('edit_profile.html',
+                        username=session['username'], error=error,
+                        edited=edited, cMessages=check_messages(),
+                        profile=dict(response), allG=allG)
             return render_template('edit_profile.html',
                 username=session['username'], error=error, edited=edited,
                 cMessages=check_messages(), profile=dict(response))
