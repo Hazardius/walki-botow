@@ -65,6 +65,7 @@
       <a href="{{ url_for('news') }}">News</a>
     {% if not session.logged_in %}
       <a href="{{ url_for('register') }}">Register</a>
+      <a href="{{ url_for('remind_act_code') }}">Resend Code</a>
     {% else %}
       <a href="{{ url_for('battles') }}">Battles</a>
       <a href="{{ url_for('tournaments') }}">Tournaments</a>

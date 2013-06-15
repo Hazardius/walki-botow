@@ -254,6 +254,12 @@ def spam_error():
         errorMe="Too Many Requests! One request per 3 seconds allowed.")
 
 
+@app.errorhandler(400)
+def page_error():
+    return render_template('error.html', errorNo=400,
+        errorMe="Page error!")
+
+
 @app.errorhandler(404)
 def not_found(error):
     if "username" in session:
@@ -492,6 +498,29 @@ def register():
         else:
             error = "One registration per 10 seconds allowed."
     return render_template('register.html', error=error)
+
+
+@app.route('/remind', methods=['GET', 'POST'])
+def remind_act_code():
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ws_error()
+    error = None
+    if request.method == 'POST':
+        payload = {
+            "Email": sanitize_html(request.form['e_mail'])
+        }
+        response = postToWebService(payload, "/reactivate")
+        if response.get('Status') is True:
+            return render_template('message.html',
+                message="Activation link successfuly re-sent!")
+        else:
+            error = response.get('Message')
+        return render_template('message.html', message=error)
+    return render_template('remind.html', error=error)
 
 
 @app.route('/activation/<webHash>')
