@@ -781,11 +781,26 @@ def edit_profile(edited):
             response2 = postToWebService(payload2, "/" + payload['Login']
                 + "/other")
             if response2.get('Status') is True:
-                session['redirected'] = True
-                return redirect(url_for('show_user_profile', nick=payload[
-                    'Login']))
+                payload3 = {
+                    "Editor": session['username']
+                }
+                groups = request.form.getlist("group")
+                num = 1
+                for group in groups:
+                    payload3.update({str(num): sanitize_html(group)})
+                    num = num + 1
+                payload3.update({"Count": (num - 1)})
+                response3 = postToWebService(payload3, "/" + payload['Login'] +
+                    "/groups")
+                if response3.get('Status') is True:
+                    session['redirected'] = True
+                    return redirect(url_for('show_user_profile', nick=payload[
+                        'Login']))
+                else:
+                    error = (response3.get('Message') + " Profile partially " +
+                        "edited! Only groups remain unchanged!")
             else:
-                error = response.get('Message') + " Profile partially edited!"
+                error = response2.get('Message') + " Profile partially edited!"
         else:
             error = response.get('Message')
     response = getFromWebService("/" + sanitize_html(edited) + "/about")
