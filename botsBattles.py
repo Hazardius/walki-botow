@@ -260,8 +260,8 @@ def not_found(error):
 
 def check_ws():
     try:
-        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask', md5.new(
-            'Hazardius').hexdigest()))
+        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask',
+            SECOND_SECRET_KEY))
     except requests.exceptions.ConnectionError:
         return False
     return r.status_code == 200
@@ -604,6 +604,11 @@ def show_user_profile(nick):
         error=error, cMessages=check_messages())
 
 
+#@app.route('/secret', methods=['GET', 'POST'])
+#def secret():
+    #return render_template('message.html', username=session['username'])
+
+
 @app.route('/edit_profile/<edited>', methods=['GET', 'POST'])
 def edit_profile(edited):
     if check_ws() is False:
@@ -632,7 +637,12 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            session['pagination'] = int(request.form['pagination'])
+            if (int(request.form['pagination']) < 5):
+                session['pagination'] = 5
+            elif (int(request.form['pagination']) > 25):
+                session['pagination'] = 25
+            else:
+                session['pagination'] = int(request.form['pagination'])
             if "eNot" in request.form:
                 eNot = True
             else:
@@ -912,8 +922,8 @@ def view_battle(number):
                 conError = ""
                 r = requests.get(WEBSERVICE_IP + "/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/log",
-                    stream=True, auth=HTTPDigestAuth('Flask', md5.new(
-                    'Hazardius').hexdigest()))
+                    stream=True, auth=HTTPDigestAuth('Flask',
+                    SECOND_SECRET_KEY))
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")
