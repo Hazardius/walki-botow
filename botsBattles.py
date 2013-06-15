@@ -569,16 +569,17 @@ def show_user_profile(nick):
                 # Found a Gravatar
                 response.update({'Avatar': "http://www.gravatar.com/avatar/" +
                     md5.new(response.get('Email').lower()).hexdigest()
-                    + "?s=150"})
+                    + "?s=150&d=retro"})
             if response.get('Avatar') == "":
                 # No avatar set - try to get Gravatar
                 response.update({'Avatar': "http://www.gravatar.com/avatar/" +
                     md5.new(response.get('Email').lower()).hexdigest()
-                    + "?s=150"})
+                    + "?s=150&d=retro"})
         else:
             # No avatar set - try to get Gravatar
             response.update({'Avatar': "http://www.gravatar.com/avatar/" +
-                md5.new(response.get('Email').lower()).hexdigest() + "?s=150"})
+                md5.new(response.get('Email').lower()).hexdigest()
+                + "?s=150&d=retro"})
         if nick != session['username']:
             if visibleEmail is False:
                 response.update({'Email': ""})
