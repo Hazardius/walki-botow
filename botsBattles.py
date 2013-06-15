@@ -270,9 +270,6 @@ def check_ws():
 def check_perm(page):
     pageList = page.split('/')
     if (pageList[0] == 'edit_profile'):
-        #response = getFromWebService("/" + session['username'] + "/privacy")
-        #if response.get('Status') is True:
-        #    print response
         if "permissions" in session:
             if 'Change users profile' in session['permissions']:
                 return True
@@ -281,6 +278,9 @@ def check_perm(page):
                 return True
         return False
     elif (pageList[0] == 'game'):
+        if "permissions" in session:
+            if 'Change users profile' in session['permissions']:
+                return True
         if "username" in session:
             if (pageList[1] == session['username'] or pageList[2] == session[
                 'username']):
@@ -289,6 +289,16 @@ def check_perm(page):
     elif (pageList[0] == 'messages'):
         if "username" in session:
             if (pageList[1] == session['username']):
+                return True
+        return False
+    elif (pageList[0] == 'creTour'):
+        if "permissions" in session:
+            if 'Create tournaments' in session['permissions']:
+                return True
+        return False
+    elif (pageList[0] == 'creNews'):
+        if "permissions" in session:
+            if "Adding news's" in session['permissions']:
                 return True
         return False
     elif (pageList[0] == 'admin'):
@@ -1078,7 +1088,7 @@ def new_tournament():
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    if check_perm('admin') is False:
+    if check_perm('creTour') is False:
         return render_template('message.html', cMessages=check_messages(),
             message="You are not permitted to see that page!")
     error = None
