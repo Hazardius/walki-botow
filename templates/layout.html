@@ -72,8 +72,8 @@
       <a href="{{ url_for('user') }}">{{ username }}</a>
       <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
     {% endif %}
-    {% if 'Site settings' in session.permissions %}
-      <a href="{{ url_for('admin_box') }}">Admin Tools</a>
+    {% if "Adding news's" in session.permissions or "Create tournaments" in session.permissions %}
+      <a href="{{ url_for('admin_box') }}">Add new content</a>
     {% endif %}
     {% if not session.logged_in %}
       <a href="{{ url_for('login') }}">Log in</a>

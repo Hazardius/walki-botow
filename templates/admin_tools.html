@@ -1,7 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
+  {% if "Adding news's" in session.permissions %}
   <a href="{{ url_for('add_news') }}">Add news</a><br />
+  {% endif %}
+  {% if 'Create tournaments' in session.permissions %}
   <a href="{{ url_for('new_tournament') }}">Create new tournament</a>
+  {% endif %}
   <!--<a href="">View bans</a>-->
 {% endblock %}

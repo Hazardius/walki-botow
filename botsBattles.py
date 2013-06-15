@@ -226,6 +226,7 @@ def sendFileToWebService(filename, subpage):
     except AttributeError, e:
         error = "No JSON as a response.\nResponse: " + str(response)
     except requests.exceptions.ConnectionError:
+        print e
         error = "[SendFile]Connection Error!"
         app.logger.error(error)
     else:
@@ -236,14 +237,19 @@ def sendFileToWebService(filename, subpage):
 # error pages
 
 
-def ws_error():
-    return render_template('error.html', errorNo=502,
-        errorMe="WebService is not responding!")
-
-
 def ban_error():
     return render_template('error.html', errorNo=403,
-        errorMe="Your IP is banned!")
+        errorMe="Forbidden!")
+
+
+def ws_error():
+    return render_template('error.html', errorNo=502,
+        errorMe="Bad Gateway! WebService is not responding.")
+
+
+def spam_error():
+    return render_template('error.html', errorNo=429,
+        errorMe="Too Many Requests! One request per 3 seconds allowed.")
 
 
 @app.errorhandler(404)
@@ -256,6 +262,19 @@ def not_found(error):
             errorMe="The page You're looking for isn't here!")
 
 # page methods
+
+
+def check_spam():
+    import time
+    if 'lastTime' in session:
+        lastTime = session['lastTime']
+    else:
+        lastTime = 0.0
+    session['lastTime'] = time.time()
+    if lastTime:
+        if (session['lastTime'] - lastTime < 3.0):
+            return False
+    return True
 
 
 def check_ws():
@@ -311,27 +330,26 @@ def check_perm(page):
 
 def is_ban():
     #print str(request.remote_addr)
-    #if (request.remote_addr == '95.108.86.12'):
+    #if (request.remote_addr == BANNEDIP):
         #return True
     return False
 
 
 @app.route('/help/<gamefile>')
 def help(gamefile):
+    if check_spam() is False:
+        return spam_error()
     locFilePath = os.path.normpath(gamefile)
     direct = os.path.normpath(app.config['UPLOAD_FOLDER'])
     return send_from_directory(direct, locFilePath)
-
-
-@app.route('/main.js')
-def main_js():
-    return render_template('main.js')
 
 # page methods - news
 
 
 @app.route('/')
 def news():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -383,6 +401,8 @@ def news():
 
 @app.route('/add_news', methods=['GET', 'POST'])
 def add_news():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -430,6 +450,8 @@ def add_news():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -459,6 +481,8 @@ def register():
 
 @app.route('/activation/<webHash>')
 def try_to_activate(webHash):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -478,6 +502,8 @@ def try_to_activate(webHash):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -543,6 +569,8 @@ def check_messages():
 
 @app.route('/post_box')
 def post_box():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -572,6 +600,8 @@ def user():
 
 @app.route('/user/<nick>')
 def show_user_profile(nick):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -614,6 +644,8 @@ def show_user_profile(nick):
 
 @app.route('/edit_profile/<edited>', methods=['GET', 'POST'])
 def edit_profile(edited):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -704,6 +736,8 @@ def users():
 
 @app.route('/users/<int:page>')
 def users_p(page):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -732,6 +766,8 @@ def users_p(page):
 
 @app.route('/admin_tools')
 def admin_box():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -752,6 +788,8 @@ def battles():
 
 @app.route('/battles/<int:page>')
 def battles_p(page):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -783,6 +821,8 @@ def battles_p(page):
 
 @app.route('/choose_oponent')
 def choose_oponent():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -809,6 +849,8 @@ def choose_oponent():
 
 @app.route('/invite', methods=['GET', 'POST'])
 def new_inv():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -851,6 +893,8 @@ def invite_to_battle(uFrom, uTo, gameName):
 
 @app.route('/no_duel/<int:invId>', methods=['GET', 'POST'])
 def no_duel(invId):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -875,6 +919,8 @@ def cancel_battle(invId):
 
 @app.route('/duel/<int:invId>', methods=['GET', 'POST'])
 def new_duel(invId):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -899,6 +945,8 @@ def register_battle(invId):
 
 @app.route('/view_battle/<int:number>')
 def view_battle(number):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -987,6 +1035,8 @@ def view_battle(number):
 
 @app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
 def send_code(idG, game):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -1041,6 +1091,8 @@ def send_code(idG, game):
 
 @app.route('/tournaments')
 def tournaments():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -1067,6 +1119,8 @@ def tournaments():
 
 @app.route('/tournament/<int:tourId>')
 def tournament(tourId):
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -1084,6 +1138,8 @@ def tournament(tourId):
 
 @app.route('/new_tournament', methods=['GET', 'POST'])
 def new_tournament():
+    if check_spam() is False:
+        return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -1114,7 +1170,6 @@ def new_tournament():
                 "TourID": tourID,
                 "Type": sanitize_html(request.form['tourType'])
             }
-            print payload
             response2 = postToWebService(payload, "/games/tournaments/"
                 + str(tourID) + "/info")
             print response2
@@ -1128,20 +1183,20 @@ def new_tournament():
 # debug
 
 
-@app.route('/secret', methods=['GET', 'POST'])
-def secret():
-    payload = {
-        "Editor": session['username'],
-        "Count": 1,
-        "1": "Super admin"
-    }
-    response = postToWebService(payload, "/Hazardius/groups")
-    if response.get('Status') is True:
-        return render_template('message.html', username=session['username'],
-            message="PRZESLANE!")
-    error = response.get('Message')
-    return render_template('message.html', username=session['username'],
-        message=error)
+#@app.route('/secret', methods=['GET', 'POST'])
+#def secret():
+    #payload = {
+        #"Editor": session['username'],
+        #"Count": 1,
+        #"1": "Super admin"
+    #}
+    #response = postToWebService(payload, "/Hazardius/groups")
+    #if response.get('Status') is True:
+        #return render_template('message.html', username=session['username'],
+            #message="PRZESLANE!")
+    #error = response.get('Message')
+    #return render_template('message.html', username=session['username'],
+        #message=error)
 
 # app start
 
