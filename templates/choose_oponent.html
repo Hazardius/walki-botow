@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <!--if games %}-->
   {% if users %}
       <form action="{{ url_for('new_inv') }}" method=post class=send-code>
         <dt>Game:
@@ -22,7 +21,4 @@
   {% else %}
     <dt> There are no more users now.
   {% endif %}
-  <!--
-    <dt> No games availible!
-   endif %}-->
 {% endblock %}

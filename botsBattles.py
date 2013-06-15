@@ -230,6 +230,42 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
+def sendFileToWebServiceT(fileData, subpage):
+    error = None
+    data = fileData
+    try:
+        response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
+            headers={'Content-Type': 'application/octet-stream'},
+            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+        data = response.json()
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    except AttributeError, e:
+        error = "No JSON as a response.\nResponse: " + str(response)
+    except requests.exceptions.ConnectionError, e:
+        error = "[SendFile]Connection Error! " + str(e)
+        app.logger.error(error)
+    else:
+        return data
+    errorMessage = {"Status": False, "Message": error}
+    return errorMessage
+
+
 def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
@@ -257,9 +293,8 @@ def sendFileToWebService(filename, subpage):
             error = e
     except AttributeError, e:
         error = "No JSON as a response.\nResponse: " + str(response)
-    except requests.exceptions.ConnectionError:
-        print e
-        error = "[SendFile]Connection Error!"
+    except requests.exceptions.ConnectionError, e:
+        error = "[SendFile]Connection Error! " + str(e)
         app.logger.error(error)
     else:
         return data
@@ -664,10 +699,11 @@ def post_box():
     if is_ban() is True:
         return ban_error()
     error = None
-    response = getFromWebService("/notice/" + session['username'])
+    response = getFromWebService("/notice/" + session['username'] + "/0/50")
+    print response
     if response.get('Status') is True:
         messages = []
-        for i in range(1, session['pagination']):
+        for i in range(1, response.get('Count') + 1):
             nextOne = response.get(str(i))
             if nextOne is not None:
                 messages.append(dict(nextOne))
@@ -952,14 +988,11 @@ def choose_oponent():
     if is_ban() is True:
         return ban_error()
     error = None
-    # gamesRes = getFromWebService("/games")
-    # if gamesRes.get('Status') is True:
     userRes = getFromWebService("/games/duels/" + session['username']
-        + "/0/list")
+        + "/0/100/list")
     if userRes.get('Status') is True:
-    #         games = []
         logins = []
-        for i in range(1, session['pagination']):
+        for i in range(1, userRes.get('Count') + 1):
             nextOne = userRes.get(str(i))
             if nextOne is not None:
                 logins.append(nextOne)
@@ -1177,11 +1210,11 @@ def send_code(idG, game):
                 "Language": sanitize_html(exten),
                 "GameID": idG,
                 "Game": sanitize_html(game),
-                "Code": sanitize_html(request.form['code']),
+                "Code": request.form['code'],
                 "FileName": sanitize_html(str(idG) + str(game) + session[
                     'username']) + "." + exten
             }
-            response = postToWebService(payload, "/code/upload")
+            response = postToWebService(payload, "/code/duel/upload")
             if response.get('Status') is True:
                 return render_template('message.html', message="Code sent!",
                     error=error, cMessages=check_messages(),
@@ -1192,21 +1225,25 @@ def send_code(idG, game):
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
                 filename = secure_filename(codeFile.filename)
-                locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                    filename)
-                locFilePath = os.path.normpath(locFilePath)
-                codeFile.save(locFilePath)
-                response = sendFileToWebService(locFilePath, "/code/upload/" +
-                    game + "/" + str(idG) + "/" + session['username'] + "/" +
-                    filename)
+                #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    #filename)
+                #locFilePath = os.path.normpath(locFilePath)
+                #codeFile.save(locFilePath)
+                response = sendFileToWebServiceT(codeFile, "/code/duel/upl" +
+                    "oad/" + game + "/" + str(idG) + "/" + session['username']
+                    + "/" + filename)
+                #response = sendFileToWebService(locFilePath, "/code/duel/upl" +
+                    #"oad/" + game + "/" + str(idG) + "/" + session['username']
+                    #+ "/" + filename)
+                print response
                 if response.get('Status') is True:
-                    os.remove(locFilePath)
+                    #os.remove(locFilePath)
                     return render_template('message.html',
                         username=session['username'], error=error,
                         message="File uploaded!", cMessages=check_messages())
                 else:
                     error = response.get('Message')
-                os.remove(locFilePath)
+                #os.remove(locFilePath)
             else:
                 error = 'File format not valid!'
                 app.logger.error(error)
