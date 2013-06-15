@@ -277,6 +277,17 @@ def check_perm(page):
             if (pageList[1] == session['username']):
                 return True
         return False
+    elif (pageList[0] == 'game'):
+        if "admin_box" in session:
+            if session['admin_box'] is True:
+                return True
+        if "username" in session:
+            if (pageList[1] == session['username'] or pageList[2] == session[
+                'username']):
+                #print session['username'] + "\n" + pageList[1] + "\n"
+                    #+ pageList[2]
+                return True
+        return False
     elif (pageList[0] == 'messages'):
         if "username" in session:
             if (pageList[1] == session['username']):
@@ -827,27 +838,40 @@ def register_battle(invId):
         error=error, cMessages=check_messages())
 
 
-@app.route('/view_battle/<int:number>/<game>')
-def view_battle(number, game):
+@app.route('/view_battle/<int:number>')
+def view_battle(number):
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
         return ban_error()
     error = None
+    gameName = ""
+    response = getFromWebService("/games/" + str(number) + "/about")
+    if response.get('Status') is True:
+        gameName = response.get('GameName')
+        if check_perm('game/' + response.get('Player1') + "/" + response.get(
+            'Player2')) is False:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are not permitted to see that page!")
+    else:
+        message = ("Error while checking permissions! " + str(response.get(
+            'Message')))
+        return render_template('message.html', cMessages=check_messages(),
+            message=message)
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
         if "Message" in response:
             if response.get('Message') == "Waiting for compilation":
                 return render_template('view_battle.html',
                     username=session['username'], cMessages=check_messages(),
-                    number=number, game=game, winner=response.get('Winner'),
+                    number=number, game=gameName, winner=response.get('Winner'),
                     error=error, message=response.get('Message'))
         if response.get('Finished') is True:
             try:
                 conError = ""
-                r = requests.get(WEBSERVICE_IP + "/code/" + sanitize_html(game)
-                    + "/" + str(number) + "/log", stream=True,
-                    auth=HTTPDigestAuth('Flask', 'Hazardius'))
+                r = requests.get(WEBSERVICE_IP + "/code/" +
+                    sanitize_html(gameName) + "/" + str(number) + "/log",
+                    stream=True, auth=HTTPDigestAuth('Flask', 'Hazardius'))
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")
@@ -892,12 +916,12 @@ def view_battle(number, game):
             gameLog = conError
             return render_template('view_battle.html',
                 username=session['username'], cMessages=check_messages(),
-                number=number, game=game, winner=response.get('Winner'),
+                number=number, game=gameName, winner=response.get('Winner'),
                 error=error, message=response.get('Message'), log=gameLog)
     else:
         error = response
     return render_template('send_code.html', username=session['username'],
-        cMessages=check_messages(), number=number, game=game, error=error,
+        cMessages=check_messages(), number=number, game=gameName, error=error,
         winner=response.get('Winner'), message=response.get('Message'))
 
 
