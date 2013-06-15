@@ -396,8 +396,10 @@ def help(gamefile):
 
 @app.route('/')
 def news():
-    if check_spam() is False:
-        return spam_error()
+    if 'redirected' not in session:
+        session.pop('redirected', None)
+        if check_spam() is False:
+            return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -613,6 +615,7 @@ def login():
                 session['username'] = request.form['username']
                 session['pagination'] = 10
                 flash('You were logged in %s' % session['username'])
+                session['redirected'] = True
                 return redirect(url_for('news'))
             else:
                 error = response.get('Message')
@@ -677,8 +680,10 @@ def user():
 
 @app.route('/user/<nick>')
 def show_user_profile(nick):
-    if check_spam() is False:
-        return spam_error()
+    if 'redirected' not in session:
+        session.pop('redirected', None)
+        if check_spam() is False:
+            return spam_error()
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -776,6 +781,7 @@ def edit_profile(edited):
             response2 = postToWebService(payload2, "/" + payload['Login']
                 + "/other")
             if response2.get('Status') is True:
+                session['redirected'] = True
                 return redirect(url_for('show_user_profile', nick=payload[
                     'Login']))
             else:
@@ -955,6 +961,7 @@ def invite_to_battle(uFrom, uTo, gameName):
     response = postToWebService(payload, "/notice/invitation")
     if response.get('Status') is True:
         flash("Successful invitation to the battle.")
+        session['redirected'] = True
         return redirect(url_for('news'))
     else:
         error = response.get('Message')
@@ -994,6 +1001,7 @@ def cancel_battle(invId):
     response = putToWebService(payload, "/notice/invitation/decline")
     if response.get('Status') is True:
         flash("You refused that invitation.")
+        session['redirected'] = True
         return redirect(url_for('news'))
     else:
         error = response.get('Message')
@@ -1020,6 +1028,7 @@ def register_battle(invId):
     response = postToWebService(payload, "/games/duels/registry")
     if response.get('Status') is True:
         flash("You accepted this invitation.")
+        session['redirected'] = True
         return redirect(url_for('news'))
     else:
         error = response.get('Message')
