@@ -14,13 +14,18 @@
       <dd><input type="text" name="surname" value="{{ profile.Surname }}" required
               x-moz-errormessage="Enter Second Name" size="20" maxlength="128">
       <dt>Sex:<br />
-        <input type="radio" name="sex" value="male" required>Male<br />
-        <input type="radio" name="sex" value="female" required>Female
+        <input type="radio" name="sex" value="male" {% if profile.Sex == "male"%}checked{%endif%} required>Male<br />
+        <input type="radio" name="sex" value="female" {% if profile.Sex == "female" %}checked{%endif%} required>Female
       <dt>e-mail address:
       <dd><input type="email" name="e_mail" value="{{ profile.Email }}"
               size="25" required>
       <dt>Avatar address:
       <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
+      <dt>Pagination:
+      <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.Pagination }}>
+      <dt>Email Notice: <input type="checkbox" name="eNot" value=true {% if profile.EmailNotice %}checked=true{% endif %}>
+      <dt>Email Notice About Duels: <input type="checkbox" name="eNotD" value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
+      <dt>Email Notice About Tournaments: <input type="checkbox" name="eNotT" value=true {% if profile.EmailTournamentNotice %}checked=true{% endif %}>
       <dd><input type=submit value="Edit data!">
     </dl>
   </form>

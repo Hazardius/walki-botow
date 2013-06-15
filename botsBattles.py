@@ -631,12 +631,42 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            return redirect(url_for('show_user_profile', nick=payload['Login']))
+            if "eNot" in request.form:
+                eNot = True
+            else:
+                eNot = False
+            if "eNotD" in request.form:
+                eNotD = True
+            else:
+                eNotD = False
+            if "eNotT" in request.form:
+                eNotT = True
+            else:
+                eNotT = False
+            payload2 = {
+                "Pagination": request.form['pagination'],
+                "EmailNotice": eNot,
+                "EmailDuelNotice": eNotD,
+                "EmailTournamentNotice": eNotT
+            }
+            response2 = postToWebService(payload2, "/" + payload['Login']
+                + "/other")
+            if response2.get('Status') is True:
+                return redirect(url_for('show_user_profile', nick=payload[
+                    'Login']))
+            else:
+                error = response.get('Message') + " Profile partially edited!"
         else:
             error = response.get('Message')
     response = getFromWebService("/" + sanitize_html(edited) + "/about")
     if response.get('Status') is True:
         response.update({"nick": edited})
+        response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
+        if response2.get('Status') is True:
+            response.update(response2)
+            return render_template('edit_profile.html',
+                username=session['username'], error=error, edited=edited,
+                cMessages=check_messages(), profile=dict(response))
         return render_template('edit_profile.html',
             username=session['username'], error=error,
             cMessages=check_messages(), edited=edited, profile=dict(response))
