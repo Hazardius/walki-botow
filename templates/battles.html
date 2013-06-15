@@ -8,12 +8,12 @@
         <b>{{ battle.Player1 }}</b> vs. <b>{{ battle.Player2 }}</b></h2>
         </a>
   {% else %}
-    <li><em>You have no battles now.</em>
+    <li><em>You have no more battles.</em><br />
   {% endfor %}
+  {% if page>0 %}
+  <a href="{{ url_for('battles_p', page=(page-1)) }}">Previous page</a><br />
+  {% endif %}
   {% if battles %}
-      {% if page>0 %}
-      <a href="{{ url_for('battles_p', page=(page-1)) }}">Previous page</a><br />
-      {% endif %}
       {% if next %}
           <a href="{{ url_for('battles_p', page=(page+1)) }}">Next page</a>
       {% endif %}
