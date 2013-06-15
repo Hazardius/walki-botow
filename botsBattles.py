@@ -604,11 +604,6 @@ def show_user_profile(nick):
         error=error, cMessages=check_messages())
 
 
-#@app.route('/secret', methods=['GET', 'POST'])
-#def secret():
-    #return render_template('message.html', username=session['username'])
-
-
 @app.route('/edit_profile/<edited>', methods=['GET', 'POST'])
 def edit_profile(edited):
     if check_ws() is False:
@@ -676,6 +671,7 @@ def edit_profile(edited):
         response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
         if response2.get('Status') is True:
             response.update(response2)
+            response.update({"Pagination": session['pagination']})
             return render_template('edit_profile.html',
                 username=session['username'], error=error, edited=edited,
                 cMessages=check_messages(), profile=dict(response))
@@ -1116,6 +1112,13 @@ def new_tournament():
             error = response
     return render_template('new_tournament.html', username=session['username'],
         cMessages=check_messages(), error=error)
+
+# debug
+
+
+@app.route('/secret', methods=['GET', 'POST'])
+def secret():
+    return render_template('message.html', username=session['username'])
 
 # app start
 
