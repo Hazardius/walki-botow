@@ -17,6 +17,7 @@ import xml.etree.ElementTree as ET
 # configuration
 DEBUG = True
 SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\x1f'
+SECOND_SECRET_KEY = md5.new('Hazardius').hexdigest()
 
 import socket
 
@@ -51,7 +52,7 @@ def allowed_codeFile(filename):
 def getAtomFromWebService(newsID):
     try:
         f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
-            "?media=atom", auth=HTTPDigestAuth('Flask', 'Hazardius'))
+            "?media=atom", auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
         data = ET.fromstring(f.content)
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -84,7 +85,7 @@ def getAtomFromWebService(newsID):
 def getFromWebService(subpage):
     try:
         f = requests.get(WEBSERVICE_IP + subpage, auth=HTTPDigestAuth('Flask',
-            'Hazardius'))
+            SECOND_SECRET_KEY))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -118,7 +119,8 @@ def postToWebService(payload, subpage):
     try:
         f = requests.post(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen}, auth=HTTPDigestAuth('Flask', 'Hazardius'))
+            'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
+            SECOND_SECRET_KEY))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -152,7 +154,8 @@ def putToWebService(payload, subpage):
     try:
         f = requests.put(WEBSERVICE_IP + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen}, auth=HTTPDigestAuth('Flask', 'Hazardius'))
+            'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
+            SECOND_SECRET_KEY))
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -201,7 +204,7 @@ def sendFileToWebService(filename, subpage):
     try:
         response = requests.post(WEBSERVICE_IP + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
-            auth=HTTPDigestAuth('Flask', 'Hazardius'))
+            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -257,8 +260,8 @@ def not_found(error):
 
 def check_ws():
     try:
-        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask',
-            'Hazardius'))
+        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask', md5.new(
+            'Hazardius').hexdigest()))
     except requests.exceptions.ConnectionError:
         return False
     return r.status_code == 200
@@ -497,10 +500,7 @@ def login():
                 if response.get('Groups') is 1:
                     session['admin_box'] = True
                 session['username'] = request.form['username']
-                response2 = getFromWebService("/" + request.form['username']
-                    + "/other")
-                if response2.get('Status') is True:
-                    session['pagination'] = response2.get('Pagination')
+                session['pagination'] = 10
                 flash('You were logged in %s' % session['username'])
                 return redirect(url_for('news'))
             else:
@@ -512,7 +512,7 @@ def login():
 def logout():
     session.pop('logged_in', None)
     session.pop('username', None)
-    session.pop('pagination', 25)
+    session.pop('pagination', 10)
     session.pop('admin_box', None)
     flash('You were logged out')
     return redirect(url_for('news'))
@@ -627,10 +627,12 @@ def edit_profile(edited):
                 .encode('utf-8', 'ignore')),
             "Email": sanitize_html(request.form['e_mail']),
             "Sex": request.form['sex'],
-            "Avatar": sanitize_html(request.form['avatar'])
+            "Avatar": sanitize_html(request.form['avatar']),
+            "Editor": session['username']
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
+            session['pagination'] = int(request.form['pagination'])
             if "eNot" in request.form:
                 eNot = True
             else:
@@ -644,10 +646,10 @@ def edit_profile(edited):
             else:
                 eNotT = False
             payload2 = {
-                "Pagination": request.form['pagination'],
                 "EmailNotice": eNot,
                 "EmailDuelNotice": eNotD,
-                "EmailTournamentNotice": eNotT
+                "EmailTournamentNotice": eNotT,
+                "Editor": session['username']
             }
             response2 = postToWebService(payload2, "/" + payload['Login']
                 + "/other")
@@ -690,15 +692,15 @@ def users_p(page):
         return ban_error()
     error = None
     userRes = getFromWebService("/games/duels/" + session['username']
-        + "/" + str(page) + "/list")
+        + "/" + str(page) + "/" + str(session['pagination']) + "/list")
     if userRes.get('Status') is True:
         logins = []
-        for i in range(1, session['pagination']):
+        for i in range(1, session['pagination'] + 1):
             nextOne = userRes.get(str(i))
             if nextOne is not None:
                 logins.append(nextOne)
         nextP = False
-        if logins.count == session['pagination']:
+        if len(logins) == session['pagination']:
             nextP = True
         return render_template('users.html',
             cMessages=check_messages(), username=session['username'],
@@ -901,7 +903,8 @@ def view_battle(number):
                 conError = ""
                 r = requests.get(WEBSERVICE_IP + "/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/log",
-                    stream=True, auth=HTTPDigestAuth('Flask', 'Hazardius'))
+                    stream=True, auth=HTTPDigestAuth('Flask', md5.new(
+                    'Hazardius').hexdigest()))
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")
