@@ -21,6 +21,8 @@ SECOND_SECRET_KEY = md5.new('Hazardius').hexdigest()
 
 import socket
 
+lastRegistration = 0.0
+
 timeout = 10
 socket.setdefaulttimeout(timeout)
 
@@ -277,6 +279,16 @@ def check_spam():
     return True
 
 
+def check_regTime():
+    import time
+    global lastRegistration
+    prevRegistration = lastRegistration
+    lastRegistration = time.time()
+    if (lastRegistration - prevRegistration < 10.0):
+        return False
+    return True
+
+
 def check_ws():
     try:
         r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask',
@@ -458,24 +470,27 @@ def register():
         return ws_error()
     error = None
     if request.method == 'POST':
-        mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
-        payload = {
-            "Login": sanitize_html(request.form['username']
-                .encode('utf-8', 'ignore')),
-            "Password": mdpass.hexdigest(),
-            "Name": sanitize_html(request.form['name']
-                .encode('utf-8', 'ignore')),
-            "Surname": sanitize_html(request.form['surname']
-                .encode('utf-8', 'ignore')),
-            "Email": sanitize_html(request.form['e_mail']),
-            "Sex": request.form['sex']
-        }
-        response = postToWebService(payload, "/user/registration")
-        if response.get('Status') is True:
-            return render_template('message.html',
-                message="Check your e-mail account!")
+        if check_regTime() is True:
+            mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
+            payload = {
+                "Login": sanitize_html(request.form['username']
+                    .encode('utf-8', 'ignore')),
+                "Password": mdpass.hexdigest(),
+                "Name": sanitize_html(request.form['name']
+                    .encode('utf-8', 'ignore')),
+                "Surname": sanitize_html(request.form['surname']
+                    .encode('utf-8', 'ignore')),
+                "Email": sanitize_html(request.form['e_mail']),
+                "Sex": request.form['sex']
+            }
+            response = postToWebService(payload, "/user/registration")
+            if response.get('Status') is True:
+                return render_template('message.html',
+                    message="Check your e-mail account!")
+            else:
+                error = response.get('Message')
         else:
-            error = response.get('Message')
+            error = "One registration per 10 seconds allowed."
     return render_template('register.html', error=error)
 
 
@@ -1200,5 +1215,5 @@ def new_tournament():
 
 # app start
 
-if __name__ == '____':
+if __name__ == '__main__':
     app.run(host='0.0.0.0')
