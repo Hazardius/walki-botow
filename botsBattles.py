@@ -32,7 +32,7 @@ TESTING = False
 
 # list of allowed extensions
 ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'cs', 'p'])
-ALLOWED_EXTENSIONS_DOC = set(['zip'])
+ALLOWED_EXTENSIONS_DOC = set(['html'])
 UPLOAD_FOLDER = 'temp'
 
 VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
@@ -695,6 +695,12 @@ def show_user_profile(nick):
     response = getFromWebService("/" + sanitize_html(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
+        response2 = getFromWebService("/" + sanitize_html(nick) + "/groups")
+        allG = []
+        if response2.get('Status') is True:
+            perCount = response2.get('Count')
+            for i in range(1, perCount + 1):
+                allG.append(response2.get(str(i)))
         if 'Avatar' in response:
             if response.get('Avatar') == response.get('Email'):
                 # Found a Gravatar
@@ -717,7 +723,7 @@ def show_user_profile(nick):
         canEdit = check_perm('edit_profile/' + nick)
         return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=dict(response),
-            canEdit=canEdit)
+            canEdit=canEdit, groups=allG)
     else:
         error = response.get('Message')
     return render_template('message.html', username=session['username'],
