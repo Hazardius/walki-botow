@@ -729,15 +729,21 @@ def admin_box():
 
 @app.route('/battles')
 def battles():
+    return battles_p(0)
+
+
+@app.route('/battles/<int:page>')
+def battles_p(page):
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
         return ban_error()
     error = None
-    response = getFromWebService("/" + session['username'] + "/duels")
+    response = getFromWebService("/" + session['username'] + "/" + str(page) +
+        "/" + str(session['pagination']) + "/duels")
     if response.get('Status') is True:
         battles = []
-        for i in range(1, session['pagination']):
+        for i in range(1, session['pagination'] + 1):
             nextOne = response.get(str(i))
             if nextOne is not None:
                 battleInfo = getFromWebService("/games/" + str(nextOne)
@@ -746,12 +752,15 @@ def battles():
                 if battleInfo.get('Status') is True:
                     battles.append(dict(battleInfo))
         battles = sorted(battles, key=lambda bat: bat['Nr'])
+        nextP = False
+        if len(battles) == session['pagination']:
+            nextP = True
         return render_template('battles.html', username=session['username'],
-            battles=battles, cMessages=check_messages())
+            battles=battles, cMessages=check_messages(), page=page, next=nextP)
     else:
         error = response.get('Message')
     return render_template('battles.html', username=session['username'],
-        error=error, cMessages=check_messages())
+        error=error, cMessages=check_messages(), page=page, next=False)
 
 
 @app.route('/choose_oponent')

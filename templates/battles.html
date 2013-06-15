@@ -10,6 +10,14 @@
   {% else %}
     <li><em>You have no battles now.</em>
   {% endfor %}
+  {% if battles %}
+      {% if page>0 %}
+      <a href="{{ url_for('battles_p', page=(page-1)) }}">Previous page</a><br />
+      {% endif %}
+      {% if next %}
+          <a href="{{ url_for('battles_p', page=(page+1)) }}">Next page</a>
+      {% endif %}
+  {% endif %}
   </ul>
   <a href="{{ url_for('choose_oponent') }}">Start a duel</a><br />
   <a href="{{ url_for('help', gamefile='KPN.html') }}">How to play: Rock-Paper-Scissors</a><br />
