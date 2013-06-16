@@ -18,6 +18,7 @@ import xml.etree.ElementTree as ET
 DEBUG = True
 SECRET_KEY = '\xc0\xd7O\xb3\'q\\\x19m\xb3uW\x16\xc2\r\x88\x91\xdbIv\x8d\x8f\xe9\x1f'
 SECOND_SECRET_KEY = md5.new('Hazardius').hexdigest()
+AUTH_DATA = HTTPDigestAuth('Flask', SECOND_SECRET_KEY)
 
 import socket
 
@@ -86,8 +87,7 @@ def getAtomFromWebService(newsID):
 
 def getFromWebService(subpage):
     try:
-        f = requests.get(WEBSERVICE_IP + "/Flask" + subpage,
-            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+        f = requests.get(WEBSERVICE_IP + "/Flask" + subpage, auth=AUTH_DATA)
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -151,8 +151,7 @@ def postToWebService(payload, subpage):
     try:
         f = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
-            SECOND_SECRET_KEY))
+            'Content-Length': clen}, auth=AUTH_DATA)
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -186,8 +185,7 @@ def putToWebService(payload, subpage):
     try:
         f = requests.put(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
-            'Content-Length': clen}, auth=HTTPDigestAuth('Flask',
-            SECOND_SECRET_KEY))
+            'Content-Length': clen}, auth=AUTH_DATA)
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -236,7 +234,8 @@ def sendFileToWebServiceT(fileData, subpage):
     try:
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
-            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+            auth=AUTH_DATA)
+        print response.content
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -272,7 +271,7 @@ def sendFileToWebService(filename, subpage):
     try:
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
-            auth=HTTPDigestAuth('Flask', SECOND_SECRET_KEY))
+            auth=AUTH_DATA)
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -335,7 +334,7 @@ def not_found(error):
             errorMe="The page You're looking for isn't here!")
 
 
-@app.route("/message/mess")
+@app.route("/message/<mess>")
 def message(mess):
     if 'redirected' not in session:
         return ban_error()
@@ -374,8 +373,7 @@ def check_regTime():
 
 def check_ws():
     try:
-        r = requests.head(WEBSERVICE_IP, auth=HTTPDigestAuth('Flask',
-            SECOND_SECRET_KEY))
+        r = requests.head(WEBSERVICE_IP, auth=AUTH_DATA)
     except requests.exceptions.ConnectionError:
         return False
     return r.status_code == 200
@@ -604,6 +602,8 @@ def remind_act_code():
                 mess="Activation link successfuly re-sent!"))
         else:
             error = response.get('Message')
+        if error is None:
+            error = ''
         session['redirected'] = True
         return redirect(url_for('message', mess=error))
     return render_template('remind.html', error=error)
@@ -628,6 +628,8 @@ def try_to_activate(webHash):
             mess="User successfully activated!"))
     else:
         error = response.get('Message')
+    if error is None:
+        error = ''
     session['redirected'] = True
     return redirect(url_for('message', mess=error))
 
@@ -916,6 +918,8 @@ def edit_profile(edited):
             username=session['username'], error=error,
             cMessages=check_messages(), edited=edited, profile=dict(response))
     else:
+        if error is None:
+            error = ''
         session['redirected'] = True
         return redirect(url_for('message', mess=error))
 
@@ -1173,8 +1177,7 @@ def view_battle(number):
                     sanitize_html(gameName) + "/" + str(number) + "/duel/log")
                 r = requests.get(WEBSERVICE_IP + "/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/duel/log",
-                    stream=True, auth=HTTPDigestAuth('Flask',
-                    SECOND_SECRET_KEY))
+                    stream=True, auth=AUTH_DATA)
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")
@@ -1266,7 +1269,6 @@ def send_code(idG, game):
                 #response = sendFileToWebService(locFilePath, "/code/duel/upl" +
                     #"oad/" + game + "/" + str(idG) + "/" + session['username']
                     #+ "/" + filename)
-                print response
                 if response.get('Status') is True:
                     #os.remove(locFilePath)
                     session['redirected'] = True
