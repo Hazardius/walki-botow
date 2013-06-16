@@ -1148,8 +1148,10 @@ def view_battle(number):
         if response.get('Finished') is True:
             try:
                 conError = ""
+                print (WEBSERVICE_IP + "/code/" +
+                    sanitize_html(gameName) + "/" + str(number) + "/duel/log")
                 r = requests.get(WEBSERVICE_IP + "/code/" +
-                    sanitize_html(gameName) + "/" + str(number) + "/log",
+                    sanitize_html(gameName) + "/" + str(number) + "/duel/log",
                     stream=True, auth=HTTPDigestAuth('Flask',
                     SECOND_SECRET_KEY))
                 if r.status_code == 200:
@@ -1305,12 +1307,33 @@ def tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         tour = response
+        import datetime
+        now = datetime.datetime.now()
+        rDate = tour.get('Begin').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        if (regStart < now):
+            regState = True
+        else:
+            regState = False
+        rDate = tour.get('End').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        if (regStart < now):
+            regState = False
+        if tour.get('RegType') == 'Invitation':
+            # Additional data needed
+            cATA = False
         cATA = False
         if 'isSU' in session:
             cATA = True
         return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
-            'username'], error=error)
+            'username'], error=error, regState=regState)
     error = response.get('Message')
     return render_template('tournament.html', tourId=tourId,
         cMessages=check_messages(), username=session['username'], error=error)

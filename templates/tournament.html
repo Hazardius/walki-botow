@@ -9,8 +9,9 @@
   <dt>Rules:<dd>{{ tour.Rules }}
   <dt>Registration type:<dd>{{ tour.RegType }}
   <dt>End of registration:<dd>{{ tour.End }}
+  <dt>Start of tournament:<dd>{{ tour.Start }}
     {% if tour.RegType == "Invitation" %}
-    <dt><form method="link" action="{{ url_for('sign_f_tournament', invId=tourId) }}">
+    <dt><form method="link" action="{{ url_for('sign_f_tournament', invID=tourId) }}">
       <dt><input type="submit" value="Invite someone!">
     </form>
     {% endif %}
@@ -20,7 +21,7 @@
     </form>
     {% endif %}
     {% if cATA %}
-    <dt><form method="link" action="{{ url_for('new_duel', invId=tourId) }}">
+    <dt><form method="link" action="{{ url_for('sign_f_tournament', tourID=tourId) }}">
       <dt><input type="submit" value="Add Tournament Admin!">
     </form>
     {% endif %}
