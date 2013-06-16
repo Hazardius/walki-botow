@@ -1349,16 +1349,6 @@ def new_tournament():
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
-    #payload = {
-        #"Editor": session['username'],
-        #"Count": 1,
-        #"1": "Super admin"
-    #}
-    #response = postToWebService(payload, "/Hazardius/groups")
-    #if response.get('Status') is True:
-        #return render_template('message.html', username=session['username'],
-            #message="PRZESLANE!")
-    #error = response.get('Message')
     #return render_template('message.html', username=session['username'],
         #message=error)
 
