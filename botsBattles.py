@@ -804,12 +804,13 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            if (int(request.form['pagination']) < 4):
-                session['pagination'] = 4
-            elif (int(request.form['pagination']) > 25):
-                session['pagination'] = 25
-            else:
-                session['pagination'] = int(request.form['pagination'])
+            if (edited == session['username']):
+                if (int(request.form['pagination']) < 4):
+                    session['pagination'] = 4
+                elif (int(request.form['pagination']) > 25):
+                    session['pagination'] = 25
+                else:
+                    session['pagination'] = int(request.form['pagination'])
             if "eNot" in request.form:
                 eNot = True
             else:
@@ -1331,6 +1332,12 @@ def tournament(tourId):
         cATA = False
         if 'isSU' in session:
             cATA = True
+        else:
+            admList = getFromWebService("/games/tournaments/" + str(tourId) +
+                "/admins")
+            for i in range(1, admList.get('Count') + 1):
+                if admList.get(str(i)) == session['username']:
+                    cATA = True
         return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
             'username'], error=error, regState=regState)
@@ -1375,6 +1382,7 @@ def new_tournament():
             }
             response2 = postToWebService(payload, "/games/tournaments/"
                 + str(tourID) + "/info")
+            #TODO: REACTION FOR RESPONSE2
             print response2
             return render_template('message.html', cMessages=check_messages(),
                 message="New tournament successfully created!", error=error)
@@ -1384,10 +1392,129 @@ def new_tournament():
         cMessages=check_messages(), error=error)
 
 
-@app.route('/secret', methods=['GET', 'POST'])
-def sign_f_tournament(tourId):
+@app.route('/ata/<int:tourId>', methods=['GET'])
+def add_tour_admin(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    userRes = getFromWebService("/games/duels/" + session['username']
+        + "/0/100/list")
+    if userRes.get('Status') is True:
+        logins = []
+        for i in range(1, userRes.get('Count') + 1):
+            nextOne = userRes.get(str(i))
+            if nextOne is not None:
+                logins.append(nextOne)
+        return render_template('choose_user.html', nextF="tAdmin",
+            cMessages=check_messages(), username=session['username'],
+            users=logins, cuMes="Add New Admin", id=tourId)
     return render_template('message.html', username=session['username'],
-        message=("SIGNFTOUR " + tourId))
+        message=error)
+
+
+@app.route('/ata', methods=['POST'])
+def tAdmin():
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = ""
+    tourId = request.form['id']
+    player = sanitize_html(request.form['chosenOne'])
+    payload = {
+        "Count": 1,
+        "1": player
+    }
+    response = postToWebService(payload, "/games/tournaments/" + tourId +
+        "/admins")
+    print response
+    return render_template('message.html', username=session['username'],
+        message=error + " " + str(tourId) + ". " + player)
+
+
+@app.route('/sft/<int:tourId>', methods=['GET'])
+def sign_f_tournament(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
+    if response.get('Status') is True:
+        if response.get('RegType') == 'Free':
+            # Don't know WS adress :(
+            error = "free"
+        else:
+            error = "Wrong type of Tournament Registration Type in a response!"
+    else:
+        error = response.get('Message')
+    return render_template('message.html', username=session['username'],
+        message=error)
+
+
+@app.route('/sit/<int:tourId>', methods=['GET'])
+def sign_i_tournament(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
+    if response.get('Status') is True:
+        if response.get('RegType') == 'Invitation':
+            userRes = getFromWebService("/games/duels/" + session['username']
+                + "/0/100/list")
+            if userRes.get('Status') is True:
+                logins = []
+                for i in range(1, userRes.get('Count') + 1):
+                    nextOne = userRes.get(str(i))
+                    if nextOne is not None:
+                        logins.append(nextOne)
+                return render_template('choose_user.html', users=logins,
+                    nextF="sign_ip_tournament", cMessages=check_messages(),
+                    username=session['username'], cuMes="Invite User",
+                    id=tourId)
+            error = "invitation " + tourId
+        else:
+            error = "Wrong type of Tournament Registration Type in a response!"
+    else:
+        error = response.get('Message')
+    return render_template('message.html', username=session['username'],
+        message=error)
+
+
+@app.route('/sit', methods=['POST'])
+def sign_ip_tournament():
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    tourId = request.form['id']
+    player = sanitize_html(request.form['chosenOne'])
+    response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
+    if response.get('Status') is True:
+        if response.get('RegType') == 'Invitation':
+            # Don't know WS adress :(
+            error = "invitation" + sanitize_html(player)
+        else:
+            error = "Wrong type of Tournament Registration Type in a response!"
+    else:
+        error = response.get('Message')
+    return render_template('message.html', username=session['username'],
+        message=error)
 
 # debug
 

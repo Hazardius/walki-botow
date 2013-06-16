@@ -27,8 +27,10 @@
               size="25" required>
       <dt>Avatar address:
       <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
+      {% if session['username'] == edited %}
       <dt>Pagination:
       <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.Pagination }}>
+      {% endif %}
       <dt>Email Notice: <input type="checkbox" name="eNot" value=true {% if profile.EmailNotice %}checked=true{% endif %}>
       <dt>Email Notice About Duels: <input type="checkbox" name="eNotD" value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
       <dt>Email Notice About Tournaments: <input type="checkbox" name="eNotT" value=true {% if profile.EmailTournamentNotice %}checked=true{% endif %}>
