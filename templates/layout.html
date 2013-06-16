@@ -71,7 +71,9 @@
       <a href="{{ url_for('tournaments') }}">Tournaments</a>
       <a href="{{ url_for('users') }}">Users</a>
       <a href="{{ url_for('user') }}">{{ username }}</a>
+      {% if cMessages %}
       <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
+      {% endif %}
     {% endif %}
     {% if "Adding news's" in session.permissions or "Create tournaments" in session.permissions %}
       <a href="{{ url_for('admin_box') }}">Add new content</a>

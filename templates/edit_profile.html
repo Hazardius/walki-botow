@@ -3,7 +3,7 @@
   <script src="{{ url_for('static', filename='main.js') }}" type="text/javascript" charset=utf-8"></script>
 {% endblock %}
 {% block body %}
-  <h2>Edit your data {{ username }}</h2>
+  <h2>Edit data</h2>
   {% if error %}<p class=error>{{ error }}{% endif %}
   <form action="{{ url_for('edit_profile', edited=edited) }}" method=post>
     <dl>

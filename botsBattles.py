@@ -334,6 +334,18 @@ def not_found(error):
         return render_template('error.html', errorNo=404,
             errorMe="The page You're looking for isn't here!")
 
+
+@app.route("/message/mess")
+def message(mess):
+    if 'redirected' not in session:
+        return ban_error()
+    session.pop('redirected', None)
+    if 'username' in session:
+        return render_template('message.html', message=mess, username=session[
+            'username'], cMessages=check_messages())
+    else:
+        return render_template('message.html', message=mess)
+
 # page methods
 
 
@@ -432,9 +444,9 @@ def help(gamefile):
 @app.route('/')
 def news():
     if 'redirected' not in session:
-        session.pop('redirected', None)
         if check_spam() is False:
             return spam_error()
+    session.pop('redirected', None)
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -496,20 +508,20 @@ def add_news():
     if is_ban() is True:
         return ban_error()
     if check_perm('admin') is False:
-        return render_template('message.html', cMessages=check_messages(),
-            message="You are not permitted to see that page!")
+        session['redirected'] = True
+        return redirect(url_for('message',
+            mess="You are not permitted to see that page!"))
     error = None
     if request.method == 'POST':
         import time
         dateTime = time.strftime("%Y-%m-%d", time.gmtime())
-        try:
-            pub = request.form['pubDate'].encode('ascii')
-        except KeyError:
+        if 'pubDate' in request.form:
+            pub = request.form['pubDate']
+        else:
             pub = dateTime
-        try:
-            test = request.form['enaCom']
+        if 'enaCom' in request.form:
             test = True
-        except KeyError:
+        else:
             test = False
         payload = {
             "Publish": pub,
@@ -526,8 +538,9 @@ def add_news():
         }
         response = postToWebService(payload, "/news/create")
         if response.get('Status') is True:
-            return render_template('message.html', cMessages=check_messages(),
-                message="New news successfully created!", error=error)
+            session['redirected'] = True
+            return redirect(url_for('message',
+                mess="New news successfully created!"))
         else:
             error = response
     return render_template('add_news.html', username=session['username'],
@@ -561,8 +574,9 @@ def register():
             }
             response = postToWebService(payload, "/user/registration")
             if response.get('Status') is True:
-                return render_template('message.html',
-                    message="Check your e-mail account!")
+                session['redirected'] = True
+                return redirect(url_for('message',
+                    mess="Check your e-mail account!"))
             else:
                 error = response.get('Message')
         else:
@@ -585,11 +599,13 @@ def remind_act_code():
         }
         response = postToWebService(payload, "/reactivate")
         if response.get('Status') is True:
-            return render_template('message.html',
-                message="Activation link successfuly re-sent!")
+            session['redirected'] = True
+            return redirect(url_for('message',
+                mess="Activation link successfuly re-sent!"))
         else:
             error = response.get('Message')
-        return render_template('message.html', message=error)
+        session['redirected'] = True
+        return redirect(url_for('message', mess=error))
     return render_template('remind.html', error=error)
 
 
@@ -607,11 +623,13 @@ def try_to_activate(webHash):
     }
     response = postToWebService(payload, "/user/registration/activation")
     if response.get('Status') is True:
-        return render_template('message.html',
-            message="User successfuly activated!")
+        session['redirected'] = True
+        return redirect(url_for('message',
+            mess="User successfully activated!"))
     else:
         error = response.get('Message')
-    return render_template('message.html', message=error)
+    session['redirected'] = True
+    return redirect(url_for('message', mess=error))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -678,16 +696,19 @@ def logout():
 
 
 def check_messages():
-    if check_perm('messages/' + session['username']) is False:
-        return render_template('message.html', cMessages=check_messages(),
-            message="You are not permitted to see that page!")
-    error = None
-    response = getFromWebService("/notice/" + session['username'] + "/new")
-    if response.get('Status') is True:
-        return response.get('Count')
+    if 'username' in session:
+        if check_perm('messages/' + session['username']) is False:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are not permitted to see that page!")
+        error = None
+        response = getFromWebService("/notice/" + session['username'] + "/new")
+        if response.get('Status') is True:
+            return response.get('Count')
+        else:
+            error = "Problem with messages!"
+        return error
     else:
-        error = "Problem with messages!"
-    return error
+        return None
 
 
 @app.route('/post_box')
@@ -725,9 +746,9 @@ def user():
 @app.route('/user/<nick>')
 def show_user_profile(nick):
     if 'redirected' not in session:
-        session.pop('redirected', None)
         if check_spam() is False:
             return spam_error()
+    session.pop('redirected', None)
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -860,7 +881,6 @@ def edit_profile(edited):
         response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
         if response2.get('Status') is True:
             response.update(response2)
-            response.update({"Pagination": session['pagination']})
             if 'Change users profile' in session['permissions']:
                 response3 = getFromWebService('/user/groups')
                 if response3.get('Status') is True:
@@ -896,8 +916,8 @@ def edit_profile(edited):
             username=session['username'], error=error,
             cMessages=check_messages(), edited=edited, profile=dict(response))
     else:
-        return render_template('message.html', username=session['username'],
-            error=error, cMessages=check_messages())
+        session['redirected'] = True
+        return redirect(url_for('message', mess=error))
 
 # page methods - users list
 
@@ -1214,8 +1234,6 @@ def send_code(idG, game):
         return spam_error()
     if check_ws() is False:
         return ws_error()
-    if is_ban() is True:
-        return ban_error()
     error = None
     if request.method == 'POST':
         if request.form['codeForm'] == 'text':
@@ -1226,14 +1244,12 @@ def send_code(idG, game):
                 "GameID": idG,
                 "Game": sanitize_html(game),
                 "Code": request.form['code'],
-                "FileName": sanitize_html(str(idG) + str(game) + session[
-                    'username']) + "." + exten
+                "FileName": sanitize_html(request.form['fileName'])
             }
             response = postToWebService(payload, "/code/duel/upload")
             if response.get('Status') is True:
-                return render_template('message.html', message="Code sent!",
-                    error=error, cMessages=check_messages(),
-                    username=session['username'])
+                session['redirected'] = True
+                return redirect(url_for('message', mess="Code sent!"))
             else:
                 error = response
         elif request.form['codeForm'] == 'file':
@@ -1253,9 +1269,9 @@ def send_code(idG, game):
                 print response
                 if response.get('Status') is True:
                     #os.remove(locFilePath)
-                    return render_template('message.html',
-                        username=session['username'], error=error,
-                        message="File uploaded!", cMessages=check_messages())
+                    session['redirected'] = True
+                    return redirect(url_for('message',
+                        mess="File uploaded!"))
                 else:
                     error = response.get('Message')
                 #os.remove(locFilePath)
@@ -1335,6 +1351,7 @@ def tournament(tourId):
         else:
             admList = getFromWebService("/games/tournaments/" + str(tourId) +
                 "/admins")
+            print admList
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
@@ -1384,8 +1401,9 @@ def new_tournament():
                 + str(tourID) + "/info")
             #TODO: REACTION FOR RESPONSE2
             print response2
-            return render_template('message.html', cMessages=check_messages(),
-                message="New tournament successfully created!", error=error)
+            session['redirected'] = True
+            return redirect(url_for('message',
+                mess="New tournament successfuly created!"))
         else:
             error = response
     return render_template('new_tournament.html', username=session['username'],
@@ -1433,7 +1451,10 @@ def tAdmin():
     }
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
-    print response
+    if response.get('Status') is True:
+        session['redirected'] = True
+        return redirect(url_for('message',
+            mess="User " + player + " is now an admin in this tournament."))
     return render_template('message.html', username=session['username'],
         message=error + " " + str(tourId) + ". " + player)
 
@@ -1450,8 +1471,14 @@ def sign_f_tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         if response.get('RegType') == 'Free':
-            # Don't know WS adress :(
-            error = "free"
+            response2 = getFromWebService("/games/tournaments/" + str(tourId) +
+                "/registry")
+            print response2
+            if response2.get('Status') is True:
+                session['redirected'] = True
+                return redirect(url_for('message',
+                    mess="You signed in!"))
+            error = response2.get('Message')
         else:
             error = "Wrong type of Tournament Registration Type in a response!"
     else:
@@ -1484,13 +1511,13 @@ def sign_i_tournament(tourId):
                     nextF="sign_ip_tournament", cMessages=check_messages(),
                     username=session['username'], cuMes="Invite User",
                     id=tourId)
-            error = "invitation " + tourId
+            error = "Error downloading users. " + userRes.get('Message')
         else:
             error = "Wrong type of Tournament Registration Type in a response!"
     else:
         error = response.get('Message')
-    return render_template('message.html', username=session['username'],
-        message=error)
+    return render_template('message.html', cMessages=check_messages(), message=
+        "", error=error)
 
 
 @app.route('/sit', methods=['POST'])
@@ -1509,6 +1536,9 @@ def sign_ip_tournament():
         if response.get('RegType') == 'Invitation':
             # Don't know WS adress :(
             error = "invitation" + sanitize_html(player)
+            #session['redirected'] = True
+            #return redirect(url_for('message',
+                #mess="You signed in!"))
         else:
             error = "Wrong type of Tournament Registration Type in a response!"
     else:
@@ -1519,12 +1549,12 @@ def sign_ip_tournament():
 # debug
 
 
-@app.route('/secret', methods=['GET', 'POST'])
-def secret():
-    request = getFromWebService("/games/tournaments/24/registry")
-    print request
-    return render_template('message.html', username=session['username'],
-        message=request)
+#@app.route('/secret', methods=['GET', 'POST'])
+#def secret():
+    #request = getFromWebService("/games/tournaments/24/registry")
+    #print request
+    #return render_template('message.html', username=session['username'],
+        #message=request)
 
 # app start
 
