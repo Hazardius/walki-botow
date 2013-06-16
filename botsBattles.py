@@ -647,7 +647,7 @@ def login():
                     perCount = response2.get('Count')
                     for i in range(1, perCount + 1):
                         if response2.get(str(i)) == "Super admin":
-                            session['isSUDO'] = True
+                            session['isSU'] = True
                 perCount = response.get('Count')
                 permissions = []
                 for i in range(1, perCount + 1):
@@ -670,7 +670,7 @@ def logout():
     session.pop('username', None)
     session.pop('pagination', 10)
     session.pop('permissions', None)
-    session.pop('isSUDO', None)
+    session.pop('isSU', None)
     flash('You were logged out')
     return redirect(url_for('news'))
 
@@ -863,30 +863,31 @@ def edit_profile(edited):
             if 'Change users profile' in session['permissions']:
                 response3 = getFromWebService('/user/groups')
                 if response3.get('Status') is True:
-                    perCount = response3.get('Count')
+                    groCount = response3.get('Count')
                     allG = []
-                    for i in range(1, perCount + 1):
+                    for i in range(1, groCount + 1):
                         group = response3.get(str(i)).get('Name')
                         if group == "Super admin":
-                            if 'isSUDO' in session:
+                            if 'isSU' in session:
                                 allG.append(group)
                         else:
                             allG.append(group)
-                    response4 = getFromWebService('/' +  +'/groups')
+                    response4 = getFromWebService('/' + sanitize_html(edited) +
+                        '/retrieve')
                     if response4.get('Status') is True:
-                        perCount = response3.get('Count')
-                        allG = []
-                        for i in range(1, perCount + 1):
-                            group = response3.get(str(i)).get('Name')
-                            if group == "Super admin":
-                                if 'isSUDO' in session:
-                                    allG.append(group)
-                            else:
-                                allG.append(group)
+                        ugrCount = response4.get('Count')
+                        usrG = []
+                        for i in range(1, ugrCount + 1):
+                            group = response4.get(str(i))
+                            usrG.append(group)
+                        return render_template('edit_profile.html',
+                            username=session['username'], error=error,
+                            edited=edited, cMessages=check_messages(),
+                            profile=dict(response), allG=allG, usrG=usrG)
                     return render_template('edit_profile.html',
                         username=session['username'], error=error,
                         edited=edited, cMessages=check_messages(),
-                        profile=dict(response), allG=allG, usrG=usrG)
+                        profile=dict(response))
             return render_template('edit_profile.html',
                 username=session['username'], error=error, edited=edited,
                 cMessages=check_messages(), profile=dict(response))
@@ -1304,9 +1305,13 @@ def tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         tour = response
-        return render_template('tournament.html', tourId=tourId, cATA=False,
+        cATA = False
+        if 'isSU' in session:
+            cATA = True
+        return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
             'username'], error=error)
+    error = response.get('Message')
     return render_template('tournament.html', tourId=tourId,
         cMessages=check_messages(), username=session['username'], error=error)
 
