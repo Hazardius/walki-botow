@@ -29,6 +29,7 @@ socket.setdefaulttimeout(timeout)
 
 # address of WebService server
 WEBSERVICE_IP = "http://77.65.54.170:9005"
+#WEBSERVICE_IP = "http://localhost:9005"
 TESTING = False
 
 # list of allowed extensions
@@ -228,42 +229,41 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
-def sendFileToWebServiceT(fileData, subpage):
-    error = None
-    data = fileData
-    try:
-        print "a"
-        response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
-            headers={'Content-Type': 'application/octet-stream'},
-            auth=AUTH_DATA)
-        print response.content
-        data = response.json()
-    except URLError, e:
-        if hasattr(e, 'reason'):
-            error = e.reason
-            app.logger.error('We failed to reach a server.\nReason: ' + error)
-        elif hasattr(e, 'code'):
-            error = e.code
-            app.logger.error('The server couldn\'t fulfill the request.'
-                + '\nError code:' + error)
-    except ValueError, e:
-        if hasattr(e, 'reason'):
-            error = e.reason
-            app.logger.error('Value Error has been found.\nReason: ' + error)
-        elif hasattr(e, 'code'):
-            error = e.code
-            app.logger.error('Value Error has been found.\nError code:' + error)
-        else:
-            error = e
-    except AttributeError, e:
-        error = "No JSON as a response.\nResponse: " + str(response)
-    except requests.exceptions.ConnectionError, e:
-        error = "[SendFile]Connection Error! " + str(e)
-        app.logger.error(error)
-    else:
-        return data
-    errorMessage = {"Status": False, "Message": error}
-    return errorMessage
+#def sendFileToWebServiceT(fileData, subpage):
+    #error = None
+    #data = fileData
+    #try:
+        #response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
+            #headers={'Content-Type': 'application/octet-stream'},
+            #auth=AUTH_DATA)
+        #print response.content
+        #data = response.json()
+    #except URLError, e:
+        #if hasattr(e, 'reason'):
+            #error = e.reason
+            #app.logger.error('We failed to reach a server.\nReason: ' + error)
+        #elif hasattr(e, 'code'):
+            #error = e.code
+            #app.logger.error('The server couldn\'t fulfill the request.'
+                #+ '\nError code:' + error)
+    #except ValueError, e:
+        #if hasattr(e, 'reason'):
+            #error = e.reason
+            #app.logger.error('Value Error has been found.\nReason: ' + error)
+        #elif hasattr(e, 'code'):
+            #error = e.code
+            #app.logger.error('Value Error has been found.\nError code:' + error)
+        #else:
+            #error = e
+    #except AttributeError, e:
+        #error = "No JSON as a response.\nResponse: " + str(response)
+    #except requests.exceptions.ConnectionError, e:
+        #error = "[SendFile]Connection Error! " + str(e)
+        #app.logger.error(error)
+    #else:
+        #return data
+    #errorMessage = {"Status": False, "Message": error}
+    #return errorMessage
 
 
 def sendFileToWebService(filename, subpage):
@@ -288,7 +288,8 @@ def sendFileToWebService(filename, subpage):
             app.logger.error('Value Error has been found.\nReason: ' + error)
         elif hasattr(e, 'code'):
             error = e.code
-            app.logger.error('Value Error has been found.\nError code:' + error)
+            app.logger.error('Value Error has been found.\nError code:'
+                + error)
         else:
             error = e
     except AttributeError, e:
@@ -1258,24 +1259,24 @@ def send_code(idG, game):
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
                 filename = secure_filename(codeFile.filename)
-                #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                    #filename)
-                #locFilePath = os.path.normpath(locFilePath)
-                #codeFile.save(locFilePath)
-                response = sendFileToWebServiceT(codeFile, "/code/duel/upl" +
-                    "oad/" + game + "/" + str(idG) + "/" + session['username']
-                    + "/" + filename)
-                #response = sendFileToWebService(locFilePath, "/code/duel/upl" +
+                locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    filename)
+                locFilePath = os.path.normpath(locFilePath)
+                codeFile.save(locFilePath)
+                #response = sendFileToWebServiceT(codeFile, "/code/duel/upl" +
                     #"oad/" + game + "/" + str(idG) + "/" + session['username']
                     #+ "/" + filename)
+                response = sendFileToWebService(locFilePath, "/code/duel/upl" +
+                    "oad/" + game + "/" + str(idG) + "/" + session['username']
+                    + "/" + filename)
                 if response.get('Status') is True:
-                    #os.remove(locFilePath)
+                    os.remove(locFilePath)
                     flash("File uploaded!")
                     session['redirected'] = True
                     return redirect(url_for('news'))
                 else:
                     error = response.get('Message')
-                #os.remove(locFilePath)
+                os.remove(locFilePath)
             else:
                 error = 'File format not valid!'
                 app.logger.error(error)
