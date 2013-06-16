@@ -7,9 +7,7 @@
   {% if 'Create tournaments' in session.permissions %}
   <a href="{{ url_for('new_tournament') }}">Create new tournament</a><br />
   {% endif %}
-<!--
-  {% if 'Adding games servers' in session.permissions %}
+  <!--{% if 'Adding games servers' in session.permissions %}
   <a href="{{ url_for('add_game') }}">Add new game</a>
-  {% endif %}
--->
+  {% endif %}-->
 {% endblock %}

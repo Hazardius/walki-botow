@@ -1551,12 +1551,12 @@ def sign_ip_tournament():
 # add games
 
 
-#@app.route('/aGame', methods=['GET', 'POST'])
-#def add_game():
+@app.route('/aGame', methods=['GET', 'POST'])
+def add_game():
     #if request.method == 'POST':
-        #flash("Add game!")
-        #session['redirected'] = True
-        #return redirect(url_for('news'))
+    flash("Add game!")
+    session['redirected'] = True
+    return redirect(url_for('news'))
     #return render_template('add_game.html', cMessages=check_messages(),
         #username=session['username'])
 
