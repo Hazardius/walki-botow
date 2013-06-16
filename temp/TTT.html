@@ -1,32 +1,52 @@
-Tworzenie bota do gry w Kółko i Krzyżyk
-a)  Rozpoczęcie rozgrywki
-Wymaga się od twórcy danego bota stworzenia tablicy dwuwymiarowej
-o wymiarach 3x3 w celu późniejszego odwzorowania ruchów rywala.
-Tablica powinna być indeksowana od zera, a nie od jedynki!!!
-
-Bot na samym początku rozgrywki otrzymuje na strumień wejściowy komunikat:
-1. Start, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Start\n.
-W tej sytuacji, to nasz bot zaczyna, a rywal czeka na wykonanie przez naszego bota ruchu.
-
-2. X Y, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco:
-X Y\n, gdzie X odpowiada pierwszemu wymiarowi tablicy dwuwymiarowej, a Y odpowiada drugiemu wymiarowi. Mówiąc innymi słowami, bot otrzymuje współrzędne ruchu przeciwnika, rozdzielone znakiem spacji.
-Zatem należy uwzględnić podczas tworzenia bota dwa możliwe scenariusze rozpoczęcia rozgrywki.
-b)  W trakcie rozgrywki
-Po rozpoczęciu rozgrywki (patrz podpunkt a) następuje gra turowa, czyli bot czeka na wykonanie ruchu przez rywala, a dopiero potem następuje jego kolej na dokonanie ruchu, podczas gdy rywal oczekuje wtedy na ruch naszego bota.
-W trakcie gry turowej nasz bot musi dokonywać kolejnych wyborów.
-Na wybór składają się dwie „współrzędne”, a dokładniej mówiąc dwa indeksy do tablicy dwuwymiarowej:
-X - współrzędna pierwszego wymiaru, liczba z zakresu 0-2,
-Y - współrzędna drugiego wymiaru, liczba z zakresu 0-2.
-Współrzędne te są rozdzielone znakiem spacji.
-Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej instrukcjami.
-Taktyka wyboru oraz analiza wyborów rywala pozostaje w kwestii twórcy danego bota.
-Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: X Y\n.
-Komunikat ten będziemy otrzymywać dopóki żaden z botów nie wygra zgodnie
-z zasadami gry w kółko i krzyżyk albo do momentu remisu.
-
-Oba wspomniane przed chwilą przypadki są opisane w podpunkcie c).
-c)  Zakończenie rozgrywki
-Rozgrywka kończy się w momencie wygrania jednego z botów lub remisem po wykonaniu 9 tur!
-Po wygraniu rozgrywki przez jednego z botów, bot otrzymuje na strumień wejściowy komunikat: Koniec, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Koniec\n.
-W wspomnianym przypadku, gdy żaden z botów nie wygra w przeciągu 9 ruchów, następuje remis i bot otrzymuje na strumień wejściowy komunikat: Remis, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Remis\n.
-Jeżeli nastąpi remis, to gra zostaje zakończona, po czym zostaje rozpoczęta od nowa.
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN" "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!--This file was converted to xhtml by OpenOffice.org - see http://xml.openoffice.org/odf2xhtml for more info.--><head profile="http://dublincore.org/documents/dcmi-terms/"><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/><title xml:lang="en-US">- no title specified</title><meta name="DCTERMS.title" content="" xml:lang="en-US"/><meta name="DCTERMS.language" content="en-US" scheme="DCTERMS.RFC4646"/><meta name="DCTERMS.source" content="http://xml.openoffice.org/odf2xhtml"/><meta name="DCTERMS.issued" content="2013-06-16T15:14:54.15" scheme="DCTERMS.W3CDTF"/><meta name="DCTERMS.modified" content="2013-06-16T15:15:55.91" scheme="DCTERMS.W3CDTF"/><meta name="DCTERMS.provenance" content="" xml:lang="en-US"/><meta name="DCTERMS.subject" content="," xml:lang="en-US"/><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" hreflang="en"/><link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" hreflang="en"/><link rel="schema.DCTYPE" href="http://purl.org/dc/dcmitype/" hreflang="en"/><link rel="schema.DCAM" href="http://purl.org/dc/dcam/" hreflang="en"/><style type="text/css">
+	@page {  }
+	table { border-collapse:collapse; border-spacing:0; empty-cells:show }
+	td, th { vertical-align:top; font-size:12pt;}
+	h1, h2, h3, h4, h5, h6 { clear:both }
+	ol, ul { margin:0; padding:0;}
+	li { list-style: none; margin:0; padding:0;}
+	<!-- "li span.odfLiEnd" - IE 7 issue-->
+	li span. { clear: both; line-height:0; width:0; height:0; margin:0; padding:0; }
+	span.footnodeNumber { padding-right:1em; }
+	span.annotation_style_by_filter { font-size:95%; font-family:Arial; background-color:#fff000;  margin:0; border:0; padding:0;  }
+	* { margin:0;}
+	.P1 { font-size:12pt; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.P11 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; font-weight:bold; }
+	.P12 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; font-weight:bold; }
+	.P13 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; font-weight:bold; }
+	.P15 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.P16 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.P17 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.P18 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.037cm; margin-right:0cm; text-indent:0cm; font-style:normal; font-weight:bold; }
+	.P19 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.117cm; margin-right:0cm; text-indent:0cm; }
+	.P21 { font-size:14pt; font-style:italic; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P23 { font-size:14pt; font-style:italic; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P24 { font-size:115%; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P3 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:1.984cm; margin-right:0cm; text-indent:0cm; }
+	.P6 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; font-style:normal; }
+	.P8 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; font-weight:normal; }
+	.P9 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; }
+	.Bullet_20_Symbols { font-family:OpenSymbol; }
+	.T10 { font-style:normal; }
+	.T11 { font-style:normal; }
+	.T12 { font-style:normal; }
+	.T15 { font-style:normal; font-weight:normal; }
+	.T16 { font-style:normal; font-weight:normal; }
+	.T18 { font-weight:bold; }
+	.T19 { font-weight:bold; }
+	.T20 { font-weight:bold; }
+	.T21 { font-weight:normal; }
+	.T22 { font-weight:normal; }
+	.T23 { font-style:normal; }
+	.T24 { font-style:normal; }
+	.T4 { font-style:normal; font-weight:bold; }
+	.T5 { font-style:normal; font-weight:bold; }
+	.T6 { font-style:normal; font-weight:bold; }
+	.T7 { font-style:normal; font-weight:bold; }
+	.T8 { font-style:normal; }
+	.T9 { font-style:normal; }
+	<!-- ODF styles with no properties representable as CSS -->
+	.Numbering_20_Symbols .T1 .T2 .T25 .T26 .T27 .T28 .T29 .T3 { }
+	</style></head><body dir="ltr" style="max-width:21.001cm;margin:2cm; margin-top:2cm; margin-bottom:2cm; margin-left:2cm; margin-right:2cm; writing-mode:lr-tb; "><h1 class="P24"><a id="a__Tworzenie_bota_do_gry_w_Kółko_i_Krzyżyk"><span/></a>Tworzenie bota do gry w Kółko i Krzyżyk</h1><ul><li><ol><li><h class="P21" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">a) </span><a id="a_a___Rozpoczęcie_rozgrywki"><a name="__RefHeading__1803_593557588"/>Rozpoczęcie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P11"><span class="T25">Wymaga się</span><span class="T1"> </span><span class="T25">od </span><span class="T1">twórcy danego bota </span><span class="T25">stworzenia tablicy dwuwymiarowej</span></p><p class="P12">o wymiarach 3x3 w celu późniejszego odwzorowania ruchów rywala.</p><p class="P11"><span class="T25">Tablica powinna być indeksowana od zera, a nie od jed</span><span class="T26">ynki!!!</span></p><p class="P13"> </p><p class="P3"><span class="T3">Bot </span><span class="T1">na samym początku rozgrywki </span><span class="T3">otrzymuje na strumień wejściowy komunikat:</span></p><ol><li><p class="P9" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm">1.</span><span class="T5">Start</span><span class="T8">, a po nim </span><span class="T5">znak nowej linii</span><span class="T8">. </span><span class="T9">Zatem</span><span class="T8"> komunikat te</span><span class="T9">n</span><span class="T8"> wygląda </span><span class="T9">następująco</span><span class="T8">: </span><span class="T5">Start\n</span><span class="T8">.</span><span class="odfLiEnd"/> </p><p class="P6" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span>W tej sytuacji, to nasz bot zaczyna, a rywal czeka na wykonanie przez naszego bota ruchu.<span class="odfLiEnd"/> </p><p class="P6" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span><span class="odfLiEnd"/> </p></li><li><p class="P8" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm">2.</span><span class="T6">X Y</span><span class="T11">, a po nim </span><span class="T6">znak nowej linii</span><span class="T11">. </span><span class="T9">Zatem</span><span class="T8"> komunikat te</span><span class="T9">n</span><span class="T8"> wygląda </span><span class="T9">następująco</span><span class="T8">:</span><span class="odfLiEnd"/> </p><p class="P8" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span><span class="T6">X Y</span><span class="T5">\n</span><span class="T8">, </span><span class="T11">gdzie X odpowiada pierwszemu wymiarowi tablicy dwuwymiarowej, a Y odpowiada drugiemu wymiarowi. Mówiąc innymi słowami, bot otrzymuje współrzędne ruchu przeciwnika, </span><span class="T10">rozdzielone </span><span class="T7">znakiem spacji</span><span class="T11">.</span><span class="odfLiEnd"/> </p></li></ol><p class="P18">Zatem należy uwzględnić podczas tworzenia bota dwa możliwe scenariusze rozpoczęcia rozgrywki.</p><ul><li><ol><li><h class="P23" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">b) </span><a id="a_b___W_trakcie_rozgrywki"><a name="__RefHeading__1770_5935575883"/>W trakcie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P15"><span class="T1">Po rozpocz</span><span class="T26">ęciu </span><span class="T1">rozgrywk</span><span class="T26">i</span><span class="T1"> (patrz podpunkt a) następuje </span><span class="T19">gra turowa</span><span class="T1">, </span><span class="T26">czyli bot czeka na wykonanie ruchu przez rywala, a dopiero potem następuje jego kolej na dokonanie ruchu, podczas gdy rywal oczekuje wtedy na ruch naszego bota.</span></p><p class="P16">W trakcie gry turowej nasz bot musi dokonywać kolejnych wyborów.</p><p class="P17">Na wybór składają się dwie „współrzędne”, a dokładniej mówiąc dwa indeksy do tablicy dwuwymiarowej:</p><p class="P11"><span class="T27">X</span><span class="T22"> - współrzędna pierwszego wymiaru, liczba z zakresu 0-2,</span></p><p class="P11"><span class="T27">Y</span><span class="T22"> - współrzędna drugiego wymiaru, liczba z zakresu 0-2.</span></p><p class="P11"><span class="T22">Współrzędne te są rozdzielone </span><span class="T27">znakiem spacji</span><span class="T22">.</span></p><p class="P15"><span class="T1">Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej </span><span class="T28">instrukcjami</span><span class="T1">.</span></p><p class="P11"><span class="T1">Taktyka wyboru </span><span class="T2">oraz analiza wyborów rywala </span><span class="T1">pozostaje w kwestii twórcy danego bota.</span></p><p class="P15"><span class="T1">Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: </span><span class="T20">X Y</span><span class="T18">\n</span><span class="T21">.</span></p><p class="P1">Komunikat ten będziemy otrzymywać dopóki żaden z botów nie wygra zgodnie</p><p class="P19">z zasadami gry w kółko i krzyżyk albo do momentu remisu.</p><p class="P19"> </p><p class="P19"><span class="T15">Oba wspomniane przed chwilą przypadki są </span><span class="T16">opisan</span><span class="T15">e</span><span class="T16"> w podpunkcie c).</span></p><ul><li><ol><li><h class="P23" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">c) </span><a id="a_c___Zakończenie_rozgrywki"><a name="__RefHeading__1772_5935575883"/>Zakończenie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P11"><span class="T26">Rozgrywka kończy się </span><span class="T29">w momencie</span><span class="T26"> wygrani</span><span class="T29">a</span><span class="T26"> jednego z botów lub remisem po wykonaniu 9 tur!</span></p><p class="P3"><span class="T1">Po wygraniu rozgrywki przez jednego z botów, </span><span class="T2">bot</span><span class="T1"> </span><span class="T3">otrzymuje na strumień wejściowy komunikat: </span><span class="T4">Koniec</span><span class="T8">, a po nim </span><span class="T5">znak nowej linii</span><span class="T8">. </span><span class="T9">Zatem</span><span class="T8"> komunikat te</span><span class="T9">n</span><span class="T8"> wygląda </span><span class="T9">następująco</span><span class="T8">: </span><span class="T4">Koniec</span><span class="T5">\n</span><span class="T8">.</span></p><p class="P3"><span class="T10">W wspomnianym przypadku, gdy żaden z botów nie wygra w przeciągu 9 ruchów, następuje remis i </span><span class="T12">bot</span><span class="T9"> </span><span class="T8">otrzymuje na strumień wejściowy komunikat: </span><span class="T7">Remis</span><span class="T8">, a po nim </span><span class="T5">znak nowej linii</span><span class="T8">. </span><span class="T9">Zatem</span><span class="T8"> komunikat te</span><span class="T9">n</span><span class="T8"> wygląda </span><span class="T9">następująco</span><span class="T8">: </span><span class="T7">Remis</span><span class="T5">\n</span><span class="T8">.</span></p><p class="P3"><span class="T23">Jeżeli nastąpi remis, to gra zostaje</span><span class="T24"> zakończona, po czym zostaje</span><span class="T23"> rozpoczęta od nowa.</span></p></body></html>

@@ -1,21 +1,38 @@
-Tworzenie bota do gry w Kamień-Papier-Nożyce
-a)  Rozpoczęcie rozgrywki
-Bot na samym początku rozgrywki otrzymuje na strumień wejściowy komunikat: Start, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Start\n.
-b)  W trakcie rozgrywki
-Po komunikacie rozpoczynającym rozgrywkę (patrz podpunkt a), następuje kolej, żeby bot wybrał: kamień, papier lub nożyce.
-Stosuje się następujące oznaczenia:
-K - kamień,
-P - papier,
-N - nożyce.
-Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej oznaczeniami.
-Taktyka wyboru oraz analiza wyborów rywala pozostaje w kwestii twórcy danego bota.
-Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: K\n, lub P\n, lub N\n.
-Po dokonaniu wyborów przez oba boty i ich przesłaniu możemy otrzymać jeden z dwóch możliwych komunikatów:
-1. Jeżeli żaden z botów nie wygrał, to na strumień wejściowy otrzymamy identyczny komunikat jak podczas rozpoczęcia rozgrywki (patrz podpunkt a), czyli Start\n.
-Rozgrywka toczy się dalej, zatem postępujemy zgodnie z podpunktem b).
-
-2. Jeżeli jeden z botów wygra rozgrywkę, to na strumień wejściowy otrzymamy komunikat opisany w podpunkcie c).
-Rozgrywka ulega zakończeniu.
-c)  Zakończenie rozgrywki
-Rozgrywka toczy się do momentu aż któryś z botów wygra.
-Po wygraniu rozgrywki przez jednego z botów, bot otrzymuje na strumień wejściowy komunikat: Koniec, a po nim znak nowej linii. Zatem komunikat ten wygląda następująco: Koniec\n.
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN" "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!--This file was converted to xhtml by OpenOffice.org - see http://xml.openoffice.org/odf2xhtml for more info.--><head profile="http://dublincore.org/documents/dcmi-terms/"><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/><title xml:lang="en-US">- no title specified</title><meta name="DCTERMS.title" content="" xml:lang="en-US"/><meta name="DCTERMS.language" content="en-US" scheme="DCTERMS.RFC4646"/><meta name="DCTERMS.source" content="http://xml.openoffice.org/odf2xhtml"/><meta name="DCTERMS.issued" content="2013-06-16T15:14:54.15" scheme="DCTERMS.W3CDTF"/><meta name="DCTERMS.modified" content="2013-06-16T15:15:29.59" scheme="DCTERMS.W3CDTF"/><meta name="DCTERMS.provenance" content="" xml:lang="en-US"/><meta name="DCTERMS.subject" content="," xml:lang="en-US"/><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" hreflang="en"/><link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" hreflang="en"/><link rel="schema.DCTYPE" href="http://purl.org/dc/dcmitype/" hreflang="en"/><link rel="schema.DCAM" href="http://purl.org/dc/dcam/" hreflang="en"/><style type="text/css">
+	@page {  }
+	table { border-collapse:collapse; border-spacing:0; empty-cells:show }
+	td, th { vertical-align:top; font-size:12pt;}
+	h1, h2, h3, h4, h5, h6 { clear:both }
+	ol, ul { margin:0; padding:0;}
+	li { list-style: none; margin:0; padding:0;}
+	<!-- "li span.odfLiEnd" - IE 7 issue-->
+	li span. { clear: both; line-height:0; width:0; height:0; margin:0; padding:0; }
+	span.footnodeNumber { padding-right:1em; }
+	span.annotation_style_by_filter { font-size:95%; font-family:Arial; background-color:#fff000;  margin:0; border:0; padding:0;  }
+	* { margin:0;}
+	.P1 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:1.984cm; margin-right:0cm; text-indent:0cm; }
+	.P10 { font-size:14pt; font-style:italic; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P11 { font-size:14pt; font-style:italic; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P12 { font-size:115%; font-weight:bold; margin-bottom:0.212cm; margin-top:0.423cm; font-family:Arial; writing-mode:page; }
+	.P2 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:1.984cm; margin-right:0cm; text-indent:0cm; }
+	.P3 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; font-style:normal; font-weight:normal; }
+	.P4 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; font-style:normal; font-weight:normal; }
+	.P5 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; }
+	.P6 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.P7 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; font-weight:bold; }
+	.P8 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; font-weight:normal; }
+	.P9 { font-size:12pt; margin-bottom:0.212cm; margin-top:0cm; font-family:Times New Roman; writing-mode:page; margin-left:2.064cm; margin-right:0cm; text-indent:0cm; }
+	.Bullet_20_Symbols { font-family:OpenSymbol; }
+	.T11 { font-weight:bold; }
+	.T12 { font-weight:normal; }
+	.T4 { font-style:normal; font-weight:bold; }
+	.T5 { font-style:normal; font-weight:bold; }
+	.T6 { font-style:normal; }
+	.T7 { font-style:normal; }
+	.T8 { font-style:normal; font-weight:normal; }
+	.T9 { font-style:normal; font-weight:normal; }
+	<!-- ODF styles with no properties representable as CSS -->
+	.Numbering_20_Symbols .T1 .T10 .T2 .T3 { }
+	</style></head><body dir="ltr" style="max-width:21.001cm;margin:2cm; margin-top:2cm; margin-bottom:2cm; margin-left:2cm; margin-right:2cm; writing-mode:lr-tb; "><h1 class="P12"><a id="a__Tworzenie_bota_do_gry_w_Kamień-Papier-Nożyce"><span/></a>Tworzenie bota do gry w Kamień-Papier-Nożyce</h1><ul><li><ol><li><h class="P10" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">a) </span><a id="a_a___Rozpoczęcie_rozgrywki"><a name="__RefHeading__1768_593557588"/>Rozpoczęcie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P2"><span class="T3">Bot </span><span class="T1">na samym początku rozgrywki </span><span class="T3">otrzymuje na strumień wejściowy komunikat: </span><span class="T5">Start</span><span class="T6">, a po nim </span><span class="T5">znak nowej linii</span><span class="T6">. </span><span class="T7">Zatem</span><span class="T6"> komunikat te</span><span class="T7">n</span><span class="T6"> wygląda </span><span class="T7">następująco</span><span class="T6">: </span><span class="T5">Start\n</span><span class="T6">.</span></p><ul><li><ol><li><h class="P11" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">b) </span><a id="a_b___W_trakcie_rozgrywki"><a name="__RefHeading__1770_593557588"/>W trakcie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P9"><span class="T1">Po komunikac</span><span class="T10">i</span><span class="T1">e rozpoczynającym rozgrywkę (patrz podpunkt a), następuje kolej, żeby bot wybrał: kamień, papier lub nożyce.</span></p><p class="P9"><span class="T1">Stosuje się następujące oznaczenia:</span></p><p class="P9"><span class="T11">K</span><span class="T1"> - kamień,</span></p><p class="P9"><span class="T11">P</span><span class="T1"> - papier,</span></p><p class="P9"><span class="T11">N</span><span class="T1"> - nożyce.</span></p><p class="P6">Po dokonaniu wyboru należy go wysłać na strumień wyjściowy, zgodnie z podanymi powyżej oznaczeniami.</p><p class="P7"><span class="T1">Taktyka wyboru </span><span class="T2">oraz analiza wyborów rywala </span><span class="T1">pozostaje w kwestii twórcy danego bota.</span></p><p class="P9"><span class="T1">Następnie otrzymujemy na strumień wejściowy komunikat informujący nas o ruchu rywala, zawierający również znak nowej linii, czyli: </span><span class="T11">K\n</span><span class="T12">, lub </span><span class="T11">P\n</span><span class="T12">, lub </span><span class="T11">N\n</span><span class="T12">.</span></p><p class="P8">Po dokonaniu wyborów przez oba boty i ich przesłaniu możemy otrzymać jeden z dwóch możliwych komunikatów:</p><ol><li><p class="P5" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm">1.</span><span class="T12">Jeżeli żaden z botów nie wygrał, to na strumień wejściowy otrzymamy identyczny komunikat jak podczas rozpoczęcia rozgrywki (patrz podpunkt a), czyli </span><span class="T5">Start\n</span><span class="T8">.</span><span class="odfLiEnd"/> </p><p class="P5" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span><span class="T9">Rozgrywka toczy się dalej, zatem postępujemy zgodnie z podpunktem b).</span><span class="odfLiEnd"/> </p><p class="P3" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span><span class="odfLiEnd"/> </p></li><li><p class="P4" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm">2.</span>Jeżeli jeden z botów wygra rozgrywkę, to na strumień wejściowy otrzymamy komunikat opisany w podpunkcie c).<span class="odfLiEnd"/> </p><p class="P3" style="margin-left:0cm;"><span class="Numbering_20_Symbols" style="display:block;float:left;min-width:0cm"><!-- --></span>Rozgrywka ulega zakończeniu.<span class="odfLiEnd"/> </p></li></ol><ul><li><ol><li><h class="P11" style="margin-left:0cm;"><span style="display:block;float:left;min-width:0cm">c) </span><a id="a_c___Zakończenie_rozgrywki"><a name="__RefHeading__1772_593557588"/>Zakończenie rozgrywki</a><span class="odfLiEnd"/> </h></li></ol></li></ul><p class="P1">Rozgrywka toczy się do momentu aż któryś z botów wygra.</p><p class="P2"><span class="T1">Po wygraniu rozgrywki przez jednego z botów, </span><span class="T2">bot</span><span class="T1"> </span><span class="T3">otrzymuje na strumień wejściowy komunikat: </span><span class="T4">Koniec</span><span class="T6">, a po nim </span><span class="T5">znak nowej linii</span><span class="T6">. </span><span class="T7">Zatem</span><span class="T6"> komunikat te</span><span class="T7">n</span><span class="T6"> wygląda </span><span class="T7">następująco</span><span class="T6">: </span><span class="T4">Koniec</span><span class="T5">\n</span><span class="T6">.</span></p></body></html>
