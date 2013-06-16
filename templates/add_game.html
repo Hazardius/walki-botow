@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+    <h2>Add New Game</h2>
+    <form action="{{ url_for('add_game') }}" method=post class=send-code enctype=multipart/form-data >
+      <dl>
+        <dt>Name of game:
+        <dd><input type="text" name="gameName" size="25" maxlength="128">
+        <dt>Short code:
+        <dd><input type="text" name="codeOfGame" size="25" maxlength="128">
+        <dt>Checker:
+        <dd><input type="file" name="checker" required>
+        <dt>File:
+        <dd><input type="file" name="instruction" required>
+        <dd><input type=submit value=Send>
+      </dl>
+    </form>
+  {% endif %}
+{% endblock %}

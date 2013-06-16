@@ -1518,8 +1518,8 @@ def sign_i_tournament(tourId):
             error = "Wrong type of Tournament Registration Type in a response!"
     else:
         error = response.get('Message')
-    return render_template('message.html', cMessages=check_messages(), message=
-        "", error=error)
+    return render_template('message.html', cMessages=check_messages(),
+        message=error)
 
 
 @app.route('/sit', methods=['POST'])
@@ -1547,6 +1547,18 @@ def sign_ip_tournament():
         error = response.get('Message')
     return render_template('message.html', username=session['username'],
         message=error)
+
+# add games
+
+
+#@app.route('/aGame', methods=['GET', 'POST'])
+#def add_game():
+    #if request.method == 'POST':
+        #flash("Add game!")
+        #session['redirected'] = True
+        #return redirect(url_for('news'))
+    #return render_template('add_game.html', cMessages=check_messages(),
+        #username=session['username'])
 
 # debug
 
