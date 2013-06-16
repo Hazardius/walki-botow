@@ -232,6 +232,7 @@ def sendFileToWebServiceT(fileData, subpage):
     error = None
     data = fileData
     try:
+        print "a"
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
             auth=AUTH_DATA)
@@ -506,9 +507,9 @@ def add_news():
     if is_ban() is True:
         return ban_error()
     if check_perm('admin') is False:
+        flash("You are not permitted to see that page!")
         session['redirected'] = True
-        return redirect(url_for('message',
-            mess="You are not permitted to see that page!"))
+        return redirect(url_for('news'))
     error = None
     if request.method == 'POST':
         import time
@@ -536,9 +537,9 @@ def add_news():
         }
         response = postToWebService(payload, "/news/create")
         if response.get('Status') is True:
+            flash("New news successfully created!")
             session['redirected'] = True
-            return redirect(url_for('message',
-                mess="New news successfully created!"))
+            return redirect(url_for('news'))
         else:
             error = response
     return render_template('add_news.html', username=session['username'],
@@ -572,9 +573,9 @@ def register():
             }
             response = postToWebService(payload, "/user/registration")
             if response.get('Status') is True:
+                flash("Check your e-mail account!")
                 session['redirected'] = True
-                return redirect(url_for('message',
-                    mess="Check your e-mail account!"))
+                return redirect(url_for('news'))
             else:
                 error = response.get('Message')
         else:
@@ -597,15 +598,14 @@ def remind_act_code():
         }
         response = postToWebService(payload, "/reactivate")
         if response.get('Status') is True:
+            flash("Activation link successfully re-sent!")
             session['redirected'] = True
-            return redirect(url_for('message',
-                mess="Activation link successfuly re-sent!"))
+            return redirect(url_for('news'))
         else:
             error = response.get('Message')
-        if error is None:
-            error = ''
+        flash(error)
         session['redirected'] = True
-        return redirect(url_for('message', mess=error))
+        return redirect(url_for('news'))
     return render_template('remind.html', error=error)
 
 
@@ -623,15 +623,14 @@ def try_to_activate(webHash):
     }
     response = postToWebService(payload, "/user/registration/activation")
     if response.get('Status') is True:
+        flash("Account successfully activated!")
         session['redirected'] = True
-        return redirect(url_for('message',
-            mess="User successfully activated!"))
+        return redirect(url_for('news'))
     else:
         error = response.get('Message')
-    if error is None:
-        error = ''
+    flash(error)
     session['redirected'] = True
-    return redirect(url_for('message', mess=error))
+    return redirect(url_for('news'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -918,10 +917,9 @@ def edit_profile(edited):
             username=session['username'], error=error,
             cMessages=check_messages(), edited=edited, profile=dict(response))
     else:
-        if error is None:
-            error = ''
+        flash(error)
         session['redirected'] = True
-        return redirect(url_for('message', mess=error))
+        return redirect(url_for('news'))
 
 # page methods - users list
 
@@ -1251,8 +1249,9 @@ def send_code(idG, game):
             }
             response = postToWebService(payload, "/code/duel/upload")
             if response.get('Status') is True:
+                flash("Code sent!")
                 session['redirected'] = True
-                return redirect(url_for('message', mess="Code sent!"))
+                return redirect(url_for('news'))
             else:
                 error = response
         elif request.form['codeForm'] == 'file':
@@ -1271,9 +1270,9 @@ def send_code(idG, game):
                     #+ "/" + filename)
                 if response.get('Status') is True:
                     #os.remove(locFilePath)
+                    flash("File uploaded!")
                     session['redirected'] = True
-                    return redirect(url_for('message',
-                        mess="File uploaded!"))
+                    return redirect(url_for('news'))
                 else:
                     error = response.get('Message')
                 #os.remove(locFilePath)
@@ -1403,9 +1402,9 @@ def new_tournament():
                 + str(tourID) + "/info")
             #TODO: REACTION FOR RESPONSE2
             print response2
+            flash("New tournament successfully created!")
             session['redirected'] = True
-            return redirect(url_for('message',
-                mess="New tournament successfuly created!"))
+            return redirect(url_for('news'))
         else:
             error = response
     return render_template('new_tournament.html', username=session['username'],
@@ -1454,9 +1453,9 @@ def tAdmin():
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
     if response.get('Status') is True:
+        flash("User " + player + " is now an admin in this tournament.")
         session['redirected'] = True
-        return redirect(url_for('message',
-            mess="User " + player + " is now an admin in this tournament."))
+        return redirect(url_for('news'))
     return render_template('message.html', username=session['username'],
         message=error + " " + str(tourId) + ". " + player)
 
@@ -1477,9 +1476,9 @@ def sign_f_tournament(tourId):
                 "/registry")
             print response2
             if response2.get('Status') is True:
+                flash("You signed in!")
                 session['redirected'] = True
-                return redirect(url_for('message',
-                    mess="You signed in!"))
+                return redirect(url_for('news'))
             error = response2.get('Message')
         else:
             error = "Wrong type of Tournament Registration Type in a response!"
