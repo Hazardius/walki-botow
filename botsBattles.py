@@ -1129,6 +1129,10 @@ def view_battle(number):
             'Message')))
         return render_template('message.html', cMessages=check_messages(),
             message=message)
+    isPlayer = False
+    if (session['username'] == response.get('Player1') or session['username']
+        == response.get('Player2')):
+        isPlayer = True
     response = getFromWebService("/games/" + str(number) + "/info")
     if response.get('Status') is True:
         if "Message" in response:
@@ -1193,7 +1197,8 @@ def view_battle(number):
         error = response
     return render_template('send_code.html', username=session['username'],
         cMessages=check_messages(), number=number, game=gameName, error=error,
-        winner=response.get('Winner'), message=response.get('Message'))
+        winner=response.get('Winner'), message=response.get('Message'),
+        isP=isPlayer)
 
 
 @app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
@@ -1229,9 +1234,6 @@ def send_code(idG, game):
                     filename)
                 locFilePath = os.path.normpath(locFilePath)
                 codeFile.save(locFilePath)
-                #response = sendFileToWebServiceT(codeFile, "/code/duel/upl" +
-                    #"oad/" + game + "/" + str(idG) + "/" + session['username']
-                    #+ "/" + filename)
                 response = sendFileToWebService(locFilePath, "/code/duel/upl" +
                     "oad/" + game + "/" + str(idG) + "/" + session['username']
                     + "/" + filename)

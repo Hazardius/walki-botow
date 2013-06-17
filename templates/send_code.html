@@ -6,6 +6,7 @@
     {% if game %}<b>{{ game }}</b><br />
     {% if message %}{{ message }}{% endif %}<br />
     {% if winner %}Winner is <b>{{ winner }}</b>{% endif %}
+    {% if isP %}
     <h2>SEND IN TEXTBOX</h2>
     <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post >
       <dl>
@@ -31,6 +32,9 @@
         <dd><input type="file" name="file">
         <dd><input type=submit value=Send>
       </dl>
-    </form>{% endif %}{% endif %}
+    </form>
+    {% endif %}
+    {% endif %}
+    {% endif %}
   {% endif %}
 {% endblock %}
