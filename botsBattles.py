@@ -1275,7 +1275,7 @@ def tournaments():
                 nextOne = response.get(str(i))
                 if nextOne is not None:
                     tours.append(dict(nextOne))
-            tours = sorted(tours, key=lambda bat: bat['ID'])
+            tours = sorted(tours, key=lambda bat: bat['Name'].lower())
             return render_template('tournaments.html',
                 username=session['username'], tours=tours,
                 cMessages=check_messages())
