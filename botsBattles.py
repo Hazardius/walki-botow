@@ -1344,33 +1344,73 @@ def new_tournament():
             message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
-        payload = {
-            "TourName": sanitize_html(request.form['name']),
-            "Name": sanitize_html(request.form['game']),
-            "Description": sanitize_html(request.form['description']),
-            "Rules": sanitize_html(request.form['rules'])
-        }
-        response = postToWebService(payload, "/games/tournaments/new")
-        if response.get('Status') is True:
-            tourID = response.get('ID')
-            payload = {
-                "RegBegin": sanitize_html(request.form['bDate'].replace("T",
-                    " ") + ":00"),
-                "RegEnd": sanitize_html(request.form['eDate'].replace("T",
-                    " ") + ":00"),
-                "RegType": sanitize_html(request.form['regType']),
-                "MaxPlayers": request.form['maxPl'],
-                "Start": sanitize_html(request.form['sDate'].replace("T",
-                    " ") + ":00"),
-                "TourID": tourID,
-                "Type": sanitize_html(request.form['tourType'])
-            }
-            response2 = postToWebService(payload, "/games/tournaments/"
-                + str(tourID) + "/info")
-            if response2.get('Status') is True:
-                flash("New tournament successfully created!")
-                session['redirected'] = True
-                return redirect(url_for('news'))
+        import datetime
+        now = datetime.datetime.now()
+        bDateTimeO = ""
+        if 'bDate' in request.form:
+            bDateTime = request.form['bDate'].split(' ')
+            bDate = bDateTime[0].split('-')
+            bTime = bDateTime[1].spli(':')
+            bDateTimeO = datetime.datetime(int(bDate[0]), int(bDate[1]), int(
+                bDate[2]), int(bTime[0]), int(bTime[1]))
+        else:
+            error = "Error 2. No date(bDate) sent!"
+        eDateTimeO = ""
+        if 'eDate' in request.form:
+            eDateTime = request.form['eDate'].split(' ')
+            eDate = eDateTime[0].split('-')
+            eTime = eDateTime[1].spli(':')
+            eDateTimeO = datetime.datetime(int(eDate[0]), int(eDate[1]), int(
+                eDate[2]), int(eTime[0]), int(eTime[1]))
+        else:
+            error = "Error 2. No date(eDate) sent!"
+        sDateTimeO = ""
+        if 'sDate' in request.form:
+            sDateTime = request.form['sDate'].split(' ')
+            sDate = sDateTime[0].split('-')
+            sTime = sDateTime[1].spli(':')
+            sDateTimeO = datetime.datetime(int(sDate[0]), int(sDate[1]), int(
+                sDate[2]), int(sTime[0]), int(sTime[1]))
+        else:
+            error = "Error 2. No date(sDate) sent!"
+        if error is None:
+            if (bDateTimeO < now):
+                error = ("Registration date wrong! Beginning of registration " +
+                    "before now!")
+            if (eDateTimeO < bDateTimeO):
+                error = ("Registration date wrong! End of registration before" +
+                    " beginning!")
+            if (sDateTimeO < eDateTimeO):
+                error = ("Registration date wrong! Start of tournament before" +
+                    " end of registration!")
+            if error is None:
+                payload = {
+                    "TourName": sanitize_html(request.form['name']),
+                    "Name": sanitize_html(request.form['game']),
+                    "Description": sanitize_html(request.form['description']),
+                    "Rules": sanitize_html(request.form['rules'])
+                }
+                response = postToWebService(payload, "/games/tournaments/new")
+                if response.get('Status') is True:
+                    tourID = response.get('ID')
+                    payload = {
+                        "RegBegin": sanitize_html(request.form['bDate']
+                            .replace("T", " ") + ":00"),
+                        "RegEnd": sanitize_html(request.form['eDate']
+                            .replace("T", " ") + ":00"),
+                        "RegType": sanitize_html(request.form['regType']),
+                        "MaxPlayers": request.form['maxPl'],
+                        "Start": sanitize_html(request.form['sDate']
+                            .replace("T", " ") + ":00"),
+                        "TourID": tourID,
+                        "Type": sanitize_html(request.form['tourType'])
+                    }
+                    response2 = postToWebService(payload, "/games/tournaments/"
+                        + str(tourID) + "/info")
+                    if response2.get('Status') is True:
+                        flash("New tournament successfully created!")
+                        session['redirected'] = True
+                        return redirect(url_for('news'))
         else:
             error = response
     return render_template('new_tournament.html', username=session['username'],
