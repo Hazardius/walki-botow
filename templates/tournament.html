@@ -13,9 +13,11 @@
   {% if regState %}
     <dt>State of registration: <b>OPEN</b>
     {% if tour.RegType == "Invitation" %}
+    {% if cATA %}
     <dt><form method="link" action="{{ url_for('sign_i_tournament', tourId=tourId) }}">
       <dt><input type="submit" value="Invite someone!">
     </form>
+    {% endif %}
     {% endif %}
     {% if tour.RegType == "Free" %}
     <dt><form method="link" action="{{ url_for('sign_f_tournament', tourId=tourId) }}">

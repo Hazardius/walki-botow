@@ -1276,8 +1276,10 @@ def tournaments():
 
 @app.route('/tournament/<int:tourId>')
 def tournament(tourId):
-    if check_spam() is False:
-        return spam_error()
+    if 'redirected' not in session:
+        if check_spam() is False:
+            return spam_error()
+    session.pop('redirected', None)
     if check_ws() is False:
         return ws_error()
     if is_ban() is True:
@@ -1493,11 +1495,19 @@ def sign_ip_tournament():
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         if response.get('RegType') == 'Invitation':
-            # Don't know WS adress :(
-            error = "invitation" + sanitize_html(player)
-            #session['redirected'] = True
-            #return redirect(url_for('message',
-                #mess="You signed in!"))
+            error = None
+            payload = {
+                "UserFrom": sanitize_html(session['username']),
+                "UserTo": player,
+                "TourName": sanitize_html(response.get('TourName')),
+                "Type": "Tournament"
+            }
+            response2 = postToWebService(payload, "/notice/invitation")
+            if response2.get('Status') is True:
+                flash("You signed " + player + " in!")
+                session['redirected'] = True
+                return redirect(url_for('tournament', tourId=tourId))
+            error = response2.get('Message')
         else:
             error = "Wrong type of Tournament Registration Type in a response!"
     else:
