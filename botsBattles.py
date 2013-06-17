@@ -916,6 +916,7 @@ def users_p(page):
             if nextOne is not None:
                 logins.append(nextOne)
         nextP = False
+        logins = sorted(logins, key=lambda x: x.lower())
         if len(logins) == session['pagination']:
             nextP = True
         return render_template('users.html',
@@ -1144,9 +1145,11 @@ def view_battle(number):
         if response.get('Finished') is True:
             try:
                 conError = ""
-                r = requests.get(WEBSERVICE_IP + "/code/" +
+                r = requests.get(WEBSERVICE_IP + "/Flask/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/duel/log",
                     stream=True, auth=AUTH_DATA)
+                print r
+                print r.content
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")
