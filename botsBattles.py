@@ -229,43 +229,6 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
-#def sendFileToWebServiceT(fileData, subpage):
-    #error = None
-    #data = fileData
-    #try:
-        #response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
-            #headers={'Content-Type': 'application/octet-stream'},
-            #auth=AUTH_DATA)
-        #print response.content
-        #data = response.json()
-    #except URLError, e:
-        #if hasattr(e, 'reason'):
-            #error = e.reason
-            #app.logger.error('We failed to reach a server.\nReason: ' + error)
-        #elif hasattr(e, 'code'):
-            #error = e.code
-            #app.logger.error('The server couldn\'t fulfill the request.'
-                #+ '\nError code:' + error)
-    #except ValueError, e:
-        #if hasattr(e, 'reason'):
-            #error = e.reason
-            #app.logger.error('Value Error has been found.\nReason: ' + error)
-        #elif hasattr(e, 'code'):
-            #error = e.code
-            #app.logger.error('Value Error has been found.\nError code:' + error)
-        #else:
-            #error = e
-    #except AttributeError, e:
-        #error = "No JSON as a response.\nResponse: " + str(response)
-    #except requests.exceptions.ConnectionError, e:
-        #error = "[SendFile]Connection Error! " + str(e)
-        #app.logger.error(error)
-    #else:
-        #return data
-    #errorMessage = {"Status": False, "Message": error}
-    #return errorMessage
-
-
 def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
@@ -723,7 +686,6 @@ def post_box():
         return ban_error()
     error = None
     response = getFromWebService("/notice/" + session['username'] + "/0/50")
-    print response
     if response.get('Status') is True:
         messages = []
         for i in range(1, response.get('Count') + 1):
@@ -1172,8 +1134,6 @@ def view_battle(number):
         if response.get('Finished') is True:
             try:
                 conError = ""
-                print (WEBSERVICE_IP + "/code/" +
-                    sanitize_html(gameName) + "/" + str(number) + "/duel/log")
                 r = requests.get(WEBSERVICE_IP + "/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/duel/log",
                     stream=True, auth=AUTH_DATA)
@@ -1344,16 +1304,12 @@ def tournament(tourId):
             regDate[2]), int(regTime[0]), int(regTime[1]))
         if (regStart < now):
             regState = False
-        if tour.get('RegType') == 'Invitation':
-            # Additional data needed
-            cATA = False
         cATA = False
         if 'isSU' in session:
             cATA = True
         else:
             admList = getFromWebService("/games/tournaments/" + str(tourId) +
                 "/admins")
-            print admList
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
@@ -1401,11 +1357,10 @@ def new_tournament():
             }
             response2 = postToWebService(payload, "/games/tournaments/"
                 + str(tourID) + "/info")
-            #TODO: REACTION FOR RESPONSE2
-            print response2
-            flash("New tournament successfully created!")
-            session['redirected'] = True
-            return redirect(url_for('news'))
+            if response2.get('Status') is True:
+                flash("New tournament successfully created!")
+                session['redirected'] = True
+                return redirect(url_for('news'))
         else:
             error = response
     return render_template('new_tournament.html', username=session['username'],
@@ -1473,9 +1428,11 @@ def sign_f_tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         if response.get('RegType') == 'Free':
-            response2 = getFromWebService("/games/tournaments/" + str(tourId) +
-                "/registry")
-            print response2
+            payload = {
+                "User": sanitize_html(session['username'])
+            }
+            response2 = postToWebService(payload, "/games/tournaments/" +
+                str(tourId) + "/registry")
             if response2.get('Status') is True:
                 flash("You signed in!")
                 session['redirected'] = True
