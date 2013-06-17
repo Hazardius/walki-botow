@@ -2,7 +2,7 @@
 {% block body %}
   <ul class=news>
   {% for entry in news %}
-    <li><h2>{{ entry.title }} by {{ entry.author }} ({{ entry.published }})</h2><br />
+    <li><h2>[{{ entry.published }}] {{ entry.title }}<br />{{ entry.author }}</h2><br />
       {{ entry.entry|safe }}<br />
       {{ entry.summary|safe }}<br /><br />
       <b>Category:</b> {{ entry.subtitle }}<br /><br /><br />

@@ -477,11 +477,17 @@ def add_news():
     error = None
     if request.method == 'POST':
         import time
+        import datetime
         dateTime = time.strftime("%Y-%m-%d", time.gmtime())
+        pub = dateTime
         if 'pubDate' in request.form:
-            pub = request.form['pubDate']
-        else:
-            pub = dateTime
+            now = datetime.datetime.now()
+            pubDate = request.form['pubDate'].split(' ')
+            pubSDate = pubDate[0].split('-')
+            pubStart = datetime.datetime(int(pubSDate[0]), int(pubSDate[1]),
+                (int(pubSDate[2]) + 1))
+            if (pubStart > now):
+                pub = request.form['pubDate']
         if 'enaCom' in request.form:
             test = True
         else:
