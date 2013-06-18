@@ -1632,6 +1632,13 @@ def sign_ip_tournament():
 
 @app.route('/aGame', methods=['GET', 'POST'])
 def add_game():
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
     if request.method == 'POST':
         newGame = {}
         newGame.update({"codeOfGame": sanitize_html(request.form[
