@@ -1257,7 +1257,8 @@ def view_battle(number):
                 error=error, message=response.get('Message'), log=gameLog)
     else:
         error = response
-    flash("Error! " + error)
+    if error is not None:
+        flash("Error! " + error)
     session['redirected'] = True
     return redirect(url_for('news'))
 
@@ -1278,7 +1279,8 @@ def send_code(idG, game):
                 "GameID": idG,
                 "Game": sanitize_html(game),
                 "Code": request.form['code'],
-                "FileName": sanitize_html(request.form['fileName'])
+                "FileName": sanitize_html(request.form['fileName'].replace(" ",
+                    ""))
             }
             response = postToWebService(payload, "/code/duel/upload")
             if response.get('Status') is True:
@@ -1661,7 +1663,7 @@ def add_game():
         session['redirected'] = True
         return redirect(url_for('news'))
     return render_template('add_game.html', cMessages=check_messages(),
-        username=session['username'])
+        username=session['username'], error=error)
 
 # debug
 
