@@ -765,6 +765,50 @@ def show_user_profile(nick):
         error=error, cMessages=check_messages())
 
 
+@app.route('/edit_privacy/<edited>', methods=['GET', 'POST'])
+def edit_privacy(edited):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    if check_perm('edit_profile/' + edited) is False:
+        if "username" in session:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are not permitted to see that page!")
+        else:
+            return render_template('message.html',
+                message="You are not permitted to see that page!")
+    error = None
+    if request.method == 'POST':
+        payload = {
+            "AllowDuelInv": sanitize_html(request.form['allowDI']),
+            "AllowPrivMessage": sanitize_html(request.form['allowPM']),
+            "AllowTourInv": sanitize_html(request.form['allowTI']),
+            "PublicEmail": sanitize_html(request.form['allowEV']),
+            "Editor": session['username']
+        }
+        response = postToWebService(payload, "/" + sanitize_html(edited) +
+            "/privacy")
+        if response.get('Status') is True:
+            session['redirected'] = True
+            return redirect(url_for('show_user_profile', nick=sanitize_html(
+                edited)))
+        else:
+            error = response.get('Message')
+    response = getFromWebService("/" + sanitize_html(edited) + "/privacy")
+    if response.get('Status') is True:
+        response.update({"nick": edited})
+        return render_template('edit_privacy.html', username=session[
+            'username'], error=error, cMessages=check_messages(),
+            profile=dict(response))
+    else:
+        flash(error)
+        session['redirected'] = True
+        return redirect(url_for('news'))
+
+
 @app.route('/edit_profile/<edited>', methods=['GET', 'POST'])
 def edit_profile(edited):
     if check_spam() is False:
@@ -1153,8 +1197,6 @@ def view_battle(number):
                 r = requests.get(WEBSERVICE_IP + "/Flask/code/" +
                     sanitize_html(gameName) + "/" + str(number) + "/duel/log",
                     stream=True, auth=AUTH_DATA)
-                print r
-                print r.content
                 if r.status_code == 200:
                     #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
                         #"log" + session['username'] + ".txt")

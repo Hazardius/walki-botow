@@ -3,9 +3,9 @@
   <script src="{{ url_for('static', filename='main.js') }}" type="text/javascript" charset=utf-8"></script>
 {% endblock %}
 {% block body %}
-  <h2>Edit data</h2>
+  <h2>Edit data of {{ profile.nick }}</h2>
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <form action="{{ url_for('edit_profile', edited=edited) }}" method=post>
+  <form action="{{ url_for('edit_profile', edited=profile.nick) }}" method=post>
     <dl>
       <dt>Name:
       <dd><input type="text" name="name" value="{{ profile.Name }}" required
@@ -27,7 +27,7 @@
               size="25" required>
       <dt>Avatar address:
       <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
-      {% if session['username'] == edited %}
+      {% if session['username'] == profile.nick %}
       <dt>Pagination:
       <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.Pagination }}>
       {% endif %}

@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block head %}
+  <script src="{{ url_for('static', filename='main.js') }}" type="text/javascript" charset=utf-8"></script>
+{% endblock %}
+{% block body %}
+  <h2>Edit privacy settings of {{ profile.nick }}</h2>
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <form action="{{ url_for('edit_privacy', edited=profile.nick) }}" method=post>
+    <dl>
+      <dt>Show my e-mail: <input type="checkbox" name="allowEV" value=true {% if profile.PublicEmail %}checked=true{% endif %}>
+      <dt>Other users can invite me to duel: <input type="checkbox" name="allowDI" value=true {% if profile.AllowDuelInv %}checked=true{% endif %}>
+      <dt>I can be invited to a tournament: <input type="checkbox" name="allowTI" value=true {% if profile.AllowTournamentsInv %}checked=true{% endif %}>
+      <dt>Other users can send me messages: <input type="checkbox" name="allowPM" value=true {% if profile.AllowPrivateMessage %}checked=true{% endif %}>
+
+      <dd><input type=submit value="Edit privacy settings!">
+    </dl>
+  </form>
+{% endblock %}
