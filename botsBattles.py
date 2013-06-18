@@ -1215,63 +1215,58 @@ def view_battle(number):
                     'username'], cMessages=check_messages(), number=number,
                     game=gameName, error=error, winner=response.get('Winner'),
                     message=response.get('Message'), isP=isPlayer)
-        else:
-            if response.get('Finished') is True:
-                try:
-                    conError = ""
-                    r = requests.get(WEBSERVICE_IP + "/Flask/code/" +
-                        sanitize_html(gameName) + "/" + str(number) + "/duel/log",
-                        stream=True, auth=AUTH_DATA)
-                    if r.status_code == 200:
-                        #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                            #"log" + session['username'] + ".txt")
-                        #locFilePath = os.path.normpath(locFilePath)
-                        zmienna = ""
-                        for chunk in r.iter_content():
-                            zmienna = zmienna + str(chunk)
-                        #with open(locFilePath, 'wb') as f:
-                            #for chunk in r.iter_content():
-                                #f.write(chunk)
-                        #with open(locFilePath, 'r') as content_file:
-                            #conError = content_file.read()
-                        #os.remove(locFilePath)
-                        #conError = ("<br />".join(zmienna.split("\n")))
-                        conError = zmienna
-                        #print conError
-                    else:
-                        conError = "Wrong code of response: " + str(r.status_code)
-                except URLError, e:
-                    if hasattr(e, 'reason'):
-                        conError = e.reason
-                        app.logger.error('We failed to reach a server.\nReason: '
-                            + conError)
-                    elif hasattr(e, 'code'):
-                        conError = e.code
-                        app.logger.error('The server couldn\'t fulfill the request.'
-                            + '\nError code:' + conError)
-                except ValueError, e:
-                    if hasattr(e, 'reason'):
-                        conError = e.reason
-                        app.logger.error('Value Error has been found.\nReason: '
-                            + conError)
-                    elif hasattr(e, 'code'):
-                        conError = e.code
-                        app.logger.error('Value Error has been found.\nError code:'
-                            + conError)
-                    else:
-                        conError = e
-                except requests.exceptions.ConnectionError:
-                    conError = "Connection Error!"
-                    app.logger.error(conError)
-                gameLog = conError
-                return render_template('view_battle.html',
-                    username=session['username'], cMessages=check_messages(),
-                    number=number, game=gameName, winner=response.get('Winner'),
-                    error=error, message=response.get('Message'), log=gameLog)
-            return render_template('send_code.html', username=session[
-                'username'], cMessages=check_messages(), number=number,
-                game=gameName, error=error, winner=response.get('Winner'),
-                message=response.get('Message'), isP=isPlayer)
+        if response.get('Finished') is True:
+            try:
+                conError = ""
+                r = requests.get(WEBSERVICE_IP + "/Flask/code/" +
+                    sanitize_html(gameName) + "/" + str(number) + "/duel/log",
+                    stream=True, auth=AUTH_DATA)
+                if r.status_code == 200:
+                    #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                        #"log" + session['username'] + ".txt")
+                    #locFilePath = os.path.normpath(locFilePath)
+                    zmienna = ""
+                    for chunk in r.iter_content():
+                        zmienna = zmienna + str(chunk)
+                    #with open(locFilePath, 'wb') as f:
+                        #for chunk in r.iter_content():
+                            #f.write(chunk)
+                    #with open(locFilePath, 'r') as content_file:
+                        #conError = content_file.read()
+                    #os.remove(locFilePath)
+                    #conError = ("<br />".join(zmienna.split("\n")))
+                    conError = zmienna
+                    #print conError
+                else:
+                    conError = "Wrong code of response: " + str(r.status_code)
+            except URLError, e:
+                if hasattr(e, 'reason'):
+                    conError = e.reason
+                    app.logger.error('We failed to reach a server.\nReason: '
+                        + conError)
+                elif hasattr(e, 'code'):
+                    conError = e.code
+                    app.logger.error('The server couldn\'t fulfill the request.'
+                        + '\nError code:' + conError)
+            except ValueError, e:
+                if hasattr(e, 'reason'):
+                    conError = e.reason
+                    app.logger.error('Value Error has been found.\nReason: '
+                        + conError)
+                elif hasattr(e, 'code'):
+                    conError = e.code
+                    app.logger.error('Value Error has been found.\nError code:'
+                        + conError)
+                else:
+                    conError = e
+            except requests.exceptions.ConnectionError:
+                conError = "Connection Error!"
+                app.logger.error(conError)
+            gameLog = conError
+            return render_template('view_battle.html',
+                username=session['username'], cMessages=check_messages(),
+                number=number, game=gameName, winner=response.get('Winner'),
+                error=error, message=response.get('Message'), log=gameLog)
     else:
         error = response
     if error is not None:
