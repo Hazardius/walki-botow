@@ -789,11 +789,23 @@ def edit_privacy(edited):
                 message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
+        ADI = False
+        if 'allowDI' in request.form:
+            ADI = True
+        APM = False
+        if 'allowPM' in request.form:
+            APM = True
+        ADI = False
+        if 'allowDI' in request.form:
+            ATI = True
+        AEV = False
+        if 'allowEV' in request.form:
+            AEV = True
         payload = {
-            "AllowDuelInv": sanitize_html(request.form['allowDI']),
-            "AllowPrivMessage": sanitize_html(request.form['allowPM']),
-            "AllowTourInv": sanitize_html(request.form['allowTI']),
-            "PublicEmail": sanitize_html(request.form['allowEV']),
+            "AllowDuelInv": ADI,
+            "AllowPrivMessage": APM,
+            "AllowTourInv": ATI,
+            "PublicEmail": AEV,
             "Editor": session['username']
         }
         response = postToWebService(payload, "/" + sanitize_html(edited) +
