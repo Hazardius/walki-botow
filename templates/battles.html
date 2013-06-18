@@ -21,5 +21,8 @@
   </ul>
   <a href="{{ url_for('choose_oponent') }}">Start a duel</a><br />
   <a href="{{ url_for('help', gamefile='KPN.html') }}">How to play: Rock-Paper-Scissors</a><br />
-  <a href="{{ url_for('help', gamefile='TTT.html') }}">How to play: Tick-Tack-Toe</a>
+  <a href="{{ url_for('help', gamefile='TTT.html') }}">How to play: Tick-Tack-Toe</a><br />
+  {% for game in games %}
+  <a href="{{ url_for('help', gamefile=game.codeOfGame+'.html') }}">How to play: {{ game.gameName }}</a><br />
+  {% endfor %}
 {% endblock %}

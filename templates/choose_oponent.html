@@ -6,7 +6,7 @@
         <dt>Game:
         <dd><select name=game>
         {% for game in games %}
-          <option value="{{ game }}" /> {{ game }}</option>
+          <option value="{{ game.codeOfGame }}" /> {{ game.gameName }}</option>
         {% endfor %}
           <option value="KPN">Rock-paper-scissors</option>
           <option value="TTT">Tic-Tac-Toe</option>

@@ -23,6 +23,7 @@ AUTH_DATA = HTTPDigestAuth('Flask', SECOND_SECRET_KEY)
 import socket
 
 lastRegistration = 0.0
+games = []
 
 timeout = 10
 socket.setdefaulttimeout(timeout)
@@ -51,6 +52,11 @@ app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 def allowed_codeFile(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_FILE
+
+
+def allowed_docFile(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_DOC
 
 
 def getAtomFromWebService(newsID):
@@ -1007,6 +1013,7 @@ def battles_p(page):
     error = None
     response = getFromWebService("/" + session['username'] + "/" + str(page) +
         "/" + str(session['pagination']) + "/duels")
+    global games
     if response.get('Status') is True:
         battles = []
         for i in range(1, session['pagination'] + 1):
@@ -1022,11 +1029,13 @@ def battles_p(page):
         if len(battles) == session['pagination']:
             nextP = True
         return render_template('battles.html', username=session['username'],
-            battles=battles, cMessages=check_messages(), page=page, next=nextP)
+            battles=battles, cMessages=check_messages(), page=page, next=nextP,
+            games=games)
     else:
         error = response.get('Message')
     return render_template('battles.html', username=session['username'],
-        error=error, cMessages=check_messages(), page=page, next=False)
+        error=error, cMessages=check_messages(), page=page, next=False,
+        games=games)
 
 
 @app.route('/choose_oponent')
@@ -1040,6 +1049,7 @@ def choose_oponent():
     error = None
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/100/list")
+    global games
     if userRes.get('Status') is True:
         logins = []
         for i in range(1, userRes.get('Count') + 1):
@@ -1048,10 +1058,10 @@ def choose_oponent():
                 logins.append(nextOne)
         return render_template('choose_oponent.html',
             cMessages=check_messages(), username=session['username'],
-            users=logins)
+            users=logins, games=games)
     error = userRes.get('Message')
     return render_template('choose_oponent.html', username=session['username'],
-        error=error, cMessages=check_messages())
+        error=error, cMessages=check_messages(), games=games)
 
 
 @app.route('/invite', methods=['GET', 'POST'])
@@ -1084,6 +1094,7 @@ def invite_to_battle(uFrom, uTo, gameName):
         error = response.get('Message')
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/list")
+    global games
     if userRes.get('Status') is True:
         logins = []
         for i in range(1, session['pagination']):
@@ -1092,11 +1103,11 @@ def invite_to_battle(uFrom, uTo, gameName):
                 logins.append(nextOne)
         return render_template('choose_oponent.html',
             cMessages=check_messages(), username=session['username'],
-            users=logins, error=error)
+            users=logins, error=error, games=games)
     else:
         error = error + "\n" + userRes.get('Message')
     return render_template('choose_oponent.html', username=session['username'],
-        error=error, cMessages=check_messages())
+        error=error, cMessages=check_messages(), games=games)
 
 
 @app.route('/no_duel/<int:invId>', methods=['GET', 'POST'])
@@ -1465,8 +1476,9 @@ def new_tournament():
                         return redirect(url_for('news'))
         else:
             error = response
+    global games
     return render_template('new_tournament.html', username=session['username'],
-        cMessages=check_messages(), error=error)
+        cMessages=check_messages(), error=error, games=games)
 
 
 @app.route('/ata/<int:tourId>', methods=['GET'])
@@ -1620,12 +1632,29 @@ def sign_ip_tournament():
 
 @app.route('/aGame', methods=['GET', 'POST'])
 def add_game():
-    #if request.method == 'POST':
-    flash("Add game!")
-    session['redirected'] = True
-    return redirect(url_for('news'))
-    #return render_template('add_game.html', cMessages=check_messages(),
-        #username=session['username'])
+    if request.method == 'POST':
+        newGame = {}
+        newGame.update({"codeOfGame": sanitize_html(request.form[
+            'codeOfGame'])})
+        newGame.update({"gameName": sanitize_html(request.form['gameName'])})
+        docFile = request.files['instruction']
+        if docFile and allowed_docFile(docFile.filename):
+            filename = newGame.get('codeOfGame') + ".html"
+            filename = secure_filename(filename)
+            locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                filename)
+            locFilePath = os.path.normpath(locFilePath)
+            docFile.save(locFilePath)
+            global games
+            games.append(newGame)
+            flash("Game added!")
+            session['redirected'] = True
+            return redirect(url_for('news'))
+        flash("Problem adding game!")
+        session['redirected'] = True
+        return redirect(url_for('news'))
+    return render_template('add_game.html', cMessages=check_messages(),
+        username=session['username'])
 
 # debug
 
