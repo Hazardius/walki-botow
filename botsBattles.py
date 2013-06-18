@@ -754,7 +754,8 @@ def show_user_profile(nick):
                 + "?s=150&d=retro"})
         if nick != session['username']:
             if visibleEmail is False:
-                response.update({'Email': ""})
+                if 'isSU' not in session:
+                    response.update({'Email': ""})
         canEdit = check_perm('edit_profile/' + nick)
         return render_template('profile.html', cMessages=check_messages(),
             username=session['username'], profile=dict(response),
@@ -1333,6 +1334,8 @@ def tournaments():
 
 @app.route('/tournament/<int:tourId>')
 def tournament(tourId):
+    # /games/tournaments/{tourID}/scores
+    # lista graczy z wynikami
     if 'redirected' not in session:
         if check_spam() is False:
             return spam_error()
@@ -1397,27 +1400,27 @@ def new_tournament():
         now = datetime.datetime.now()
         bDateTimeO = ""
         if 'bDate' in request.form:
-            bDateTime = request.form['bDate'].split(' ')
+            bDateTime = request.form['bDate'].split('T')
             bDate = bDateTime[0].split('-')
-            bTime = bDateTime[1].spli(':')
+            bTime = bDateTime[1].split(':')
             bDateTimeO = datetime.datetime(int(bDate[0]), int(bDate[1]), int(
                 bDate[2]), int(bTime[0]), int(bTime[1]))
         else:
             error = "Error 2. No date(bDate) sent!"
         eDateTimeO = ""
         if 'eDate' in request.form:
-            eDateTime = request.form['eDate'].split(' ')
+            eDateTime = request.form['eDate'].split('T')
             eDate = eDateTime[0].split('-')
-            eTime = eDateTime[1].spli(':')
+            eTime = eDateTime[1].split(':')
             eDateTimeO = datetime.datetime(int(eDate[0]), int(eDate[1]), int(
                 eDate[2]), int(eTime[0]), int(eTime[1]))
         else:
             error = "Error 2. No date(eDate) sent!"
         sDateTimeO = ""
         if 'sDate' in request.form:
-            sDateTime = request.form['sDate'].split(' ')
+            sDateTime = request.form['sDate'].split('T')
             sDate = sDateTime[0].split('-')
-            sTime = sDateTime[1].spli(':')
+            sTime = sDateTime[1].split(':')
             sDateTimeO = datetime.datetime(int(sDate[0]), int(sDate[1]), int(
                 sDate[2]), int(sTime[0]), int(sTime[1]))
         else:
