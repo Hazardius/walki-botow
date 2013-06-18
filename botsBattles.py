@@ -1142,6 +1142,11 @@ def view_battle(number):
                     username=session['username'], cMessages=check_messages(),
                     number=number, game=gameName, winner=response.get('Winner'),
                     error=error, message=response.get('Message'))
+            if response.get('Message') == "Waiting for files":
+                return render_template('send_code.html', username=session[
+                    'username'], cMessages=check_messages(), number=number,
+                    game=gameName, error=error, winner=response.get('Winner'),
+                    message=response.get('Message'), isP=isPlayer)
         if response.get('Finished') is True:
             try:
                 conError = ""
@@ -1198,10 +1203,9 @@ def view_battle(number):
                 error=error, message=response.get('Message'), log=gameLog)
     else:
         error = response
-    return render_template('send_code.html', username=session['username'],
-        cMessages=check_messages(), number=number, game=gameName, error=error,
-        winner=response.get('Winner'), message=response.get('Message'),
-        isP=isPlayer)
+    flash("Error! " + error)
+    session['redirected'] = True
+    return redirect(url_for('news'))
 
 
 @app.route('/sendCode/<int:idG>/<game>', methods=['GET', 'POST'])
