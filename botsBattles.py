@@ -66,6 +66,21 @@ def allowed_docFile(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_DOC
 
 
+@app.route('/delete_file/<filename>')
+def delete_file(filename):
+    if 'isSU' not in session:
+        return ban_error()
+    filename = secure_filename(filename)
+    filePath = os.path.join(app.config['UPLOAD_FOLDER'],
+        filename)
+    filePath = os.path.normpath(filePath)
+    if os.path.exists(filePath) is True:
+        os.remove(filePath)
+    flash('File %s was removed!' % filename)
+    session['redirected'] = True
+    return redirect(url_for('news'))
+
+
 def make_external(url):
     return urljoin(request.url_root, url)
 
@@ -464,7 +479,7 @@ def news():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
-                                day = int(shorterTextList[2])
+                                day = int(shorterTextList[2]) + 1
                                 if day < 10:
                                     day = "0" + str(day)
                                 else:
@@ -525,7 +540,7 @@ def recent_feed():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
-                                day = int(shorterTextList[2])
+                                day = int(shorterTextList[2]) + 1
                                 if day < 10:
                                     day = "0" + str(day)
                                 else:
@@ -1574,7 +1589,7 @@ def new_tournament():
     error = None
     if request.method == 'POST':
         import datetime
-        from_zone = tzlocal()
+        from_zone = PLTZ
         to_zone = tzutc()
         now = datetime.datetime.now()
         now = now.replace(tzinfo=from_zone)
@@ -1644,6 +1659,7 @@ def new_tournament():
                         "TourID": tourID,
                         "Type": sanitize_html(request.form['tourType'])
                     }
+                    print payload
                     response2 = postToWebService(payload, "/games/tournaments/"
                         + str(tourID) + "/info")
                     if response2.get('Status') is True:
