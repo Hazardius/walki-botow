@@ -726,7 +726,11 @@ def login():
                     pagFile = open(pagFilePath, 'r+')
                     pags = json.loads(pagFile.read())
                     pagFile.close()
-                session['pagination'] = int(pags.get(request.form['username']))
+                if request.form['username'] in pags:
+                    session['pagination'] = int(pags.get(request.form[
+                        'username']))
+                else:
+                    session['pagination'] = 10
                 response2 = getFromWebService("/" + sanitize_html(request.form[
                     'username']) + "/retrieve")
                 if response2.get('Status') is True:
