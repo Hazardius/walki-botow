@@ -11,7 +11,9 @@ import os
 import requests
 from requests.auth import HTTPDigestAuth
 from urllib2 import URLError
+from urlparse import urljoin
 from werkzeug import secure_filename
+from werkzeug.contrib.atom import AtomFeed
 import xml.etree.ElementTree as ET
 
 # configuration
@@ -57,6 +59,24 @@ def allowed_codeFile(filename):
 def allowed_docFile(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_DOC
+
+def make_external(url):
+    return urljoin(request.url_root, url)
+
+
+def sanitize_html(value):
+    value = value.replace("'", "")
+    value = value.replace('"', "")
+    value = value.replace("`", "")
+    value = value.replace("$", "")
+    value = value.replace("^", "")
+    value = value.replace("&", "")
+    value = value.replace("*", "")
+    soup = BeautifulSoup(value)
+    for tag in soup.findAll(True):
+        if tag.name not in VALID_TAGS:
+            tag.hidden = True
+    return soup.renderContents()
 
 
 def getAtomFromWebService(newsID):
@@ -220,21 +240,6 @@ def putToWebService(payload, subpage):
     return errorMessage
 
 
-def sanitize_html(value):
-    value = value.replace("'", "")
-    value = value.replace('"', "")
-    value = value.replace("`", "")
-    value = value.replace("$", "")
-    value = value.replace("^", "")
-    value = value.replace("&", "")
-    value = value.replace("*", "")
-    soup = BeautifulSoup(value)
-    for tag in soup.findAll(True):
-        if tag.name not in VALID_TAGS:
-            tag.hidden = True
-    return soup.renderContents()
-
-
 def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
@@ -286,7 +291,7 @@ def ws_error():
 
 def spam_error():
     return render_template('error.html', errorNo=429,
-        errorMe="Too Many Requests! One request per 1.5 second allowed.")
+        errorMe="Too Many Requests! One request per 0.75 second allowed.")
 
 
 @app.errorhandler(400)
@@ -327,7 +332,7 @@ def check_spam():
         lastTime = 0.0
     session['lastTime'] = time.time()
     if lastTime:
-        if (session['lastTime'] - lastTime < 1.5):
+        if (session['lastTime'] - lastTime < 0.75):
             return False
     return True
 
@@ -466,6 +471,66 @@ def news():
             cMessages=check_messages(), error=error)
     else:
         return render_template('news.html', error=error)
+
+
+@app.route('/news.atom')
+def recent_feed():
+    error = None
+    feed = AtomFeed('Recent News',
+                    feed_url=request.url, url=request.url_root)
+    if "pagination" in session:
+        response = getNSFromWebService("/news/" + str(0) + "/" + str(session[
+            'pagination']) + "/retrieve")
+    else:
+        response = getNSFromWebService("/news/" + str(0) + "/" + str(25) +
+            "/retrieve")
+    if response.get('Status') is True:
+        news = []
+        for i in range(1, response.get('Count') + 1):
+            response2 = getAtomFromWebService(response.get(str(i)))
+            if 'Status' in response2:
+                error = response2.get('Message')
+                print error
+            else:
+                oneNews = {}
+                for field in response2:
+                    shortTag = field.tag.split('}')[1]
+                    if shortTag == "author":
+                        for deepField in field:
+                            info = deepField.text
+                    elif shortTag == "entry":
+                        for deepField in field:
+                            shorterTag = deepField.tag.split('}')[1]
+                            if shorterTag == "published":
+                                shorterText = deepField.text.split('T')[0]
+                                oneNews.update({shorterTag: shorterText})
+                            elif shorterTag == "summary":
+                                oneNews.update({shorterTag: deepField.text})
+                            elif shorterTag == "title":
+                                info = deepField.text
+                    else:
+                        info = field.text
+                    oneNews.update({shortTag: info})
+                news.append(oneNews)
+        news = sorted(news, key=lambda art: art['published'], reverse=True)
+
+        someId = 1
+        for oneNews in news:
+            import datetime
+            dateTab = oneNews.get('published').split('-')
+            date = datetime.datetime(int(dateTab[0]), int(dateTab[1]), int(
+                dateTab[2]))
+            feed.add(oneNews.get('title'),
+                unicode(oneNews.get('summary') + oneNews.get('entry')),
+                id=someId,
+                content_type='html',
+                url="http://walki-botow.herokuapp.com/",
+                author=oneNews.get('author'),
+                published=date,
+                updated=date)
+            someId = someId + 1
+        return feed.get_response()
+    return page_error()
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
@@ -1682,7 +1747,7 @@ def add_game():
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
-    #request = getFromWebService("/games/tournaments/24/registry")
+    #request = getFromWebService("/games/KPN")
     #print request
     #return render_template('message.html', username=session['username'],
         #message=request)

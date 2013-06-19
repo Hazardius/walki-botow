@@ -10,6 +10,11 @@
     <li><em>There is no news? Probably server was cleaned.</em>
   {% endfor %}
   <br /><br />
+  <link href="{{ url_for('recent_feed') }}"
+      rel="alternate"
+      title="Recent Changes"
+      type="application/atom+xml">
+  <a href="{{ url_for('recent_feed') }}">ATOM feed</a><br />
   <!--<div class="fb-like" data-href="http://walki-botow.herokuapp.com/" data-send="true"
       data-width="450" data-show-faces="true" data-font="verdana"></div>
   <div class="fb-comments" data-href="http://walki-botow.herokuapp.com/"
