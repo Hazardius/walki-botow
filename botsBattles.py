@@ -36,7 +36,7 @@ WEBSERVICE_IP = "http://77.65.54.170:9005"
 TESTING = False
 
 # list of allowed extensions
-ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'cs', 'p'])
+ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'cs', 'p', 'ps'])
 ALLOWED_EXTENSIONS_DOC = set(['html'])
 UPLOAD_FOLDER = 'temp'
 
@@ -449,7 +449,15 @@ def news():
                         for deepField in field:
                             shorterTag = deepField.tag.split('}')[1]
                             if shorterTag == "published":
-                                shorterText = deepField.text.split('T')[0]
+                                shorterTextList = (deepField.text.split('T')[0]
+                                    .split('-'))
+                                day = int(shorterTextList[2]) + 1
+                                if day < 10:
+                                    day = "0" + str(day)
+                                else:
+                                    day = str(day)
+                                shorterText = (shorterTextList[0] + "-" +
+                                    shorterTextList[1] + "-" + day)
                                 oneNews.update({shorterTag: shorterText})
                             elif shorterTag == "summary":
                                 oneNews.update({shorterTag: deepField.text})
@@ -502,7 +510,15 @@ def recent_feed():
                         for deepField in field:
                             shorterTag = deepField.tag.split('}')[1]
                             if shorterTag == "published":
-                                shorterText = deepField.text.split('T')[0]
+                                shorterTextList = (deepField.text.split('T')[0]
+                                    .split('-'))
+                                day = int(shorterTextList[2]) + 1
+                                if day < 10:
+                                    day = "0" + str(day)
+                                else:
+                                    day = str(day)
+                                shorterText = (shorterTextList[0] + "-" +
+                                    shorterTextList[1] + "-" + day)
                                 oneNews.update({shorterTag: shorterText})
                             elif shorterTag == "summary":
                                 oneNews.update({shorterTag: deepField.text})
