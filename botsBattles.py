@@ -5,6 +5,8 @@ from __future__ import with_statement
 from flask import Flask, request, session, redirect, url_for, \
      render_template, flash, send_from_directory
 from BeautifulSoup import BeautifulSoup
+from dateutil.tz import *
+from datetime import *
 import json
 import md5
 import os
@@ -459,7 +461,7 @@ def news():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
-                                day = int(shorterTextList[2]) + 1
+                                day = int(shorterTextList[2])
                                 if day < 10:
                                     day = "0" + str(day)
                                 else:
@@ -520,7 +522,7 @@ def recent_feed():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
-                                day = int(shorterTextList[2]) + 1
+                                day = int(shorterTextList[2])
                                 if day < 10:
                                     day = "0" + str(day)
                                 else:
@@ -1027,6 +1029,9 @@ def edit_profile(edited):
     if response.get('Status') is True:
         response.update({"nick": edited})
         response.update({"pag": session['pagination']})
+        tmzns = []
+        #print datetime.now(tzlocal())
+        #tmzns = tzwin.list()
         response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
         if response2.get('Status') is True:
             response.update(response2)
@@ -1050,19 +1055,19 @@ def edit_profile(edited):
                         for i in range(1, ugrCount + 1):
                             group = response4.get(str(i))
                             usrG.append(group)
-                        return render_template('edit_profile.html',
+                        return render_template('edit_profile.html', tmzns=tmzns,
                             username=session['username'], error=error,
                             edited=edited, cMessages=check_messages(),
                             profile=dict(response), allG=allG, usrG=usrG)
                     return render_template('edit_profile.html',
                         username=session['username'], error=error,
-                        edited=edited, cMessages=check_messages(),
+                        edited=edited, cMessages=check_messages(), tmzns=tmzns,
                         profile=dict(response))
-            return render_template('edit_profile.html',
+            return render_template('edit_profile.html', tmzns=tmzns,
                 username=session['username'], error=error, edited=edited,
                 cMessages=check_messages(), profile=dict(response))
         return render_template('edit_profile.html',
-            username=session['username'], error=error,
+            username=session['username'], error=error, tmzns=tmzns,
             cMessages=check_messages(), edited=edited, profile=dict(response))
     else:
         flash(error)
