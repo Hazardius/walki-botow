@@ -717,6 +717,16 @@ def login():
             }
             response = postToWebService(payload, "/login")
             if response.get('Status') is True:
+                filename = "usersPag.jsoninf"
+                pagFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    filename)
+                pagFilePath = os.path.normpath(pagFilePath)
+                pags = {}
+                if os.path.exists(pagFilePath) is True:
+                    pagFile = open(pagFilePath, 'r+')
+                    pags = json.loads(pagFile.read())
+                    pagFile.close()
+                session['pagination'] = int(pags.get(request.form['username']))
                 response2 = getFromWebService("/" + sanitize_html(request.form[
                     'username']) + "/retrieve")
                 if response2.get('Status') is True:
@@ -731,7 +741,6 @@ def login():
                 session['permissions'] = permissions
                 session['logged_in'] = True
                 session['username'] = request.form['username']
-                session['pagination'] = 10
                 flash('You were logged in %s' % session['username'])
                 session['redirected'] = True
                 return redirect(url_for('news'))
@@ -926,6 +935,26 @@ def edit_profile(edited):
                 message="You are not permitted to see that page!")
     error = None
     if request.method == 'POST':
+        if (edited == session['username']):
+            if (int(request.form['pagination']) < 4):
+                session['pagination'] = 4
+            elif (int(request.form['pagination']) > 25):
+                session['pagination'] = 25
+            else:
+                session['pagination'] = int(request.form['pagination'])
+        filename = "usersPag.jsoninf"
+        pagFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+            filename)
+        pagFilePath = os.path.normpath(pagFilePath)
+        pags = {}
+        if os.path.exists(pagFilePath) is True:
+            pagFile = open(pagFilePath, 'r+')
+            pags = json.loads(pagFile.read())
+            pagFile.close()
+        pags.update({session['username']: str(session['pagination'])})
+        pagFile = open(pagFilePath, 'w+')
+        pagFile.write(json.dumps(pags))
+        pagFile.close()
         payload = {
             "Login": sanitize_html(edited),
             "Name": sanitize_html(request.form['name']
@@ -939,13 +968,6 @@ def edit_profile(edited):
         }
         response = postToWebService(payload, "/" + payload['Login'] + "/about")
         if response.get('Status') is True:
-            if (edited == session['username']):
-                if (int(request.form['pagination']) < 4):
-                    session['pagination'] = 4
-                elif (int(request.form['pagination']) > 25):
-                    session['pagination'] = 25
-                else:
-                    session['pagination'] = int(request.form['pagination'])
             if "eNot" in request.form:
                 eNot = True
             else:
@@ -992,6 +1014,7 @@ def edit_profile(edited):
     response = getFromWebService("/" + sanitize_html(edited) + "/about")
     if response.get('Status') is True:
         response.update({"nick": edited})
+        response.update({"pag": session['pagination']})
         response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
         if response2.get('Status') is True:
             response.update(response2)
@@ -1481,6 +1504,13 @@ def tournament(tourId):
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
+        playersScoresRes = getFromWebService("/games/tournaments/" + str(tourId)
+            + "/scores")
+        if playersScoresRes.get('Status') is True:
+            players = []
+            return render_template('tournament.html', tourId=tourId, cATA=cATA,
+                tour=tour, cMessages=check_messages(), username=session[
+                'username'], error=error, regState=regState, plList=players)
         return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
             'username'], error=error, regState=regState)
@@ -1734,27 +1764,25 @@ def add_game():
     if is_ban() is True:
         return ban_error()
     error = None
-    if request.method == 'POST':
-        newGame = {}
-        newGame.update({"codeOfGame": sanitize_html(request.form[
-            'codeOfGame'])})
-        newGame.update({"gameName": sanitize_html(request.form['gameName'])})
-        docFile = request.files['instruction']
-        if docFile and allowed_docFile(docFile.filename):
-            filename = newGame.get('codeOfGame') + ".html"
-            filename = secure_filename(filename)
-            locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                filename)
-            locFilePath = os.path.normpath(locFilePath)
-            docFile.save(locFilePath)
-            global games
-            games.append(newGame)
-            flash("Game added!")
-            session['redirected'] = True
-            return redirect(url_for('news'))
-        flash("Problem adding game!")
-        session['redirected'] = True
-        return redirect(url_for('news'))
+    #if request.method == 'POST':
+        #newGame = {}
+        #newGame.update({"codeOfGame": sanitize_html(request.form[
+            #'codeOfGame'])})
+        #newGame.update({"gameName": sanitize_html(request.form['gameName'])})
+        #docFile = request.files['instruction']
+        #if docFile and allowed_docFile(docFile.filename):
+            #filename = newGame.get('codeOfGame') + ".html"
+            #filename = secure_filename(filename)
+            #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                #filename)
+            #locFilePath = os.path.normpath(locFilePath)
+            #docFile.save(locFilePath)
+            #flash("Game added!")
+            #session['redirected'] = True
+            #return redirect(url_for('news'))
+        #flash("Problem adding game!")
+        #session['redirected'] = True
+        #return redirect(url_for('news'))
     return render_template('add_game.html', cMessages=check_messages(),
         username=session['username'], error=error)
 

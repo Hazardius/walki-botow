@@ -29,7 +29,7 @@
       <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
       {% if session['username'] == profile.nick %}
       <dt>Pagination:
-      <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.Pagination }}>
+      <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.pag }}>
       {% endif %}
       <dt>Email Notice: <input type="checkbox" name="eNot" value=true {% if profile.EmailNotice %}checked=true{% endif %}>
       <dt>Email Notice About Duels: <input type="checkbox" name="eNotD" value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
