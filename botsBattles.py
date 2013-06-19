@@ -60,6 +60,7 @@ def allowed_docFile(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_DOC
 
+
 def make_external(url):
     return urljoin(request.url_root, url)
 
@@ -77,6 +78,13 @@ def sanitize_html(value):
         if tag.name not in VALID_TAGS:
             tag.hidden = True
     return soup.renderContents()
+
+
+@app.route('/show_file/<filename>')
+def show_file(filename):
+    if 'isSU' not in session:
+        return ban_error()
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 def getAtomFromWebService(newsID):
@@ -1512,6 +1520,10 @@ def tournament(tourId):
             + "/scores")
         if playersScoresRes.get('Status') is True:
             players = []
+            for i in range(1, playersScoresRes.get('Count') + 1):
+                nextOne = playersScoresRes.get(str(i))
+                if nextOne is not None:
+                    players.append(nextOne)
             return render_template('tournament.html', tourId=tourId, cATA=cATA,
                 tour=tour, cMessages=check_messages(), username=session[
                 'username'], error=error, regState=regState, plList=players)

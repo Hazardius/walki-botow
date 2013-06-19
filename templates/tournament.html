@@ -27,6 +27,11 @@
   {% else %}
     <dt>State of registration: <b>CLOSED</b>
   {% endif %}
+  {% for player in plList %}
+    <li><b>{{ player.Login }}:</b> {{ player.Points }}
+  {% else %}
+    <li><em>No players yet. Be first!</em>
+  {% endfor %}
   {% if cATA %}
     <dt><form method="link" action="{{ url_for('add_tour_admin', tourId=tourId) }}">
       <dt><input type="submit" value="Add Tournament Admin!">
