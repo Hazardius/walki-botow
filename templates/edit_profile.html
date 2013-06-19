@@ -31,15 +31,6 @@
       <dt>Pagination:
       <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.pag }}>
       {% endif %}
-<!--
-      {% if tmzns %}
-        <dt>TimeZone:
-        <dd><select name=game>
-        {% for timeZone in tmzns %}
-          <option value="{{ timeZone.tag }}" /> {{ timeZone.name }}</option>
-        {% endfor %}
-      {% endif %}
--->
       <dt>Email Notice: <input type="checkbox" name="eNot" value=true {% if profile.EmailNotice %}checked=true{% endif %}>
       <dt>Email Notice About Duels: <input type="checkbox" name="eNotD" value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
       <dt>Email Notice About Tournaments: <input type="checkbox" name="eNotT" value=true {% if profile.EmailTournamentNotice %}checked=true{% endif %}>

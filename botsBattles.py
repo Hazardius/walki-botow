@@ -29,6 +29,9 @@ import socket
 lastRegistration = 0.0
 games = []
 
+TZOFFSETS = {"PL": 7200}
+PLTZ = tzoffset("PL", 7200)
+
 timeout = 10
 socket.setdefaulttimeout(timeout)
 
@@ -1505,6 +1508,12 @@ def tournament(tourId):
             regState = True
         else:
             regState = False
+        from_zone = tzutc()
+        to_zone = PLTZ
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'Begin': str(regStart).split('+')[0]})
+
         rDate = tour.get('End').split(' ')
         regDate = rDate[0].split('-')
         regTime = rDate[1].split(':')
@@ -1512,6 +1521,17 @@ def tournament(tourId):
             regDate[2]), int(regTime[0]), int(regTime[1]))
         if (regStart < now):
             regState = False
+        from_zone = tzutc()
+        to_zone = PLTZ
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'End': str(regStart).split('+')[0]})
+
+        from_zone = tzlocal()
+        to_zone = tzutc()
+        now = now.replace(tzinfo=from_zone)
+        now = now.astimezone(to_zone)
+
         cATA = False
         if 'isSU' in session:
             cATA = True
@@ -1554,7 +1574,11 @@ def new_tournament():
     error = None
     if request.method == 'POST':
         import datetime
+        from_zone = tzlocal()
+        to_zone = tzutc()
         now = datetime.datetime.now()
+        now = now.replace(tzinfo=from_zone)
+        now = now.astimezone(to_zone)
         bDateTimeO = ""
         if 'bDate' in request.form:
             bDateTime = request.form['bDate'].split('T')
@@ -1583,6 +1607,12 @@ def new_tournament():
         else:
             error = "Error 2. No date(sDate) sent!"
         if error is None:
+            bDateTimeO = bDateTimeO.replace(tzinfo=from_zone)
+            bDateTimeO = bDateTimeO.astimezone(to_zone)
+            eDateTimeO = eDateTimeO.replace(tzinfo=from_zone)
+            eDateTimeO = eDateTimeO.astimezone(to_zone)
+            sDateTimeO = sDateTimeO.replace(tzinfo=from_zone)
+            sDateTimeO = sDateTimeO.astimezone(to_zone)
             if (bDateTimeO < now):
                 error = ("Registration date wrong! Beginning of registration " +
                     "before now!")
@@ -1814,6 +1844,7 @@ def add_game():
 #def secret():
     #request = getFromWebService("/games/KPN")
     #print request
+    #request = datetime.now(tzlocal()).astimezone(tzoffset(None, 7200))
     #return render_template('message.html', username=session['username'],
         #message=request)
 
