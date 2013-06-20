@@ -35,8 +35,11 @@ PLTZ = tzoffset("PL", 7200)
 timeout = 10
 socket.setdefaulttimeout(timeout)
 
-# address of WebService server
-WEBSERVICE_IP = "http://77.65.54.170:9005"
+# address of WebService server - McStAp
+#WEBSERVICE_IP = "http://77.65.54.170:9005"
+# address of WebService server - McHo
+WEBSERVICE_IP = "http://89.228.196.221:9005"
+# address of WebService server - Localhost
 #WEBSERVICE_IP = "http://localhost:9005"
 TESTING = False
 
@@ -1498,8 +1501,6 @@ def tournaments():
 
 @app.route('/tournament/<int:tourId>')
 def tournament(tourId):
-    # /games/tournaments/{tourID}/scores
-    # lista graczy z wynikami
     if 'redirected' not in session:
         if check_spam() is False:
             return spam_error()
@@ -1521,8 +1522,10 @@ def tournament(tourId):
             regDate[2]), int(regTime[0]), int(regTime[1]))
         if (regStart < now):
             regState = True
+            playState = True
         else:
             regState = False
+            playState = False
         from_zone = tzutc()
         to_zone = PLTZ
         regStart = regStart.replace(tzinfo=from_zone)
@@ -1542,10 +1545,18 @@ def tournament(tourId):
         regStart = regStart.astimezone(to_zone)
         tour.update({'End': str(regStart).split('+')[0]})
 
-        from_zone = tzlocal()
-        to_zone = tzutc()
-        now = now.replace(tzinfo=from_zone)
-        now = now.astimezone(to_zone)
+        rDate = tour.get('Start').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        if (regStart < now):
+            playState = False
+        from_zone = tzutc()
+        to_zone = PLTZ
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'Start': str(regStart).split('+')[0]})
 
         cATA = False
         if 'isSU' in session:
@@ -1564,12 +1575,15 @@ def tournament(tourId):
                 nextOne = playersScoresRes.get(str(i))
                 if nextOne is not None:
                     players.append(nextOne)
+                    if nextOne.get('Login') == session['username']:
+                        playState = True
             return render_template('tournament.html', tourId=tourId, cATA=cATA,
                 tour=tour, cMessages=check_messages(), username=session[
-                'username'], error=error, regState=regState, plList=players)
+                'username'], error=error, regState=regState, plList=players,
+                playState=playState)
         return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
-            'username'], error=error, regState=regState)
+            'username'], error=error, regState=regState, playState=playState)
     error = response.get('Message')
     return render_template('tournament.html', tourId=tourId,
         cMessages=check_messages(), username=session['username'], error=error)
@@ -1659,7 +1673,6 @@ def new_tournament():
                         "TourID": tourID,
                         "Type": sanitize_html(request.form['tourType'])
                     }
-                    print payload
                     response2 = postToWebService(payload, "/games/tournaments/"
                         + str(tourID) + "/info")
                     if response2.get('Status') is True:
