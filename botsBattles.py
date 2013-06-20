@@ -1513,9 +1513,6 @@ def tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         tour = response
-        print tour.get('Begin')
-        print tour.get('End')
-        print tour.get('Start')
         import datetime
         now = datetime.datetime.now()
         rDate = tour.get('Begin').split(' ')
@@ -1669,11 +1666,11 @@ def new_tournament():
                 if response.get('Status') is True:
                     tourID = response.get('ID')
                     payload = {
-                        "RegBegin": str(bDateTimeO).split('+'),
-                        "RegEnd": str(eDateTimeO).split('+'),
+                        "RegBegin": str(bDateTimeO).split('+')[0],
+                        "RegEnd": str(eDateTimeO).split('+')[0],
                         "RegType": sanitize_html(request.form['regType']),
                         "MaxPlayers": request.form['maxPl'],
-                        "Start": str(sDateTimeO).split('+'),
+                        "Start": str(sDateTimeO).split('+')[0],
                         "TourID": tourID,
                         "Type": sanitize_html(request.form['tourType'])
                     }
@@ -1683,8 +1680,12 @@ def new_tournament():
                         flash("New tournament successfully created!")
                         session['redirected'] = True
                         return redirect(url_for('news'))
-        else:
-            error = response
+                    else:
+                        flash("Error: " + response2.get('Message'))
+                        session['redirected'] = True
+                        return redirect(url_for('news'))
+                else:
+                    error = response.get('Message')
     global games
     return render_template('new_tournament.html', username=session['username'],
         cMessages=check_messages(), error=error, games=games)
@@ -1839,9 +1840,9 @@ def sign_ip_tournament():
 
 @app.route('/tour/send_code', methods=['GET', 'POST'])
 def send_code_t():
+    # /code/tournament/upload/{tourID}/{user}/{fileName}
     return render_template('message.html', username=session['username'],
         message='aaa')
-
 
 # add games
 
