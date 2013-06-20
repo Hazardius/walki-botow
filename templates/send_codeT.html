@@ -2,9 +2,10 @@
 {% block body %}
   {% if session.logged_in %}
   {% if error %}<p class=error>{{ error }}{% endif %}
+    {% if tourID %}<b>Tournament {{ tourID }}</b>{% endif %}
     {% if isP %}
     <h2>SEND IN TEXTBOX</h2>
-    <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post >
+    <form action="{{ url_for('send_code_t', tourID=tourID) }}" method=post >
       <dl>
         <dt><input type="hidden" name="codeForm" value="text"> Code:
         <dd><textarea name=code rows=10 cols=80></textarea>
@@ -22,7 +23,7 @@
       </dl>
     </form>
     <h2>OR SEND FILE</h2>
-    <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post class=send-code enctype=multipart/form-data >
+    <form action="{{ url_for('send_code_t', tourID=tourID) }}" method=post class=send-code enctype=multipart/form-data >
       <dl>
         <dt><input type="hidden" name="codeForm" value="file"> File:
         <dd><input type="file" name="file">

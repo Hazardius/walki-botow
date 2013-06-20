@@ -1846,11 +1846,70 @@ def sign_ip_tournament():
         message=error)
 
 
-@app.route('/tour/send_code', methods=['GET', 'POST'])
-def send_code_t():
-    # /code/tournament/upload/{tourID}/{user}/{fileName}
-    return render_template('message.html', username=session['username'],
-        message='aaa')
+@app.route('/tour<int:tourID>/sendCode', methods=['GET', 'POST'])
+def send_code_t(tourID):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    error = None
+
+    isPlayer = False
+    response = getFromWebService("/games/tournaments/" + str(tourID)
+        + "/scores")
+    if response.get('Status') is True:
+        for i in range(1, response.get('Count') + 1):
+            nextOne = response.get(str(i))
+            if nextOne is not None:
+                if nextOne.get('Login') == session['username']:
+                    isPlayer = True
+        if isPlayer is False:
+            return render_template('message.html', cMessages=check_messages(),
+                message="You are not permitted to see that page!")
+    if request.method == 'POST':
+        if request.form['codeForm'] == 'text':
+            exten = request.form['lang']
+            payload = {
+                "From": sanitize_html(session['username']),
+                "Language": sanitize_html(exten),
+                "TourID": tourID,
+                "Code": request.form['code'],
+                "FileName": sanitize_html(request.form['fileName'].replace(" ",
+                    ""))
+            }
+            response = postToWebService(payload, "/code/tournament/upload")
+            if response.get('Status') is True:
+                flash("Code sent!")
+                session['redirected'] = True
+                return redirect(url_for('news'))
+            else:
+                error = response
+        elif request.form['codeForm'] == 'file':
+            codeFile = request.files['file']
+            #if codeFile and allowed_codeFile(codeFile.filename):
+                #filename = secure_filename(codeFile.filename)
+                #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    #filename)
+                #locFilePath = os.path.normpath(locFilePath)
+                #codeFile.save(locFilePath)
+                #response = sendFileToWebService(locFilePath, "/code/duel/upl" +
+                    #"oad/" + game + "/" + str(idG) + "/" + session['username']
+                    #+ "/" + filename)
+                #if response.get('Status') is True:
+                    #os.remove(locFilePath)
+                    #flash("File uploaded!")
+                    #session['redirected'] = True
+                    #return redirect(url_for('news'))
+                #else:
+                    #error = response.get('Message')
+                #os.remove(locFilePath)
+            #else:
+                #error = 'File format not valid!'
+                #app.logger.error(error)
+        isPlayer = True
+    return render_template('send_codeT.html', username=session[
+        'username'], cMessages=check_messages(), error=error,
+        message=response.get('Message'), isP=isPlayer, tourID=tourID)
 
 # add games
 

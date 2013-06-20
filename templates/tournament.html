@@ -44,7 +44,7 @@
   {% if playState %}
     {% for player in plList %}
       {% if player.Login == session['username'] %}
-        <a href="{{ url_for('send_code_t') }}">Send code</a><br />
+        <a href="{{ url_for('send_code_t', tourID=tourId) }}">Send code</a><br />
       {% endif %}
     {% endfor %}
   {% endif %}
