@@ -11,6 +11,7 @@
   <dt>End of registration:<dd>{{ tour.End }}
   <dt>Start of tournament:<dd>{{ tour.Start }}
   {% if regState %}
+    {% if isPlay %}
     <dt>State of registration: <b>OPEN</b>
     {% if tour.RegType == "Invitation" %}
     {% if cATA %}
@@ -25,6 +26,7 @@
           <input type="submit" value="Sign In!">
         </form>
       {% endif %}
+    {% endif %}
     {% endif %}
   {% else %}
     <dt>State of registration: <b>CLOSED</b>

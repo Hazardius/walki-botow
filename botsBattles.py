@@ -1473,6 +1473,11 @@ def send_code(idG, game):
 
 @app.route('/tournaments')
 def tournaments():
+    return tournaments_p(0)
+
+
+@app.route('/tournaments/<int:page>')
+def tournaments_p(page):
     if check_spam() is False:
         return spam_error()
     if check_ws() is False:
@@ -1480,7 +1485,7 @@ def tournaments():
     if is_ban() is True:
         return ban_error()
     error = None
-    response = getFromWebService("/games/" + str(0) + "/" + str(session[
+    response = getFromWebService("/games/" + str(page) + "/" + str(session[
         'pagination']) + "/tournaments")
     if response.get('Status') is True:
         if response.get('Count') != 0:
@@ -1490,9 +1495,12 @@ def tournaments():
                 if nextOne is not None:
                     tours.append(dict(nextOne))
             tours = sorted(tours, key=lambda bat: bat['Name'].lower())
+            nextP = False
+            if len(tours) == session['pagination']:
+                nextP = True
             return render_template('tournaments.html',
                 username=session['username'], tours=tours,
-                cMessages=check_messages())
+                cMessages=check_messages(), page=page, next=nextP)
     else:
         error = response.get('Message')
     return render_template('tournaments.html', username=session['username'],
@@ -1584,7 +1592,7 @@ def tournament(tourId):
             return render_template('tournament.html', tourId=tourId, cATA=cATA,
                 tour=tour, cMessages=check_messages(), username=session[
                 'username'], error=error, regState=regState, plList=players,
-                playState=playState)
+                playState=playState, isPlay=isPlay)
         return render_template('tournament.html', tourId=tourId, cATA=cATA,
             tour=tour, cMessages=check_messages(), username=session[
             'username'], error=error, regState=regState, playState=playState)

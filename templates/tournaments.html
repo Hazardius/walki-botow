@@ -9,5 +9,13 @@
   {% else %}
     <li><em>Currently there is no active tournament.</em>
   {% endfor %}
+  {% if page>0 %}
+  <a href="{{ url_for('tournaments_p', page=(page-1)) }}">Previous page</a><br />
+  {% endif %}
+  {% if tours %}
+      {% if next %}
+          <a href="{{ url_for('tournaments_p', page=(page+1)) }}">Next page</a>
+      {% endif %}
+  {% endif %}
   </ul>
 {% endblock %}
