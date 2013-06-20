@@ -1513,6 +1513,9 @@ def tournament(tourId):
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         tour = response
+        print tour.get('Begin')
+        print tour.get('End')
+        print tour.get('Start')
         import datetime
         now = datetime.datetime.now()
         rDate = tour.get('Begin').split(' ')
@@ -1522,10 +1525,8 @@ def tournament(tourId):
             regDate[2]), int(regTime[0]), int(regTime[1]))
         if (regStart < now):
             regState = True
-            playState = True
         else:
             regState = False
-            playState = False
         from_zone = tzutc()
         to_zone = PLTZ
         regStart = regStart.replace(tzinfo=from_zone)
@@ -1539,6 +1540,9 @@ def tournament(tourId):
             regDate[2]), int(regTime[0]), int(regTime[1]))
         if (regStart < now):
             regState = False
+            playState = True
+        else:
+            playState = False
         from_zone = tzutc()
         to_zone = PLTZ
         regStart = regStart.replace(tzinfo=from_zone)
@@ -1571,12 +1575,15 @@ def tournament(tourId):
             + "/scores")
         if playersScoresRes.get('Status') is True:
             players = []
+            isPlay = False
             for i in range(1, playersScoresRes.get('Count') + 1):
                 nextOne = playersScoresRes.get(str(i))
                 if nextOne is not None:
                     players.append(nextOne)
                     if nextOne.get('Login') == session['username']:
-                        playState = True
+                        isPlay = True
+            if isPlay is False:
+                playState = False
             return render_template('tournament.html', tourId=tourId, cATA=cATA,
                 tour=tour, cMessages=check_messages(), username=session[
                 'username'], error=error, regState=regState, plList=players,
@@ -1662,14 +1669,11 @@ def new_tournament():
                 if response.get('Status') is True:
                     tourID = response.get('ID')
                     payload = {
-                        "RegBegin": sanitize_html(request.form['bDate']
-                            .replace("T", " ") + ":00"),
-                        "RegEnd": sanitize_html(request.form['eDate']
-                            .replace("T", " ") + ":00"),
+                        "RegBegin": str(bDateTimeO).split('+'),
+                        "RegEnd": str(eDateTimeO).split('+'),
                         "RegType": sanitize_html(request.form['regType']),
                         "MaxPlayers": request.form['maxPl'],
-                        "Start": sanitize_html(request.form['sDate']
-                            .replace("T", " ") + ":00"),
+                        "Start": str(sDateTimeO).split('+'),
                         "TourID": tourID,
                         "Type": sanitize_html(request.form['tourType'])
                     }
@@ -1831,6 +1835,13 @@ def sign_ip_tournament():
         error = response.get('Message')
     return render_template('message.html', username=session['username'],
         message=error)
+
+
+@app.route('/tour/send_code', methods=['GET', 'POST'])
+def send_code_t():
+    return render_template('message.html', username=session['username'],
+        message='aaa')
+
 
 # add games
 
