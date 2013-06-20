@@ -78,10 +78,12 @@
     {% if "Adding news's" in session.permissions or "Create tournaments" in session.permissions %}
       <a href="{{ url_for('admin_box') }}">Admin tools</a>
     {% endif %}
+    {% if 'isSU' in session %}
+      <a href="{{ url_for('helpGP') }}">Super User Help</a>
+    {% endif %}
     {% if not session.logged_in %}
       <a href="{{ url_for('login') }}">Log in</a>
     {% else %}
-      <a href="{{ url_for('helpGP') }}">Help</a>
       <a href="{{ url_for('logout') }}">Log out</a>
     {% endif %}
   </div>

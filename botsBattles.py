@@ -278,8 +278,6 @@ def sendFileToWebService(filename, subpage):
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
             auth=AUTH_DATA)
-        print response
-        print response.content
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
