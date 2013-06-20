@@ -2,7 +2,7 @@
 {% block body %}
   {% if session.logged_in %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-    {% if tourID %}<b>Tournament {{ tourID }}</b>{% endif %}
+    {% if tourID %}<dt><b>Tournament {{ tourID }}</b>{% endif %}
     {% if isP %}
     <h2>SEND IN TEXTBOX</h2>
     <form action="{{ url_for('send_code_t', tourID=tourID) }}" method=post >

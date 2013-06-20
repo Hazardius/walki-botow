@@ -278,6 +278,8 @@ def sendFileToWebService(filename, subpage):
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
             auth=AUTH_DATA)
+        print response
+        print response.content
         data = response.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -1461,7 +1463,6 @@ def send_code(idG, game):
                 os.remove(locFilePath)
             else:
                 error = 'File format not valid!'
-                app.logger.error(error)
     return render_template('message.html', username=session['username'],
         error=error, cMessages=check_messages())
 
@@ -1876,34 +1877,32 @@ def send_code_t(tourID):
             }
             response = postToWebService(payload, "/code/tournament/upload")
             if response.get('Status') is True:
-                flash("Code sent!")
+                flash("Code sent for tournament " + str(tourID) + "!")
                 session['redirected'] = True
                 return redirect(url_for('news'))
             else:
                 error = response
         elif request.form['codeForm'] == 'file':
             codeFile = request.files['file']
-            #if codeFile and allowed_codeFile(codeFile.filename):
-                #filename = secure_filename(codeFile.filename)
-                #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                    #filename)
-                #locFilePath = os.path.normpath(locFilePath)
-                #codeFile.save(locFilePath)
-                #response = sendFileToWebService(locFilePath, "/code/duel/upl" +
-                    #"oad/" + game + "/" + str(idG) + "/" + session['username']
-                    #+ "/" + filename)
-                #if response.get('Status') is True:
-                    #os.remove(locFilePath)
-                    #flash("File uploaded!")
-                    #session['redirected'] = True
-                    #return redirect(url_for('news'))
-                #else:
-                    #error = response.get('Message')
-                #os.remove(locFilePath)
-            #else:
-                #error = 'File format not valid!'
-                #app.logger.error(error)
-        isPlayer = True
+            if codeFile and allowed_codeFile(codeFile.filename):
+                filename = secure_filename(codeFile.filename)
+                locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                    filename)
+                locFilePath = os.path.normpath(locFilePath)
+                codeFile.save(locFilePath)
+                response = sendFileToWebService(locFilePath, "/code/tourname" +
+                    "nt/upload/" + str(tourID) + "/" + session['username'] + "/"
+                    + filename)
+                if response.get('Status') is True:
+                    os.remove(locFilePath)
+                    flash("File uploaded for tournament " + str(tourID) + "!")
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
+                else:
+                    error = response.get('Message')
+                os.remove(locFilePath)
+            else:
+                error = 'File format not valid!'
     return render_template('send_codeT.html', username=session[
         'username'], cMessages=check_messages(), error=error,
         message=response.get('Message'), isP=isPlayer, tourID=tourID)

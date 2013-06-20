@@ -2,9 +2,9 @@
 {% block body %}
   {% if session.logged_in %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-    {% if number %}<b>{{ number }}</b>
+    {% if number %}<dt><b>{{ number }}</b>
     {% if game %}<b>{{ game }}</b><br />
-    {% if winner %}Winner is <b>{{ winner }}</b>{% endif %}
+    {% if winner %}<dt>Winner is <b>{{ winner }}</b>{% endif %}
     {% if isP %}
     <h2>SEND IN TEXTBOX</h2>
     <form action="{{ url_for('send_code', idG=number, game=game) }}" method=post >
