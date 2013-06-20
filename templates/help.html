@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <h2>This page works as desing when You use Google Chrome, because we use HTML5.</h2>
+  {% if groups %}
+    <dt><b>Groups:</b>
+    {% for group in groups %}
+      <dt>{{ group.Name }}
+      <dd>{{ group.Description }}
+    {% endfor %}
+  {% endif %}
+  {% if perms %}
+    <dt><b>Permissions:</b>
+    {% for perm in perms %}
+      <dt>{{ perm.Name }}
+      <dd>{{ perm.Description }}
+    {% endfor %}
+  {% endif %}
+{% endblock %}

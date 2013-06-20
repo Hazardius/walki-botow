@@ -802,15 +802,12 @@ def check_messages():
         if check_perm('messages/' + session['username']) is False:
             return render_template('message.html', cMessages=check_messages(),
                 message="You are not permitted to see that page!")
-        error = None
         response = getFromWebService("/notice/" + session['username'] + "/new")
         if response.get('Status') is True:
             return response.get('Count')
-        else:
-            error = "Problem with messages!"
-        return error
+        return -1
     else:
-        return None
+        return -1
 
 
 @app.route('/post_box')
@@ -1944,6 +1941,25 @@ def add_game():
         #return redirect(url_for('news'))
     return render_template('add_game.html', cMessages=check_messages(),
         username=session['username'], error=error)
+
+# main help - groups and permissions
+
+
+@app.route('/helpGP')
+def helpGP():
+    error = None
+    response = getFromWebService('/user/groups')
+    groups = []
+    if response.get('Status') is True:
+        for i in range(1, response.get('Count') + 1):
+            groups.append(response.get(str(i)))
+    response = getFromWebService('/user/permissions')
+    perms = []
+    if response.get('Status') is True:
+        for i in range(1, response.get('Count') + 1):
+            perms.append(response.get(str(i)))
+    return render_template('help.html', cMessages=check_messages(),
+        username=session['username'], error=error, groups=groups, perms=perms)
 
 # debug
 

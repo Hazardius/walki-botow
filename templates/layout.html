@@ -71,7 +71,7 @@
       <a href="{{ url_for('tournaments') }}">Tournaments</a>
       <a href="{{ url_for('users') }}">Users</a>
       <a href="{{ url_for('user') }}">{{ username }}</a>
-      {% if cMessages %}
+      {% if cMessages >= 0 %}
       <a href="{{ url_for('post_box') }}">Messages [{{ cMessages }}]</a>
       {% endif %}
     {% endif %}
@@ -81,6 +81,7 @@
     {% if not session.logged_in %}
       <a href="{{ url_for('login') }}">Log in</a>
     {% else %}
+      <a href="{{ url_for('helpGP') }}">Help</a>
       <a href="{{ url_for('logout') }}">Log out</a>
     {% endif %}
   </div>
