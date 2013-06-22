@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <form action="{{ url_for('delete_t', tourId=tourId) }}" method=post class=send-code>
+    <dt>Do You really want to delete this tournament? <input type="checkbox"
+      name="iamsure" value=true>
+    <dd><input type=submit value="Yes, I'm sure">
+  </form>
+{% endblock %}

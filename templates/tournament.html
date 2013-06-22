@@ -53,12 +53,13 @@
       </form>
     {% endif %}
     {% if playState %}
-      {% for player in plList %}
-        {% if player.Login == session['username'] %}
-          <a href="{{ url_for('send_code_t', tourID=tourId) }}">
-            Send code</a><br />
-        {% endif %}
-      {% endfor %}
+      {% if isPlay %}
+        <a href="{{ url_for('send_code_t', tourID=tourId) }}">Send code</a><br />
+      {% endif %}
+    {% endif %}
+    {% if 'isSU' in session %}
+      <a href="{{ url_for('delete_t', tourId=tourId) }}">
+        Delete this tournament!</a><br />
     {% endif %}
     <br />
     <br />

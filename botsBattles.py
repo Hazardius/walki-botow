@@ -110,6 +110,36 @@ def show_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
+def deleteFromWebService(subpage):
+    try:
+        f = requests.delete(WEBSERVICE_IP + "/Flask" + subpage, auth=AUTH_DATA)
+        data = f.json()
+    except URLError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('We failed to reach a server.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('The server couldn\'t fulfill the request.'
+                + '\nError code:' + error)
+    except ValueError, e:
+        if hasattr(e, 'reason'):
+            error = e.reason
+            app.logger.error('Value Error has been found.\nReason: ' + error)
+        elif hasattr(e, 'code'):
+            error = e.code
+            app.logger.error('Value Error has been found.\nError code:' + error)
+        else:
+            error = e
+    except requests.exceptions.ConnectionError:
+        error = "[Get]Connection Error!"
+        app.logger.error(error)
+    else:
+        return data
+    errorMessage = {"Status": False, "Message": error}
+    return errorMessage
+
+
 def getAtomFromWebService(newsID):
     try:
         f = requests.get(WEBSERVICE_IP + "/news/retrieve/" + str(newsID) +
@@ -1847,6 +1877,29 @@ def new_tournament():
     global games
     return render_template('new_tournament.html', username=session['username'],
         cMessages=check_messages(), error=error, games=games)
+
+
+@app.route('/delete_tour/<int:tourId>', methods=['GET', 'POST'])
+def delete_t(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if 'isSU' not in session:
+        return ban_error()
+    if check_ws() is False:
+        return ws_error()
+    error = None
+    if request.method == 'POST':
+        if 'iamsure' in request.form:
+            if request.form['iamsure'] == 'true':
+                response = deleteFromWebService('/games/tournaments/' +
+                    str(tourId) + '/delete')
+                print response
+                flash("Tournament deleted!")
+                session['redirected'] = True
+                return redirect(url_for('news'))
+        error = "If You're not sure about that, maybe leave this page?"
+    return render_template('are_you_sure.html', username=session['username'],
+        cMessages=check_messages(), tourId=tourId, error=error)
 
 
 @app.route('/ata/<int:tourId>', methods=['GET'])
