@@ -1119,9 +1119,13 @@ def edit_profile(edited):
     error = None
     if request.method == 'POST':
         if (edited == session['username']):
-            if (int(request.form['pagination']) < 4):
+            try:
+                pagination = int(request.form['pagination'])
+            except:
+                pagination = session['pagination']
+            if (pagination < 4):
                 session['pagination'] = 4
-            elif (int(request.form['pagination']) > 25):
+            elif (pagination > 25):
                 session['pagination'] = 25
             else:
                 session['pagination'] = int(request.form['pagination'])
