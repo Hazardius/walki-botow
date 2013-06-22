@@ -352,6 +352,13 @@ def not_found(error):
             errorMe="The page You're looking for isn't here!")
 
 
+@app.route('/error/413')
+@app.errorhandler(413)
+def file_too_big_error():
+    return render_template('error.html', errorNo=413,
+        errorMe="You tried to send too big file! Limit is set to 2MB!")
+
+
 @app.route("/message/<mess>")
 def message(mess):
     if 'redirected' not in session:
@@ -1618,7 +1625,7 @@ def send_code(idG, game):
             else:
                 error = 'File format not valid!'
     return render_template('message.html', username=session['username'],
-        error=error, cMessages=check_messages())
+        error=error, cMessages=check_messages(), message="")
 
 # page methods - tournaments
 
