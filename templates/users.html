@@ -7,15 +7,17 @@
         <h2><b>{{ user }}</b></h2>
         </a>
   {% else %}
-    <li><em>There are no users now.</em>
-  {% endfor %}
-  {% if users %}
-      {% if page>0 %}
-      <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br />
-      {% endif %}
-      {% if next %}
-          <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
-      {% endif %}
+    {% if page==0 %}
+      <li><em>There are no users!?</em>
+    {% else %}
+      <li><em>There are no more users.</em>
+    {% endif %}
+  {% endfor %}<br /><br />
+  {% if page>0 %}
+    <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br />
+  {% endif %}
+  {% if next %}
+      <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
   {% endif %}
   </ul>
 {% endblock %}

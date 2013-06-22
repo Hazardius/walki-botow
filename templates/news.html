@@ -2,19 +2,22 @@
 {% block body %}
   <ul class=news>
   {% for entry in news %}
-    <li><h2>[{{ entry.published }}] {{ entry.title }}<br />{{ entry.author }}</h2><br />
+    <li><a href="{{ url_for('view_news', newsId=entry.id) }}">
+      <h2>[{{ entry.published }}] {{ entry.title }}<br />
+      {{ entry.author }}</h2></a><br />
       {{ entry.entry|safe }}<br />
-      {{ entry.summary|safe }}<br /><br />
-      <b>Category:</b> {{ entry.subtitle }}<br /><br /><br />
+      <br />
+      <br />
   {% else %}
     <li><em>There is no news? Probably server was cleaned.</em>
   {% endfor %}
-  <br /><br />
-  <link href="{{ url_for('recent_feed') }}"
-      rel="alternate"
-      title="Recent Changes"
-      type="application/atom+xml">
-  <a href="{{ url_for('recent_feed') }}">ATOM feed</a><br />
+  {% if news %}
+      <link href="{{ url_for('recent_feed') }}"
+          rel="alternate"
+          title="Recent Changes"
+          type="application/atom+xml">
+      <a href="{{ url_for('recent_feed') }}">ATOM feed</a><br />
+  {% endif %}
   <!--<div class="fb-like" data-href="http://walki-botow.herokuapp.com/" data-send="true"
       data-width="450" data-show-faces="true" data-font="verdana"></div>
   <div class="fb-comments" data-href="http://walki-botow.herokuapp.com/"

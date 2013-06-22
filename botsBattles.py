@@ -470,7 +470,8 @@ def news():
     if response.get('Status') is True:
         news = []
         for i in range(1, response.get('Count') + 1):
-            response2 = getAtomFromWebService(response.get(str(i)))
+            newsId = response.get(str(i))
+            response2 = getAtomFromWebService(newsId)
             if 'Status' in response2:
                 error = response2.get('Message')
             else:
@@ -486,7 +487,6 @@ def news():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
-                                print deepField.text
                                 day = int(shorterTextList[2]) + 1
                                 if day < 10:
                                     day = "0" + str(day)
@@ -502,6 +502,7 @@ def news():
                     else:
                         info = field.text
                     oneNews.update({shortTag: info})
+                oneNews.update({'id': newsId})
                 news.append(oneNews)
         news = sorted(news, key=lambda art: art['published'], reverse=True)
         if "username" in session:
@@ -531,10 +532,10 @@ def recent_feed():
     if response.get('Status') is True:
         news = []
         for i in range(1, response.get('Count') + 1):
-            response2 = getAtomFromWebService(response.get(str(i)))
+            newsId = response.get(str(i))
+            response2 = getAtomFromWebService(newsId)
             if 'Status' in response2:
                 error = response2.get('Message')
-                print error
             else:
                 oneNews = {}
                 for field in response2:
@@ -563,6 +564,7 @@ def recent_feed():
                     else:
                         info = field.text
                     oneNews.update({shortTag: info})
+                oneNews.update({'id': newsId})
                 news.append(oneNews)
         news = sorted(news, key=lambda art: art['published'], reverse=True)
 
@@ -576,13 +578,59 @@ def recent_feed():
                 unicode(oneNews.get('summary') + oneNews.get('entry')),
                 id=someId,
                 content_type='html',
-                url="http://walki-botow.herokuapp.com/",
+                url="http://walki-botow.herokuapp.com/news/" + str(oneNews.get(
+                    'id')),
                 author=oneNews.get('author'),
                 published=date,
                 updated=date)
             someId = someId + 1
         return feed.get_response()
     return page_error()
+
+
+@app.route('/news/<int:newsId>')
+def view_news(newsId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    oneNews = {}
+    response2 = getAtomFromWebService(newsId)
+    if 'Status' in response2:
+        error = response2.get('Message')
+    else:
+        for field in response2:
+            shortTag = field.tag.split('}')[1]
+            if shortTag == "author":
+                for deepField in field:
+                    info = deepField.text
+            elif shortTag == "entry":
+                for deepField in field:
+                    shorterTag = deepField.tag.split('}')[1]
+                    if shorterTag == "published":
+                        shorterTextList = (deepField.text.split('T')[0]
+                            .split('-'))
+                        day = int(shorterTextList[2]) + 1
+                        if day < 10:
+                            day = "0" + str(day)
+                        else:
+                            day = str(day)
+                        shorterText = (shorterTextList[0] + "-" +
+                            shorterTextList[1] + "-" + day)
+                        oneNews.update({shorterTag: shorterText})
+                    elif shorterTag == "summary":
+                        oneNews.update({shorterTag: deepField.text})
+                    elif shorterTag == "title":
+                        info = deepField.text
+            else:
+                info = field.text
+            oneNews.update({shortTag: info})
+        oneNews.update({'id': newsId})
+    return render_template('info.html', username=session['username'],
+        cMessages=check_messages(), error=error, entry=oneNews)
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
@@ -624,7 +672,7 @@ def add_news():
                 .encode('utf-8', 'ignore')),
             "FullDescription": sanitize_html(request.form['longDesc']
                 .encode('utf-8', 'ignore')),
-            "Type": request.form['newsType'].encode('ascii'),
+            "Type": sanitize_html(request.form['newsType'].encode('ascii')),
             "Comments": test,
             "Author": session['username'].encode('ascii')
         }
@@ -637,6 +685,92 @@ def add_news():
             error = response
     return render_template('add_news.html', username=session['username'],
         cMessages=check_messages(), error=error)
+
+
+@app.route('/edit_news/<int:newsId>', methods=['GET', 'POST'])
+def edit_news(newsId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    if check_perm('admin') is False:
+        flash("You are not permitted to see that page!")
+        session['redirected'] = True
+        return redirect(url_for('news'))
+    error = None
+    if request.method == 'POST':
+        import time
+        import datetime
+        dateTime = time.strftime("%Y-%m-%d", time.gmtime())
+        pub = dateTime
+        if 'pubDate' in request.form:
+            now = datetime.datetime.now()
+            pubDate = request.form['pubDate'].split(' ')
+            pubSDate = pubDate[0].split('-')
+            pubStart = datetime.datetime(int(pubSDate[0]), int(pubSDate[1]),
+                (int(pubSDate[2]) + 1))
+            if (pubStart > now):
+                pub = request.form['pubDate']
+        if 'enaCom' in request.form:
+            test = True
+        else:
+            test = False
+        payload = {
+            "Publish": pub,
+            "Title": sanitize_html(request.form['title']
+                .encode('utf-8', 'ignore')),
+            "Description": sanitize_html(request.form['shorDesc']
+                .encode('utf-8', 'ignore')),
+            "FullDescription": sanitize_html(request.form['longDesc']
+                .encode('utf-8', 'ignore')),
+            "Type": sanitize_html(request.form['newsType'].encode('ascii')),
+            "Comments": test,
+            "ID": newsId
+        }
+        response = putToWebService(payload, "/news/update")
+        if response.get('Status') is True:
+            flash("New news successfully created!")
+            session['redirected'] = True
+            return redirect(url_for('news'))
+        else:
+            error = response
+
+    oneNews = {}
+    response2 = getAtomFromWebService(newsId)
+    if 'Status' in response2:
+        error = response2.get('Message')
+    else:
+        for field in response2:
+            shortTag = field.tag.split('}')[1]
+            if shortTag == "author":
+                for deepField in field:
+                    info = deepField.text
+            elif shortTag == "entry":
+                for deepField in field:
+                    shorterTag = deepField.tag.split('}')[1]
+                    if shorterTag == "published":
+                        shorterTextList = (deepField.text.split('T')[0]
+                            .split('-'))
+                        day = int(shorterTextList[2]) + 1
+                        if day < 10:
+                            day = "0" + str(day)
+                        else:
+                            day = str(day)
+                        shorterText = (shorterTextList[0] + "-" +
+                            shorterTextList[1] + "-" + day)
+                        oneNews.update({shorterTag: shorterText})
+                    elif shorterTag == "summary":
+                        oneNews.update({shorterTag: deepField.text})
+                    elif shorterTag == "title":
+                        info = deepField.text
+            else:
+                info = field.text
+            oneNews.update({shortTag: info})
+        oneNews.update({'id': newsId})
+    return render_template('edit_news.html', username=session['username'],
+        cMessages=check_messages(), error=error, entry=oneNews)
 
 # page methods - registration and login
 
@@ -1655,13 +1789,13 @@ def new_tournament():
             eDateTimeO = eDateTimeO.astimezone(to_zone)
             sDateTimeO = sDateTimeO.replace(tzinfo=from_zone)
             sDateTimeO = sDateTimeO.astimezone(to_zone)
-            if (bDateTimeO < now):
+            if (bDateTimeO <= now):
                 error = ("Registration date wrong! Beginning of registration " +
                     "before now!")
-            if (eDateTimeO < bDateTimeO):
+            if (eDateTimeO <= bDateTimeO):
                 error = ("Registration date wrong! End of registration before" +
                     " beginning!")
-            if (sDateTimeO < eDateTimeO):
+            if (sDateTimeO <= eDateTimeO):
                 error = ("Registration date wrong! Start of tournament before" +
                     " end of registration!")
             if error is None:
