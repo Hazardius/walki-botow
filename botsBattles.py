@@ -322,6 +322,13 @@ def ws_error():
         errorMe="Bad Gateway! WebService is not responding.")
 
 
+@app.route('/error/503')
+@app.errorhandler(503)
+def ws_error2():
+    return render_template('error.html', errorNo=503,
+        errorMe="Bad Gateway! WebService is not responding.")
+
+
 def spam_error():
     return render_template('error.html', errorNo=429,
         errorMe="Too Many Requests! One request per 0.75 second allowed.")
