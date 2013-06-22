@@ -334,14 +334,12 @@ def spam_error():
         errorMe="Too Many Requests! One request per 0.75 second allowed.")
 
 
-@app.route('/error/400')
 @app.errorhandler(400)
 def page_error():
     return render_template('error.html', errorNo=400,
         errorMe="Page error!")
 
 
-@app.route('/error/404')
 @app.errorhandler(404)
 def not_found(error):
     if "username" in session:
@@ -350,13 +348,6 @@ def not_found(error):
     else:
         return render_template('error.html', errorNo=404,
             errorMe="The page You're looking for isn't here!")
-
-
-@app.route('/error/413')
-@app.errorhandler(413)
-def file_too_big_error():
-    return render_template('error.html', errorNo=413,
-        errorMe="You tried to send too big file! Limit is set to 2MB!")
 
 
 @app.route("/message/<mess>")

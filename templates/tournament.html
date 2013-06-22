@@ -19,8 +19,8 @@
     <dt>Start of tournament:
       <dd>{{ tour.Start }}
     {% if regState %}
-      {% if isPlay %}
-        <dt>State of registration: <b>OPEN</b>
+      <dt>State of registration: <b>OPEN</b>
+      {% if isPlay == False %}
         {% if tour.RegType == "Invitation" %}
           {% if cATA %}
             <dt><form method="link"
