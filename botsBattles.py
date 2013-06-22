@@ -36,9 +36,9 @@ timeout = 10
 socket.setdefaulttimeout(timeout)
 
 # address of WebService server - McStAp
-#WEBSERVICE_IP = "http://77.65.54.170:9005"
+WEBSERVICE_IP = "http://77.65.54.170:9005"
 # address of WebService server - McHo
-WEBSERVICE_IP = "http://89.228.196.221:9005"
+#WEBSERVICE_IP = "http://89.228.196.221:9005"
 # address of WebService server - Localhost
 #WEBSERVICE_IP = "http://localhost:9005"
 TESTING = False
@@ -315,6 +315,8 @@ def ban_error():
         errorMe="Forbidden!")
 
 
+@app.route('/error/502')
+@app.errorhandler(502)
 def ws_error():
     return render_template('error.html', errorNo=502,
         errorMe="Bad Gateway! WebService is not responding.")
@@ -325,12 +327,14 @@ def spam_error():
         errorMe="Too Many Requests! One request per 0.75 second allowed.")
 
 
+@app.route('/error/400')
 @app.errorhandler(400)
 def page_error():
     return render_template('error.html', errorNo=400,
         errorMe="Page error!")
 
 
+@app.route('/error/404')
 @app.errorhandler(404)
 def not_found(error):
     if "username" in session:
@@ -482,6 +486,7 @@ def news():
                             if shorterTag == "published":
                                 shorterTextList = (deepField.text.split('T')[0]
                                     .split('-'))
+                                print deepField.text
                                 day = int(shorterTextList[2]) + 1
                                 if day < 10:
                                     day = "0" + str(day)
