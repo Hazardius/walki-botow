@@ -2,8 +2,8 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   {% if users %}
-      <form action="{{ url_for('new_inv') }}" method=post class=send-code>
-        <dt>Game:
+    <form action="{{ url_for('new_inv') }}" method=post class=send-code>
+      <dt>Game:
         <dd><select name=game>
         {% for game in games %}
           <option value="{{ game.codeOfGame }}" /> {{ game.gameName }}</option>
@@ -11,13 +11,13 @@
           <option value="KPN">Rock-paper-scissors</option>
           <option value="TTT">Tic-Tac-Toe</option>
         </select>
-        <dt>Oponent:
+      <dt>Oponent:
         <dd><select name=oponent>
         {% for user in users %}
           <option value="{{ user }}" />{{ user }}</option>
         {% endfor %}
-        <dd><input type=submit value=Invite>
-      </form>
+      <dd><input type=submit value=Invite>
+    </form>
   {% else %}
     <dt> There are no more users now.
   {% endif %}

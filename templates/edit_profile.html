@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block head %}
-  <script src="{{ url_for('static', filename='main.js') }}" type="text/javascript" charset=utf-8"></script>
+  <script src="{{ url_for('static', filename='main.js') }}"
+    type="text/javascript" charset=utf-8"></script>
 {% endblock %}
 {% block body %}
   <h2>Edit data of {{ profile.nick }}</h2>
@@ -8,33 +9,42 @@
   <form action="{{ url_for('edit_profile', edited=profile.nick) }}" method=post>
     <dl>
       <dt>Name:
-      <dd><input type="text" name="name" value="{{ profile.Name }}" required
-              x-moz-errormessage="Enter First Name" size="20" maxlength="128">
+        <dd><input type="text" name="name" value="{{ profile.Name }}" required
+          x-moz-errormessage="Enter First Name" size="20" maxlength="128">
       <dt>Surname:
-      <dd><input type="text" name="surname" value="{{ profile.Surname }}" required
-              x-moz-errormessage="Enter Second Name" size="20" maxlength="128">
+        <dd><input type="text" name="surname" value="{{ profile.Surname }}"
+          x-moz-errormessage="Enter Second Name" size="20" maxlength="128"
+          required>
       {% if allG %}
         <dt>Group:
         {% for group in allG %}
-          <dd><input type="checkbox" name="group" value="{{ group }}" {% if group in usrG %}checked{% endif %}>{{ group }}
+          <dd><input type="checkbox" name="group" value="{{ group }}"
+            {% if group in usrG %}checked{% endif %}>{{ group }}
         {% endfor %}
       {% endif %}
       <dt>Sex:<br />
-        <dd><input type="radio" name="sex" value="male" {% if profile.Sex == "male"%}checked{%endif%} required>Male
-        <dd><input type="radio" name="sex" value="female" {% if profile.Sex == "female" %}checked{%endif%} required>Female
+        <dd><input type="radio" name="sex" value="male"
+          {% if profile.Sex == "male"%}checked{%endif%} required>Male
+        <dd><input type="radio" name="sex" value="female"
+          {% if profile.Sex == "female" %}checked{%endif%} required>Female
       <dt>e-mail address:
-      <dd><input type="email" name="e_mail" value="{{ profile.Email }}"
-              size="25" required>
+        <dd><input type="email" name="e_mail" value="{{ profile.Email }}"
+          size="25" required>
       <dt>Avatar address:
-      <dd><input type="text" name="avatar" size="25" maxlength="128" value="{{ profile.Avatar }}">
+        <dd><input type="text" name="avatar" size="25" maxlength="128"
+          value="{{ profile.Avatar }}">
       {% if session['username'] == profile.nick %}
-      <dt>Pagination:
-      <dd><input type="number" name="pagination" min="4" max="25" value={{ profile.pag }}>
+        <dt>Pagination:
+          <dd><input type="number" name="pagination" min="4" max="25"
+            value={{ profile.pag }}>
       {% endif %}
-      <dt>Email Notice: <input type="checkbox" name="eNot" value=true {% if profile.EmailNotice %}checked=true{% endif %}>
-      <dt>Email Notice About Duels: <input type="checkbox" name="eNotD" value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
-      <dt>Email Notice About Tournaments: <input type="checkbox" name="eNotT" value=true {% if profile.EmailTournamentNotice %}checked=true{% endif %}>
-
+      <dt>Email Notice: <input type="checkbox" name="eNot" value=true
+        {% if profile.EmailNotice %}checked=true{% endif %}>
+      <dt>Email Notice About Duels: <input type="checkbox" name="eNotD"
+        value=true {% if profile.EmailDuelNotice %}checked=true{% endif %}>
+      <dt>Email Notice About Tournaments: <input type="checkbox" name="eNotT"
+        {% if profile.EmailTournamentNotice %}checked=true{% endif %}
+        value=true>
       <dd><input type=submit value="Edit data!">
     </dl>
   </form>

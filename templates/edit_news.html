@@ -5,25 +5,31 @@
     {% if 'permissions' in session %}
       {% if 'Site settings' in session['permissions'] %}
         {% if entry %}
-          <form action="{{ url_for('edit_news', newsId=entry.id) }}" method=post >
+          <form action="{{ url_for('edit_news', newsId=entry.id) }}"
+            method=post >
             <dl>
               <dt>Title:
-              <dd><input type="text" name="title" value={{ entry.title }}
-                autofocus required x-moz-errormessage="Enter the title!"
-                size="25" maxlength="128"><br />
+                <dd><input type="text" name="title" value={{ entry.title }}
+                  autofocus required x-moz-errormessage="Enter the title!"
+                  size="25" maxlength="128"><br />
               <dt>Publish date:
-              <dd><input type="date" name="pubDate" value={{ entry.published }}>
-              <dt>Enable Comments <input type="checkbox" name="enaCom" value=true {% if entry.comments %}checked=true{% endif %}>
+                <dd><input type="date" name="pubDate" value={{ entry.published }}>
+              <dt>Enable Comments <input type="checkbox" name="enaCom"
+                value=true {% if entry.comments %}checked=true{% endif %}>
               <dt>Short Info:
-              <dd><textarea name=shorDesc rows=5 cols=80 required x-moz-errormessage="Enter short description!">{{ entry.entry|safe }}</textarea>
+                <dd><textarea name=shorDesc rows=5 cols=80 required
+                  x-moz-errormessage="Enter short description!">
+                  {{ entry.entry|safe }}</textarea>
               <dt>News:
-              <dd><textarea name=longDesc rows=15 cols=80 required x-moz-errormessage="Enter short description!">{{ entry.summary|safe }}</textarea>
+                <dd><textarea name=longDesc rows=15 cols=80 required
+                  x-moz-errormessage="Enter short description!">
+                  {{ entry.summary|safe }}</textarea>
               <dt>News type:
-              <dd><select name=newsType>
-                <option value="General">General</option>
-                <option value="Tournaments">Tournament</option>
-              </select>
-              <dd><input type=submit value=Send>
+                <dd><select name=newsType>
+                  <option value="General">General</option>
+                  <option value="Tournaments">Tournament</option>
+                </select>
+              <dd><input type=submit value=Edit news>
             </dl>
           </form>
         {% endif %}

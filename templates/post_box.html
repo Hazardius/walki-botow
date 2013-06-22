@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
   <ul class=messages>
-  {% for message in messages %}
-    <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
-    {% if message.Type == "Invitation" %}
-    <form method="link" action="{{ url_for('new_duel', invId=message.ID) }}">
-      <input type="submit" value="Accept!">
-    </form>
-    <form method="link" action="{{ url_for('no_duel', invId=message.ID) }}">
-      <input type="submit" value="Decline!">
-    </form>
-    {% endif %}
-  {% else %}
-    <li><em>You have no new messages.</em>
-  {% endfor %}
-  <!--<li><a href="{{ url_for('new_tournament') }}">Create new message</a>-->
+    {% for message in messages %}
+      <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
+      {% if message.Type == "Invitation" %}
+        <form method="link" action="{{ url_for('new_duel', invId=message.ID) }}">
+          <input type="submit" value="Accept!">
+        </form>
+        <form method="link" action="{{ url_for('no_duel', invId=message.ID) }}">
+          <input type="submit" value="Decline!">
+        </form>
+      {% endif %}
+    {% else %}
+      <li><em>You have no new messages.</em>
+    {% endfor %}
+    <!--<li><a href="{{ url_for('new_tournament') }}">Create new message</a>-->
   </ul>
 {% endblock %}

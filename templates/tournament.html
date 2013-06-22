@@ -2,53 +2,65 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   {% if tour %}
-  <h2>{{ tourId }}. {{ tour.TourName }}</h2>
-  <dt><b>Game: {{ tour.Name }}</b>
-  <dt>Number of currently signed players:<dd>{{ tour.CurrPlayers }}/{{ tour.MaxPlayers }}
-  <dt>Description:<dd>{{ tour.Description }}
-  <dt>Rules:<dd>{{ tour.Rules }}
-  <dt>Registration type:<dd>{{ tour.RegType }}
-  <dt>Beginning of registration:<dd>{{ tour.Begin }}
-  <dt>End of registration:<dd>{{ tour.End }}
-  <dt>Start of tournament:<dd>{{ tour.Start }}
-  {% if regState %}
-    {% if isPlay %}
-    <dt>State of registration: <b>OPEN</b>
-    {% if tour.RegType == "Invitation" %}
-    {% if cATA %}
-    <dt><form method="link" action="{{ url_for('sign_i_tournament', tourId=tourId) }}">
-      <dt><input type="submit" value="Invite someone!">
-    </form>
-    {% endif %}
-    {% endif %}
-    {% if tour.RegType == "Free" %}
-      {% if not playState %}
-        <dt><form method="link" action="{{ url_for('sign_f_tournament', tourId=tourId) }}">
-          <input type="submit" value="Sign In!">
-        </form>
+    <h2>{{ tourId }}. {{ tour.TourName }}</h2>
+    <dt><b>Game: {{ tour.Name }}</b>
+    <dt>Number of currently signed players:
+      <dd>{{ tour.CurrPlayers }}/{{ tour.MaxPlayers }}
+    <dt>Description:
+      <dd>{{ tour.Description }}
+    <dt>Rules:
+      <dd>{{ tour.Rules }}
+    <dt>Registration type:
+      <dd>{{ tour.RegType }}
+    <dt>Beginning of registration:
+      <dd>{{ tour.Begin }}
+    <dt>End of registration:
+      <dd>{{ tour.End }}
+    <dt>Start of tournament:
+      <dd>{{ tour.Start }}
+    {% if regState %}
+      {% if isPlay %}
+        <dt>State of registration: <b>OPEN</b>
+        {% if tour.RegType == "Invitation" %}
+          {% if cATA %}
+            <dt><form method="link"
+              action="{{ url_for('sign_i_tournament', tourId=tourId) }}">
+              <dt><input type="submit" value="Invite someone!">
+            </form>
+          {% endif %}
+        {% endif %}
+        {% if tour.RegType == "Free" %}
+          {% if not playState %}
+            <dt><form method="link"
+              action="{{ url_for('sign_f_tournament', tourId=tourId) }}">
+              <input type="submit" value="Sign In!">
+            </form>
+          {% endif %}
+        {% endif %}
       {% endif %}
+    {% else %}
+      <dt>State of registration: <b>CLOSED</b>
     {% endif %}
-    {% endif %}
-  {% else %}
-    <dt>State of registration: <b>CLOSED</b>
-  {% endif %}
-  {% for player in plList %}
-    <li><b>{{ player.Login }}:</b> {{ player.Points }} points.
-  {% else %}
-    <li><em>No players yet. Be first!</em>
-  {% endfor %}
-  {% if cATA %}
-    <dt><form method="link" action="{{ url_for('add_tour_admin', tourId=tourId) }}">
-      <dt><input type="submit" value="Add Tournament Admin!">
-    </form>
-  {% endif %}
-  {% if playState %}
     {% for player in plList %}
-      {% if player.Login == session['username'] %}
-        <a href="{{ url_for('send_code_t', tourID=tourId) }}">Send code</a><br />
-      {% endif %}
+      <li><b>{{ player.Login }}:</b> {{ player.Points }} points.
+    {% else %}
+      <li><em>No players yet. Be first!</em>
     {% endfor %}
-  {% endif %}
-  <br /><br />
+    {% if cATA %}
+      <dt><form method="link"
+        action="{{ url_for('add_tour_admin', tourId=tourId) }}">
+        <dt><input type="submit" value="Add Tournament Admin!">
+      </form>
+    {% endif %}
+    {% if playState %}
+      {% for player in plList %}
+        {% if player.Login == session['username'] %}
+          <a href="{{ url_for('send_code_t', tourID=tourId) }}">
+            Send code</a><br />
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <br />
+    <br />
   {% endif %}
 {% endblock %}

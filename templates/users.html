@@ -2,22 +2,24 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   <ul class=users>
-  {% for user in users %}
-    <li><a href="{{ url_for('show_user_profile', nick=user) }}">
+    {% for user in users %}
+      <li><a href="{{ url_for('show_user_profile', nick=user) }}">
         <h2><b>{{ user }}</b></h2>
-        </a>
-  {% else %}
-    {% if page==0 %}
-      <li><em>There are no users!?</em>
+      </a>
     {% else %}
-      <li><em>There are no more users.</em>
+      {% if page==0 %}
+        <li><em>There are no users!?</em>
+      {% else %}
+        <li><em>There are no more users.</em>
+      {% endif %}
+    {% endfor %}
+    <br />
+    <br />
+    {% if page>0 %}
+      <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br />
     {% endif %}
-  {% endfor %}<br /><br />
-  {% if page>0 %}
-    <a href="{{ url_for('users_p', page=(page-1)) }}">Previous page</a><br />
-  {% endif %}
-  {% if next %}
+    {% if next %}
       <a href="{{ url_for('users_p', page=(page+1)) }}">Next page</a>
-  {% endif %}
+    {% endif %}
   </ul>
 {% endblock %}

@@ -4,25 +4,28 @@
   <ul class=battles>
   {% for battle in battles %}
     <li><a href="{{ url_for('view_battle', number=battle.Nr) }}">
-        <h2><b>{{ battle.Nr }}</b> {{ battle.Type }} in {{ battle.GameName }}:
-        <b>{{ battle.Player1 }}</b> vs. <b>{{ battle.Player2 }}</b></h2>
-        </a>
+      <h2><b>{{ battle.Nr }}</b> {{ battle.Type }} in {{ battle.GameName }}:
+      <b>{{ battle.Player1 }}</b> vs. <b>{{ battle.Player2 }}</b></h2>
+    </a>
   {% else %}
     <li><em>You have no more battles.</em><br />
   {% endfor %}
   {% if page>0 %}
-  <a href="{{ url_for('battles_p', page=(page-1)) }}">Previous page</a><br />
+    <a href="{{ url_for('battles_p', page=(page-1)) }}">Previous page</a><br />
   {% endif %}
   {% if battles %}
-      {% if next %}
-          <a href="{{ url_for('battles_p', page=(page+1)) }}">Next page</a>
-      {% endif %}
+    {% if next %}
+      <a href="{{ url_for('battles_p', page=(page+1)) }}">Next page</a>
+    {% endif %}
   {% endif %}
   </ul>
   <a href="{{ url_for('choose_oponent') }}">Start a duel</a><br />
-  <a href="{{ url_for('help', gamefile='KPN.html') }}">How to play: Rock-Paper-Scissors</a><br />
-  <a href="{{ url_for('help', gamefile='TTT.html') }}">How to play: Tick-Tack-Toe</a><br />
+  <a href="{{ url_for('help', gamefile='KPN.html') }}">How to play:
+    Rock-Paper-Scissors</a><br />
+  <a href="{{ url_for('help', gamefile='TTT.html') }}">How to play:
+    Tick-Tack-Toe</a><br />
   {% for game in games %}
-  <a href="{{ url_for('help', gamefile=game.codeOfGame+'.html') }}">How to play: {{ game.gameName }}</a><br />
+    <a href="{{ url_for('help', gamefile=game.codeOfGame+'.html') }}">How to
+      play: {{ game.gameName }}</a><br />
   {% endfor %}
 {% endblock %}

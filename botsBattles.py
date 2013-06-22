@@ -1060,16 +1060,20 @@ def edit_privacy(edited):
     if request.method == 'POST':
         ADI = False
         if 'allowDI' in request.form:
-            ADI = True
+            if request.form['allowDI'] == 'true':
+                ADI = True
         APM = False
         if 'allowPM' in request.form:
-            APM = True
-        ADI = False
-        if 'allowDI' in request.form:
-            ATI = True
+            if request.form['allowPM'] == 'true':
+                APM = True
+        ATI = False
+        if 'allowTI' in request.form:
+            if request.form['allowTI'] == 'true':
+                ATI = True
         AEV = False
         if 'allowEV' in request.form:
-            AEV = True
+            if request.form['allowEV'] == 'true':
+                AEV = True
         payload = {
             "AllowDuelInv": ADI,
             "AllowPrivMessage": APM,

@@ -2,17 +2,18 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   {% if "Adding news's" in session.permissions %}
-  <a href="{{ url_for('add_news') }}">Add news</a><br />
+    <a href="{{ url_for('add_news') }}">Add news</a><br />
   {% endif %}
   {% if 'Create tournaments' in session.permissions %}
-  <a href="{{ url_for('new_tournament') }}">Create new tournament</a><br />
+    <a href="{{ url_for('new_tournament') }}">Create new tournament</a><br />
   {% endif %}
   {% if 'Adding games servers' in session.permissions %}
-  <a href="{{ url_for('add_game') }}">Add new game</a><br />
+    <a href="{{ url_for('add_game') }}">Add new game</a><br />
   {% endif %}
   <br />
   {% if 'isSU' in session %}
-  <a href="{{ url_for('show_file', filename='usersPag.jsoninf') }}">Check usersPag</a><br />
+    <a href="{{ url_for('show_file', filename='usersPag.jsoninf') }}">Check
+      usersPag</a><br />
 <!--
   <a href="{{ url_for('delete_file', filename='usersPag.jsoninf') }}">Try to delete usersPag</a><br />
 -->

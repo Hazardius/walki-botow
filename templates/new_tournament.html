@@ -1,43 +1,46 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if session.logged_in %}
-  {% if error %}<p class=error>{{ error }}{% endif %}
+    {% if error %}<p class=error>{{ error }}{% endif %}
     <form action="{{ url_for('new_tournament') }}" method=post >
       <dl>
         <dt>Tournament Name:
-        <dd><input type="text" name="name" placeholder="Name of tournament."
-          autofocus required x-moz-errormessage="Enter the name!"
-          size="25" maxlength="128">
+          <dd><input type="text" name="name" placeholder="Name of tournament."
+            autofocus required x-moz-errormessage="Enter the name!"
+            size="25" maxlength="128">
         <dt>Game:
-        <dd><select name=game>
-        {% for game in games %}
-          <option value="{{ game.codeOfGame }}" /> {{ game.gameName }}</option>
-        {% endfor %}
-          <option value="KPN">Rock-paper-scissors</option>
-          <option value="TTT">Tic-Tac-Toe</option>
-        </select>
+          <dd><select name=game>
+          {% for game in games %}
+            <option value="{{ game.codeOfGame }}" /> {{ game.gameName }}</option>
+          {% endfor %}
+            <option value="KPN">Rock-paper-scissors</option>
+            <option value="TTT">Tic-Tac-Toe</option>
+          </select>
         <dt>Tournament start date:
-        <dd><input type="datetime-local" name="sDate" required>
+          <dd><input type="datetime-local" name="sDate" required>
         <dt>Tournament type:
-        <dd><select name=tourType>
-          <option value="P1">Cup</option>
-          <option value="L">League</option>
-        </select>
+          <dd><select name=tourType>
+            <option value="P1">Cup</option>
+            <option value="L">League</option>
+          </select>
         <dt>Description:
-        <dd><textarea name=description rows=10 cols=80 required x-moz-errormessage="Enter description!"></textarea>
+          <dd><textarea name=description rows=10 cols=80 required
+            x-moz-errormessage="Enter description!"></textarea>
         <dt>Registration begins:
-        <dd><input type="datetime-local" name="bDate" required>
+          <dd><input type="datetime-local" name="bDate" required>
         <dt>Registration ends:
-        <dd><input type="datetime-local" name="eDate" required>
+          <dd><input type="datetime-local" name="eDate" required>
         <dt>Registration type:
-        <dd><select name=regType>
-          <option value="Free">Free</option>
-          <option value="Invitation">Invitation</option>
-        </select>
+          <dd><select name=regType>
+            <option value="Free">Free</option>
+            <option value="Invitation">Invitation</option>
+          </select>
         <dt>Max number of participants:
-        <dd><input type="number" name="maxPl" min="8" required x-moz-errormessage="Enter this number!">
+          <dd><input type="number" name="maxPl" min="8" required
+            x-moz-errormessage="Enter this number!">
         <dt>Rules:
-        <dd><textarea name=rules rows=10 cols=80 required x-moz-errormessage="Enter the rules!"></textarea>
+          <dd><textarea name=rules rows=10 cols=80 required
+            x-moz-errormessage="Enter the rules!"></textarea>
         <dd><input type=submit value=Send>
       </dl>
     </form>

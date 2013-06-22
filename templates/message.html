@@ -1,7 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
-  <h2>{% if message %}{{ message }}
-      {% else %} No message.
-      {% endif %}</h2>
+  <h2>
+    {% if message %}
+      {{ message }}
+    {% else %}
+      No message.
+    {% endif %}
+  </h2>
 {% endblock %}

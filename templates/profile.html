@@ -2,19 +2,24 @@
 {% block body %}
   {% if error %}<p class=error>{{ error }}{% endif %}
   {% if profile %}
-  {% if profile.Avatar %}<img src = "{{ profile.Avatar }}" alt = "Users' Avatar"  height="150" width="150" />{% endif %}
-  <h2>{{ profile.Name }} "{{ profile.nick }}" {{ profile.Surname }}</h2><br />
+    {% if profile.Avatar %}
+      <img src="{{ profile.Avatar }}" alt="Users' Avatar" height="150"
+        width="150" />
+    {% endif %}
+    <h2>{{ profile.Name }} "{{ profile.nick }}" {{ profile.Surname }}</h2><br />
     <dt>{{ profile.Email }}
-  {% if groups %}
-    <dt>User groups:
-    {% for group in groups %}
-      <dd>{{ group }}
-    {% endfor %}
-  {% endif %}
+    {% if groups %}
+      <dt>User groups:
+      {% for group in groups %}
+        <dd>{{ group }}
+      {% endfor %}
+    {% endif %}
     <dt>Sex: {{ profile.Sex }}
-  {% if canEdit == True %}
-    <dt><a href="{{ url_for('edit_profile', edited=profile.nick) }}">Edit profile.</a><br />
-    <dt><a href="{{ url_for('edit_privacy', edited=profile.nick) }}">Edit private settings.</a><br />
-  {% endif %}
+    {% if canEdit == True %}
+      <dt><a href="{{ url_for('edit_profile', edited=profile.nick) }}">
+        Edit profile.</a><br />
+      <dt><a href="{{ url_for('edit_privacy', edited=profile.nick) }}">
+        Edit private settings.</a><br />
+    {% endif %}
   {% endif %}
 {% endblock %}
