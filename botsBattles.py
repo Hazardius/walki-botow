@@ -659,13 +659,14 @@ def add_news():
         dateTime = time.strftime("%Y-%m-%d", time.gmtime())
         pub = dateTime
         if 'pubDate' in request.form:
-            now = datetime.datetime.now()
-            pubDate = request.form['pubDate'].split(' ')
-            pubSDate = pubDate[0].split('-')
-            pubStart = datetime.datetime(int(pubSDate[0]), int(pubSDate[1]),
-                (int(pubSDate[2]) + 1))
-            if (pubStart > now):
-                pub = request.form['pubDate']
+            if not len(request.form['pubDate']) == 0:
+                now = datetime.datetime.now()
+                pubDate = request.form['pubDate'].split(' ')
+                pubSDate = pubDate[0].split('-')
+                pubStart = datetime.datetime(int(pubSDate[0]), int(pubSDate[1]),
+                    (int(pubSDate[2]) + 1))
+                if (pubStart > now):
+                    pub = request.form['pubDate']
         if 'enaCom' in request.form:
             test = True
         else:
@@ -1353,6 +1354,7 @@ def choose_oponent():
             nextOne = userRes.get(str(i))
             if nextOne is not None:
                 logins.append(nextOne)
+        logins = sorted(logins, key=lambda x: x.lower())
         return render_template('choose_oponent.html',
             cMessages=check_messages(), username=session['username'],
             users=logins, games=games)
@@ -2109,11 +2111,10 @@ def helpGP():
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
-    #request = getFromWebService("/games/KPN")
+    #request = getFromWebService("/games")
     #print request
-    #request = datetime.now(tzlocal()).astimezone(tzoffset(None, 7200))
     #return render_template('message.html', username=session['username'],
-        #message=request)
+        #message=request, cMessages=check_messages())
 
 # app start
 
