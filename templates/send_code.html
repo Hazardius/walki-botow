@@ -15,7 +15,7 @@
             method=post >
             <dl>
               <dt><input type="hidden" name="codeForm" value="text"> Code:
-                <dd><textarea name=code rows=10 cols=80></textarea>
+                <dd><textarea name=code rows=10 cols=80 required></textarea>
               <dt>Language:
                 <dd><select name=lang>
                   <option value="cpp">C++</option>
@@ -25,7 +25,7 @@
                   <option value="py">Python</option>
                 </select>
               <dt>File name (if You use Java - NAME IT AFTER YOUR MAIN CLASS):
-                <dd><input type="text" name="fileName" size="25"
+                <dd><input type="text" name="fileName" size="25" required
                   maxlength="128">
               <dd><input type=submit value=Send>
             </dl>
