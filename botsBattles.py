@@ -1625,22 +1625,26 @@ def send_code(idG, game):
     if request.method == 'POST':
         if request.form['codeForm'] == 'text':
             exten = request.form['lang']
-            payload = {
-                "From": sanitize_html(session['username']),
-                "Language": sanitize_html(exten),
-                "GameID": idG,
-                "Game": sanitize_html(game),
-                "Code": request.form['code'],
-                "FileName": sanitize_html(request.form['fileName'].replace(" ",
-                    ""))
-            }
-            response = postToWebService(payload, "/code/duel/upload")
-            if response.get('Status') is True:
-                flash("Code sent!")
-                session['redirected'] = True
-                return redirect(url_for('news'))
+            fileName = sanitize_html(request.form['fileName'].replace(' ', ''))
+            if allowed_codeFile(fileName):
+                payload = {
+                    "From": sanitize_html(session['username']),
+                    "Language": sanitize_html(exten),
+                    "GameID": idG,
+                    "Game": sanitize_html(game),
+                    "Code": request.form['code'],
+                    "FileName": sanitize_html(request.form['fileName']
+                        .replace(" ", ""))
+                }
+                response = postToWebService(payload, "/code/duel/upload")
+                if response.get('Status') is True:
+                    flash("Code sent!")
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
+                else:
+                    error = response
             else:
-                error = response
+                error = "File name wrong!"
         elif request.form['codeForm'] == 'file':
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
