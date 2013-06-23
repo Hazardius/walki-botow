@@ -394,6 +394,13 @@ def message(mess):
 # page methods
 
 
+@app.route('/clean_messages')
+def clean_messages():
+    if check_spam() is False:
+        return spam_error()
+    return render_template('clean_messages.html')
+
+
 def check_spam():
     import time
     if 'lastTime' in session:
@@ -1763,6 +1770,7 @@ def tournament(tourId):
         else:
             admList = getFromWebService("/games/tournaments/" + str(tourId) +
                 "/admins")
+            print admList
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
@@ -1933,6 +1941,7 @@ def add_tour_admin(tourId):
             nextOne = userRes.get(str(i))
             if nextOne is not None:
                 logins.append(nextOne)
+        logins = sorted(logins, key=lambda x: x.lower())
         return render_template('choose_user.html', nextF="tAdmin",
             cMessages=check_messages(), username=session['username'],
             users=logins, cuMes="Add New Admin", id=tourId)
@@ -1955,6 +1964,7 @@ def tAdmin():
         "Count": 1,
         "1": player
     }
+    player = player.encode('ascii')
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
     if response.get('Status') is True:
@@ -2182,12 +2192,12 @@ def helpGP():
 # debug
 
 
-#@app.route('/secret', methods=['GET', 'POST'])
-#def secret():
+@app.route('/secret', methods=['GET', 'POST'])
+def secret():
     #request = getFromWebService("/games/list")
     #print request
-    #return render_template('message.html', username=session['username'],
-        #message=request, cMessages=check_messages())
+    return render_template('message.html', username=session['username'],
+        message=request, cMessages=check_messages())
 
 # app start
 
