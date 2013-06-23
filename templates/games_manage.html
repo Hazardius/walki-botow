@@ -5,5 +5,8 @@
   <br />
   {% if games %}
     <h2>Availible games:</h2>
+    {% for game in games %}
+      <dd>{{ game.Name }} - {{ game.Description }}
+    {% endfor %}
   {% endif %}
 {% endblock %}

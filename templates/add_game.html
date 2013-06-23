@@ -6,16 +6,18 @@
     <form action="{{ url_for('add_game') }}" method=post class=send-code
       enctype=multipart/form-data >
       <dl>
-        <dt>Name of game:
-          <dd><input type="text" name="gameName" size="25" maxlength="128"
+        <dt>Name of the game:
+          <dd><input type="text" name="gameName" size="25" maxlength="24"
             required>
-        <dt>Short code:
-          <dd><input type="text" name="codeOfGame" size="10" maxlength="8"
+        <dt>Name of server file (only jars are accepted):
+          <dd><input type="text" name="gameFileName" size="25" maxlength="24"
             required>
-        <dt>Checker:
-          <dd><input type="file" name="checker" required>
-        <dt>File:
-          <dd><input type="file" name="instruction" required>
+          <dd>You must send jar after the game is created and viewed in the
+          Games Management subpage.
+        <dt>Description:
+          <dd><textarea name=description rows=5 cols=80 required
+            x-moz-errormessage="Enter description!"></textarea>
+        <dt>Multiplayer: <input type="checkbox" name="multi" value=true>
         <dd><input type=submit value=Send>
       </dl>
     </form>

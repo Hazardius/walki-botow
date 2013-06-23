@@ -45,6 +45,7 @@ TESTING = False
 # list of allowed extensions
 ALLOWED_EXTENSIONS_FILE = set(['java', 'cpp', 'py', 'cs', 'p', 'ps'])
 ALLOWED_EXTENSIONS_DOC = set(['html'])
+ALLOWED_EXTENSIONS_JAR = set(['jar'])
 UPLOAD_FOLDER = 'temp'
 
 VALID_TAGS = ['strong', 'em', 'p', 'ul', 'li', 'br']
@@ -66,6 +67,11 @@ def allowed_codeFile(filename):
 def allowed_docFile(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_DOC
+
+
+def allowed_jarFile(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_JAR
 
 
 @app.route('/delete_file/<filename>')
@@ -2323,8 +2329,12 @@ def games_manage():
     if is_ban() is True:
         return ban_error()
     error = None
+    response = getFromWebService('/games/list/all')
+    all_games = []
+    for i in range(1, response.get('Count') + 1):
+        all_games.append(response.get(str(i)))
     return render_template('games_manage.html', cMessages=check_messages(),
-        username=session['username'], error=error)
+        username=session['username'], error=error, games=all_games)
 
 
 @app.route('/aGame', methods=['GET', 'POST'])
@@ -2336,25 +2346,37 @@ def add_game():
     if is_ban() is True:
         return ban_error()
     error = None
-    #if request.method == 'POST':
-        #newGame = {}
-        #newGame.update({"codeOfGame": sanitize_html(request.form[
-            #'codeOfGame'])})
-        #newGame.update({"gameName": sanitize_html(request.form['gameName'])})
-        #docFile = request.files['instruction']
-        #if docFile and allowed_docFile(docFile.filename):
-            #filename = newGame.get('codeOfGame') + ".html"
-            #filename = secure_filename(filename)
-            #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
-                #filename)
-            #locFilePath = os.path.normpath(locFilePath)
-            #docFile.save(locFilePath)
-            #flash("Game added!")
-            #session['redirected'] = True
-            #return redirect(url_for('news'))
-        #flash("Problem adding game!")
-        #session['redirected'] = True
-        #return redirect(url_for('news'))
+    if request.method == 'POST':
+        gameName = sanitize_login(request.form['gameName'])
+        desc = request.form['description']
+        multi = False
+        if 'multi' in request.form:
+            if request.form['multi'] == 'true':
+                multi = True
+        fileName = sanitize_login(request.form['gameFileName'])
+        goodFileName = False
+        try:
+            if allowed_jarFile(fileName):
+                goodFileName = True
+            else:
+                goodFileName = False
+        except:
+            goodFileName = False
+        if goodFileName is True:
+            payload = {
+                "Description": desc,
+                "Multiplayer": multi,
+                "ServerName": fileName
+            }
+            response = postToWebService(payload, '/games/' + gameName)
+            if response.get('Status') is True:
+                flash(response.get('Message'))
+                session['redirected'] = True
+                return redirect(url_for('news'))
+            else:
+                error = response.get('Message')
+        else:
+            error = "File name is incorrect!"
     return render_template('add_game.html', cMessages=check_messages(),
         username=session['username'], error=error)
 
@@ -2379,6 +2401,17 @@ def helpGP():
 
 # debug
 
+        #description = request.files['instruction']
+        #if docFile and allowed_docFile(docFile.filename):
+            #filename = newGame.get('codeOfGame') + ".html"
+            #filename = secure_filename(filename)
+            #locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+                #filename)
+            #locFilePath = os.path.normpath(locFilePath)
+            #docFile.save(locFilePath)
+            #flash("Game added!")
+            #session['redirected'] = True
+            #return redirect(url_for('news'))
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
