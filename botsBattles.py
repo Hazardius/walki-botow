@@ -487,6 +487,11 @@ def help(gamefile):
 
 @app.route('/')
 def news():
+    return news_p(0)
+
+
+@app.route('/news/<int:page>')
+def news_p(page):
     if 'redirected' not in session:
         if check_spam() is False:
             return spam_error()
@@ -497,11 +502,12 @@ def news():
         return ban_error()
     error = None
     if "pagination" in session:
-        response = getNSFromWebService("/news/" + str(0) + "/" + str(session[
-            'pagination']) + "/retrieve")
+        pagination = session['pagination']
     else:
-        response = getNSFromWebService("/news/" + str(0) + "/" + str(25) +
-            "/retrieve")
+        pagination = 25
+    response = getNSFromWebService("/news/" + str(page) + "/" + str(pagination)
+        + "/retrieve")
+    nextP = False
     if response.get('Status') is True:
         news = []
         for i in range(1, response.get('Count') + 1):
@@ -540,17 +546,21 @@ def news():
                 oneNews.update({'id': newsId})
                 news.append(oneNews)
         news = sorted(news, key=lambda art: art['published'], reverse=True)
+        if len(news) == pagination:
+            nextP = True
         if "username" in session:
             return render_template('news.html', username=session['username'],
-                cMessages=check_messages(), news=news, error=error)
+                cMessages=check_messages(), news=news, error=error, page=page,
+                next=nextP)
         else:
-            return render_template('news.html', news=news, error=error)
+            return render_template('news.html', news=news, error=error,
+                page=page, next=nextP)
     error = response.get('Message')
     if "username" in session:
         return render_template('news.html', username=session['username'],
-            cMessages=check_messages(), error=error)
+            cMessages=check_messages(), error=error, page=page, next=nextP)
     else:
-        return render_template('news.html', error=error)
+        return render_template('news.html', error=error, page=page, next=nextP)
 
 
 @app.route('/news.atom')
@@ -613,8 +623,8 @@ def recent_feed():
                 unicode(oneNews.get('summary') + oneNews.get('entry')),
                 id=someId,
                 content_type='html',
-                url="http://walki-botow.herokuapp.com/news/" + str(oneNews.get(
-                    'id')),
+                url="http://walki-botow.herokuapp.com/news_detail/" + str(
+                    oneNews.get('id')),
                 author=oneNews.get('author'),
                 published=date,
                 updated=date)
@@ -623,7 +633,7 @@ def recent_feed():
     return page_error()
 
 
-@app.route('/news/<int:newsId>')
+@app.route('/news_detail/<int:newsId>')
 def view_news(newsId):
     if check_spam() is False:
         return spam_error()
@@ -1893,10 +1903,14 @@ def delete_t(tourId):
             if request.form['iamsure'] == 'true':
                 response = deleteFromWebService('/games/tournaments/' +
                     str(tourId) + '/delete')
-                print response
-                flash("Tournament deleted!")
-                session['redirected'] = True
-                return redirect(url_for('news'))
+                if response.get('Status') is True:
+                    flash("Tournament deleted!")
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
+                else:
+                    flash("Something went wrong!")
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
         error = "If You're not sure about that, maybe leave this page?"
     return render_template('are_you_sure.html', username=session['username'],
         cMessages=check_messages(), tourId=tourId, error=error)
@@ -2170,7 +2184,7 @@ def helpGP():
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
-    #request = getFromWebService("/games")
+    #request = getFromWebService("/games/list")
     #print request
     #return render_template('message.html', username=session['username'],
         #message=request, cMessages=check_messages())
