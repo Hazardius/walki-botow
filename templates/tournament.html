@@ -51,6 +51,16 @@
         action="{{ url_for('add_tour_admin', tourId=tourId) }}">
         <dt><input type="submit" value="Add Tournament Admin!">
       </form>
+      <dt><form method="link"
+        action="{{ url_for('edit_tournament', tourId=tourId) }}">
+        <dt><input type="submit" value="Edit Tournament!">
+      </form>
+<!--
+      <dt><form method="link"
+        action="{{ url_for('add_tour_admin', tourId=tourId) }}">
+        <dt><input type="submit" value="Add/Change Tournament Default Bot!">
+      </form>
+-->
     {% endif %}
     {% if playState %}
       {% if isPlay %}

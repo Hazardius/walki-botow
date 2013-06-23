@@ -27,7 +27,6 @@ AUTH_DATA = HTTPDigestAuth('Flask', SECOND_SECRET_KEY)
 import socket
 
 lastRegistration = 0.0
-games = []
 
 TZOFFSETS = {"PL": 7200}
 PLTZ = tzoffset("PL", 7200)
@@ -297,6 +296,8 @@ def putToWebService(payload, subpage):
         f = requests.put(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen}, auth=AUTH_DATA)
+        print f
+        print f.content
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -1387,7 +1388,8 @@ def battles_p(page):
     error = None
     response = getFromWebService("/" + session['username'] + "/" + str(page) +
         "/" + str(session['pagination']) + "/duels")
-    global games
+    #global games
+    games = []
     if response.get('Status') is True:
         battles = []
         for i in range(1, session['pagination'] + 1):
@@ -1423,7 +1425,8 @@ def choose_oponent():
     error = None
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/100/list")
-    global games
+    #global games
+    games = []
     if userRes.get('Status') is True:
         logins = []
         for i in range(1, userRes.get('Count') + 1):
@@ -1469,7 +1472,8 @@ def invite_to_battle(uFrom, uTo, gameName):
         error = response.get('Message')
     userRes = getFromWebService("/games/duels/" + session['username']
         + "/0/list")
-    global games
+    #global games
+    games = []
     if userRes.get('Status') is True:
         logins = []
         for i in range(1, session['pagination']):
@@ -1933,9 +1937,140 @@ def new_tournament():
                         return redirect(url_for('news'))
                 else:
                     error = response.get('Message')
-    global games
+    #global games
+    games = []
     return render_template('new_tournament.html', username=session['username'],
         cMessages=check_messages(), error=error, games=games)
+
+
+@app.route('/edit_tournament/<int:tourId>', methods=['GET', 'POST'])
+def edit_tournament(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    cATA = False
+    if 'isSU' in session:
+        cATA = True
+    else:
+        admList = getFromWebService("/games/tournaments/" + str(tourId) +
+            "/admins")
+        for i in range(1, admList.get('Count') + 1):
+            if admList.get(str(i)) == session['username']:
+                cATA = True
+    if cATA is False:
+        return render_template('message.html', cMessages=check_messages(),
+            message="You are not permitted to see that page!")
+    error = None
+    import datetime
+    if request.method == 'POST':
+        from_zone = PLTZ
+        to_zone = tzutc()
+        now = datetime.datetime.now()
+        now = now.replace(tzinfo=from_zone)
+        now = now.astimezone(to_zone)
+        bDateTimeO = ""
+        if 'bDate' in request.form:
+            bDateTime = request.form['bDate'].split('T')
+            bDate = bDateTime[0].split('-')
+            bTime = bDateTime[1].split(':')
+            bDateTimeO = datetime.datetime(int(bDate[0]), int(bDate[1]), int(
+                bDate[2]), int(bTime[0]), int(bTime[1]))
+        else:
+            error = "Error 2. No date(bDate) sent!"
+        eDateTimeO = ""
+        if 'eDate' in request.form:
+            eDateTime = request.form['eDate'].split('T')
+            eDate = eDateTime[0].split('-')
+            eTime = eDateTime[1].split(':')
+            eDateTimeO = datetime.datetime(int(eDate[0]), int(eDate[1]), int(
+                eDate[2]), int(eTime[0]), int(eTime[1]))
+        else:
+            error = "Error 2. No date(eDate) sent!"
+        if 'sDate' in request.form:
+            sDateTime = request.form['sDate'].split(' ')
+            sDate = sDateTime[0].split('-')
+            sTime = sDateTime[1].split(':')
+            sDateTimeO = datetime.datetime(int(sDate[0]), int(sDate[1]), int(
+                sDate[2]), int(sTime[0]), int(sTime[1]))
+        if error is None:
+            bDateTimeO = bDateTimeO.replace(tzinfo=from_zone)
+            bDateTimeO = bDateTimeO.astimezone(to_zone)
+            eDateTimeO = eDateTimeO.replace(tzinfo=from_zone)
+            eDateTimeO = eDateTimeO.astimezone(to_zone)
+            sDateTimeO = sDateTimeO.replace(tzinfo=from_zone)
+            sDateTimeO = sDateTimeO.astimezone(to_zone)
+            if (eDateTimeO <= now):
+                error = ("Registration date wrong! End of registration " +
+                    "before now!")
+            if (eDateTimeO <= bDateTimeO):
+                error = ("Registration date wrong! End of registration before" +
+                    " beginning!")
+            if (sDateTimeO <= eDateTimeO):
+                error = ("Registration date wrong! Start of tournament before" +
+                    " end of registration!")
+            if error is None:
+                payload = {
+                    "TourName": request.form['name'],
+                    "Description": sanitize_html(request.form['description']),
+                    "RulesDescription": sanitize_html(request.form['rules']),
+                    "RegBegin": str(bDateTimeO).split('+')[0],
+                    "RegEnd": str(eDateTimeO).split('+')[0],
+                    "RegType": sanitize_html(request.form['regType']),
+                    "MaxPlayers": request.form['maxPl'],
+                    "TourID": tourId,
+                    "Type": sanitize_html(request.form['tourType'])
+                }
+                response2 = putToWebService(payload, "/games/tournaments/"
+                    + str(tourId) + "/update")
+                if response2.get('Status') is True:
+                    flash("Tournament successfully edited!")
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
+                else:
+                    flash("Error: " + response2.get('Message'))
+                    session['redirected'] = True
+                    return redirect(url_for('news'))
+    #global games
+    games = []
+    response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
+    if response.get('Status') is True:
+        tour = response
+        from_zone = tzutc()
+        to_zone = PLTZ
+        rDate = tour.get('Begin').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'Begin': str(regStart).split('+')[0].replace(' ', 'T')})
+
+        rDate = tour.get('End').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'End': str(regStart).split('+')[0].replace(' ', 'T')})
+
+        rDate = tour.get('Start').split(' ')
+        regDate = rDate[0].split('-')
+        regTime = rDate[1].split(':')
+        regStart = datetime.datetime(int(regDate[0]), int(regDate[1]), int(
+            regDate[2]), int(regTime[0]), int(regTime[1]))
+        regStart = regStart.replace(tzinfo=from_zone)
+        regStart = regStart.astimezone(to_zone)
+        tour.update({'Start': str(regStart).split('+')[0]})
+        return render_template('edit_tournament.html', username=session[
+            'username'], cMessages=check_messages(), error=error, games=games,
+            tour=tour, tourId=tourId)
+    return render_template('edit_tournament.html', username=session['username'],
+        cMessages=check_messages(), error=error, games=games, tourId=tourId)
 
 
 @app.route('/delete_tour/<int:tourId>', methods=['GET', 'POST'])

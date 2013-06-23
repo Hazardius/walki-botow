@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    {% if error %}<p class=error>{{ error }}{% endif %}
+    <form action="{{ url_for('edit_tournament', tourId=tourId) }}" method=post >
+      <dl>
+        <dt>Tournament Name:
+          <dd><input type="text" name="name" value="{{ tour.TourName }}"
+            autofocus required x-moz-errormessage="Enter the name!"
+            size="25" maxlength="128">
+        <dt>Game Code:
+          <dd>{{ tour.Name }}
+        <dt>Tournament start date:
+          <dd>{{ tour.Start }}
+          <input type="hidden" name="sDate" value="{{ tour.Start }}">
+        <dt>Tournament type:
+          <dd><select name=tourType>
+            <option value="P1">Cup</option>
+            <option value="L">League</option>
+          </select>
+        <dt>Description:
+          <dd><textarea name=description rows=10 cols=80 required
+            x-moz-errormessage="Enter description!">{{ tour.Description }}</textarea>
+        <dt>Registration begins:
+          <dd><input type="datetime-local" name="bDate" required
+            value="{{ tour.Begin }}">
+        <dt>Registration ends:
+          <dd><input type="datetime-local" name="eDate" required
+            value="{{ tour.End }}" max="{{ tour.Start.replace(' ', 'T') }}">
+        <dt>Registration type:
+          <dd><select name=regType>
+            <option value="Free"
+              {% if tour.RegType == 'Free' %}selected{% endif %}>
+              Free</option>
+            <option value="Invitation"
+              {% if tour.RegType == 'Invitation' %}selected{% endif %}>
+              Invitation</option>
+          </select>
+        <dt>Max number of participants:
+          <dd><input type="number" name="maxPl" min={% if tour.CurrPlayers > 8 %}
+            {{ tour.CurrPlayers }}{% else %}8{% endif %} required
+            x-moz-errormessage="Enter this number!" value={{ tour.MaxPlayers }}>
+        <dt>Rules:
+          <dd><textarea name=rules rows=10 cols=80 required
+            x-moz-errormessage="Enter the rules!">{{ tour.Rules }}</textarea>
+        <dd><input type=submit value=Send>
+      </dl>
+    </form>
+  {% endif %}
+{% endblock %}
