@@ -1963,16 +1963,14 @@ def tAdmin():
         "Count": 1,
         "1": player
     }
-    player = player.decode('utf-8', 'ignore')
-    print player
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
     if response.get('Status') is True:
-        flash("User " + player + " is now an admin in this tournament.")
+        flash("User is now an admin in this tournament.")
         session['redirected'] = True
         return redirect(url_for('news'))
     return render_template('message.html', username=session['username'],
-        message=error + " " + str(tourId) + ". " + player)
+        message=error + " " + str(tourId) + ".")
 
 
 @app.route('/sft/<int:tourId>', methods=['GET'])
