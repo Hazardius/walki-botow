@@ -1770,7 +1770,6 @@ def tournament(tourId):
         else:
             admList = getFromWebService("/games/tournaments/" + str(tourId) +
                 "/admins")
-            print admList
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
@@ -1964,7 +1963,8 @@ def tAdmin():
         "Count": 1,
         "1": player
     }
-    player = player.encode('ascii')
+    player = player.decode('utf-8')
+    print player
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
     if response.get('Status') is True:
@@ -2192,12 +2192,12 @@ def helpGP():
 # debug
 
 
-@app.route('/secret', methods=['GET', 'POST'])
-def secret():
+#@app.route('/secret', methods=['GET', 'POST'])
+#def secret():
     #request = getFromWebService("/games/list")
     #print request
-    return render_template('message.html', username=session['username'],
-        message=request, cMessages=check_messages())
+    #return render_template('message.html', username=session['username'],
+        #message=request, cMessages=check_messages())
 
 # app start
 
