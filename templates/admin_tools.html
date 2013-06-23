@@ -7,8 +7,9 @@
   {% if 'Create tournaments' in session.permissions %}
     <a href="{{ url_for('new_tournament') }}">Create new tournament</a><br />
   {% endif %}
+  <br />
   {% if 'Adding games servers' in session.permissions %}
-    <a href="{{ url_for('add_game') }}">Add new game</a><br />
+    <a href="{{ url_for('games_manage') }}">Games management</a><br />
   {% endif %}
   <br />
   {% if 'isSU' in session %}

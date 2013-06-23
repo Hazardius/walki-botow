@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if error %}<p class=error>{{ error }}{% endif %}
+  <a href="{{ url_for('add_game') }}">Add new game</a><br />
+  <br />
+  {% if games %}
+    <h2>Availible games:</h2>
+  {% endif %}
+{% endblock %}

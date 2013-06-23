@@ -296,8 +296,6 @@ def putToWebService(payload, subpage):
         f = requests.put(WEBSERVICE_IP + "/Flask" + subpage, data=data,
             headers={'Content-Type': 'application/json',
             'Content-Length': clen}, auth=AUTH_DATA)
-        print f
-        print f.content
         data = f.json()
     except URLError, e:
         if hasattr(e, 'reason'):
@@ -2312,6 +2310,21 @@ def send_code_t(tourID):
         message=response.get('Message'), isP=isPlayer, tourID=tourID)
 
 # add games
+
+
+@app.route('/game_man', methods=['GET', 'POST'])
+def games_manage():
+    if check_spam() is False:
+        return spam_error()
+    if 'Adding games servers' not in session['permissions']:
+        return ban_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    return render_template('games_manage.html', cMessages=check_messages(),
+        username=session['username'], error=error)
 
 
 @app.route('/aGame', methods=['GET', 'POST'])
