@@ -1626,7 +1626,21 @@ def send_code(idG, game):
         if request.form['codeForm'] == 'text':
             exten = request.form['lang']
             fileName = sanitize_html(request.form['fileName'].replace(' ', ''))
-            if allowed_codeFile(fileName):
+            notEmptyCode = False
+            if len(request.form['code']) > 0:
+                notEmptyCode = True
+            goodFileName = False
+            try:
+                if fileName.split('.')[1] == exten:
+                    if allowed_codeFile(fileName):
+                        goodFileName = True
+                    else:
+                        goodFileName = False
+                else:
+                    goodFileName = False
+            except:
+                goodFileName = False
+            if (goodFileName) and (notEmptyCode is True):
                 payload = {
                     "From": sanitize_html(session['username']),
                     "Language": sanitize_html(exten),
@@ -1636,6 +1650,7 @@ def send_code(idG, game):
                     "FileName": sanitize_html(request.form['fileName']
                         .replace(" ", ""))
                 }
+                print payload
                 response = postToWebService(payload, "/code/duel/upload")
                 if response.get('Status') is True:
                     flash("Code sent!")
