@@ -1963,7 +1963,7 @@ def tAdmin():
         "Count": 1,
         "1": player
     }
-    player = player.decode('utf-8')
+    player = player.decode('utf-8', 'ignore')
     print player
     response = postToWebService(payload, "/games/tournaments/" + tourId +
         "/admins")
