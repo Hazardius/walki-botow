@@ -103,6 +103,29 @@ def sanitize_html(value):
     return soup.renderContents()
 
 
+def sanitize_login(value):
+    value = value.replace("'", "")
+    value = value.replace('"', "")
+    value = value.replace("`", "")
+    value = value.replace("$", "")
+    value = value.replace("^", "")
+    value = value.replace("&", "")
+    value = value.replace("*", "")
+    value = value.replace(" ", "")
+    value = value.replace("/", "")
+    value = value.replace("\\", "")
+    value = value.replace("%", "")
+    value = value.replace("+", "")
+    value = value.replace("$", "")
+    value = value.replace("#", "")
+    value = value.replace("@", "")
+    soup = BeautifulSoup(value)
+    for tag in soup.findAll(True):
+        if tag.name not in VALID_TAGS:
+            tag.hidden = True
+    return soup.renderContents()
+
+
 @app.route('/show_file/<filename>')
 def show_file(filename):
     if 'isSU' not in session:
@@ -841,7 +864,7 @@ def register():
         if check_regTime() is True:
             mdpass = md5.new(request.form['password'].encode('utf-8', 'ignore'))
             payload = {
-                "Login": sanitize_html(request.form['username']
+                "Login": sanitize_login(request.form['username']
                     .encode('utf-8', 'ignore')),
                 "Password": mdpass.hexdigest(),
                 "Name": sanitize_html(request.form['name']
@@ -934,7 +957,7 @@ def login():
         if request.method == 'POST':
             mdpass = md5.new(request.form['password'])
             payload = {
-                "Login": sanitize_html(request.form['username']),
+                "Login": sanitize_login(request.form['username']),
                 "Password": mdpass.hexdigest(),
                 "IP": request.remote_addr
             }
@@ -954,8 +977,8 @@ def login():
                         'username']))
                 else:
                     session['pagination'] = 10
-                response2 = getFromWebService("/" + sanitize_html(request.form[
-                    'username']) + "/retrieve")
+                response2 = getFromWebService("/" + sanitize_login(
+                    request.form['username']) + "/retrieve")
                 if response2.get('Status') is True:
                     perCount = response2.get('Count')
                     for i in range(1, perCount + 1):
@@ -1044,13 +1067,13 @@ def show_user_profile(nick):
     if is_ban() is True:
         return ban_error()
     visibleEmail = False
-    response = getFromWebService("/" + sanitize_html(nick) + "/privacy")
+    response = getFromWebService("/" + sanitize_login(nick) + "/privacy")
     if response.get('Status') is True:
         visibleEmail = response.get('PublicEmail')
-    response = getFromWebService("/" + sanitize_html(nick) + "/about")
+    response = getFromWebService("/" + sanitize_login(nick) + "/about")
     if response.get('Status') is True:
         response.update({"nick": nick})
-        response2 = getFromWebService("/" + sanitize_html(nick) + "/retrieve")
+        response2 = getFromWebService("/" + sanitize_login(nick) + "/retrieve")
         allG = []
         if response2.get('Status') is True:
             perCount = response2.get('Count')
@@ -1126,15 +1149,15 @@ def edit_privacy(edited):
             "PublicEmail": AEV,
             "Editor": session['username']
         }
-        response = postToWebService(payload, "/" + sanitize_html(edited) +
+        response = postToWebService(payload, "/" + sanitize_login(edited) +
             "/privacy")
         if response.get('Status') is True:
             session['redirected'] = True
-            return redirect(url_for('show_user_profile', nick=sanitize_html(
+            return redirect(url_for('show_user_profile', nick=sanitize_login(
                 edited)))
         else:
             error = response.get('Message')
-    response = getFromWebService("/" + sanitize_html(edited) + "/privacy")
+    response = getFromWebService("/" + sanitize_login(edited) + "/privacy")
     if response.get('Status') is True:
         response.update({"nick": edited})
         return render_template('edit_privacy.html', username=session[
@@ -1188,7 +1211,7 @@ def edit_profile(edited):
         pagFile.write(json.dumps(pags))
         pagFile.close()
         payload = {
-            "Login": sanitize_html(edited),
+            "Login": sanitize_login(edited),
             "Name": sanitize_html(request.form['name']
                 .encode('utf-8', 'ignore')),
             "Surname": sanitize_html(request.form['surname']
@@ -1243,14 +1266,14 @@ def edit_profile(edited):
                 error = response2.get('Message') + " Profile partially edited!"
         else:
             error = response.get('Message')
-    response = getFromWebService("/" + sanitize_html(edited) + "/about")
+    response = getFromWebService("/" + sanitize_login(edited) + "/about")
     if response.get('Status') is True:
         response.update({"nick": edited})
         response.update({"pag": session['pagination']})
         tmzns = []
         #print datetime.now(tzlocal())
         #tmzns = tzwin.list()
-        response2 = getFromWebService('/' + sanitize_html(edited) + "/other")
+        response2 = getFromWebService('/' + sanitize_login(edited) + "/other")
         if response2.get('Status') is True:
             response.update(response2)
             if 'Change users profile' in session['permissions']:
@@ -1265,7 +1288,7 @@ def edit_profile(edited):
                                 allG.append(group)
                         else:
                             allG.append(group)
-                    response4 = getFromWebService('/' + sanitize_html(edited) +
+                    response4 = getFromWebService('/' + sanitize_login(edited) +
                         '/retrieve')
                     if response4.get('Status') is True:
                         ugrCount = response4.get('Count')
@@ -1424,8 +1447,8 @@ def new_inv():
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    return invite_to_battle(sanitize_html(session['username']),
-        sanitize_html(request.form['oponent']),
+    return invite_to_battle(sanitize_login(session['username']),
+        sanitize_login(request.form['oponent']),
         sanitize_html(request.form['game']))
 
 
@@ -1642,7 +1665,7 @@ def send_code(idG, game):
                 goodFileName = False
             if (goodFileName) and (notEmptyCode is True):
                 payload = {
-                    "From": sanitize_html(session['username']),
+                    "From": sanitize_login(session['username']),
                     "Language": sanitize_html(exten),
                     "GameID": idG,
                     "Game": sanitize_html(game),
@@ -1881,7 +1904,7 @@ def new_tournament():
                     " end of registration!")
             if error is None:
                 payload = {
-                    "TourName": sanitize_html(request.form['name']),
+                    "TourName": sanitize_login(request.form['name']),
                     "Name": sanitize_html(request.form['game']),
                     "Description": sanitize_html(request.form['description']),
                     "Rules": sanitize_html(request.form['rules'])
@@ -1977,7 +2000,7 @@ def tAdmin():
         return ban_error()
     error = ""
     tourId = request.form['id']
-    player = sanitize_html(request.form['chosenOne'])
+    player = sanitize_login(request.form['chosenOne'])
     payload = {
         "Count": 1,
         "1": player
@@ -2005,7 +2028,7 @@ def sign_f_tournament(tourId):
     if response.get('Status') is True:
         if response.get('RegType') == 'Free':
             payload = {
-                "User": sanitize_html(session['username'])
+                "User": sanitize_login(session['username'])
             }
             response2 = postToWebService(payload, "/games/tournaments/" +
                 str(tourId) + "/registry")
@@ -2065,13 +2088,13 @@ def sign_ip_tournament():
         return ban_error()
     error = None
     tourId = request.form['id']
-    player = sanitize_html(request.form['chosenOne'])
+    player = sanitize_login(request.form['chosenOne'])
     response = getFromWebService("/games/tournaments/" + str(tourId) + "/info")
     if response.get('Status') is True:
         if response.get('RegType') == 'Invitation':
             error = None
             payload = {
-                "UserFrom": sanitize_html(session['username']),
+                "UserFrom": sanitize_login(session['username']),
                 "UserTo": player,
                 "TourName": sanitize_html(response.get('TourName')),
                 "Type": "Tournament"
@@ -2114,7 +2137,7 @@ def send_code_t(tourID):
         if request.form['codeForm'] == 'text':
             exten = request.form['lang']
             payload = {
-                "From": sanitize_html(session['username']),
+                "From": sanitize_login(session['username']),
                 "Language": sanitize_html(exten),
                 "TourID": tourID,
                 "Code": request.form['code'],
