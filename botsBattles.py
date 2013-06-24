@@ -333,13 +333,12 @@ def sendFileToWebService(filename, subpage):
     error = None
     data = open(filename, 'rb')
     try:
-        response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
-            headers={'Content-Type': 'application/octet-stream'},
-            auth=AUTH_DATA)
-        app.logger.debug('SendFile response: ' + str(response))
-        app.logger.debug('SendFile content: ' + str(response.content))
+        s = requests.Session()
+        s.auth = AUTH_DATA
+        s.headers = {'Content-Type': 'application/octet-stream'}
+        s.stream = False
+        response = s.post(WEBSERVICE_IP + "/Flask" + subpage, data)
         data = response.json()
-        app.logger.debug('Data: ' + str(data))
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -619,6 +618,7 @@ def recent_feed():
             response2 = getAtomFromWebService(newsId)
             if 'Status' in response2:
                 error = response2.get('Message')
+                print error
             else:
                 oneNews = {}
                 for field in response2:
@@ -2080,6 +2080,41 @@ def edit_tournament(tourId):
         cMessages=check_messages(), error=error, games=games, tourId=tourId)
 
 
+@app.route('/update_defbot/<int:tourId>', methods=['POST'])
+def update_def_tcode(tourId):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    codeFile = request.files['file']
+    if codeFile and allowed_codeFile(codeFile.filename):
+        filename = secure_filename(codeFile.filename)
+        locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+            filename)
+        locFilePath = os.path.normpath(locFilePath)
+        codeFile.save(locFilePath)
+        response = sendFileToWebService(locFilePath, "/games/tournaments/" +
+            str(tourId) + "/" + filename + "/defaultbot")
+        if response.get('Status') is True:
+            os.remove(locFilePath)
+            flash("Default bot uploaded for tournament #" + str(tourId) + "!")
+            session['redirected'] = True
+            return redirect(url_for('tournament', tourId=tourId))
+        else:
+            error = response.get('Message')
+        os.remove(locFilePath)
+    else:
+        error = 'File format not valid!'
+    if error is None:
+        error = "Empty error! No message from WS!"
+    flash(error)
+    session['redirected'] = True
+    return redirect(url_for('tournament', tourId=tourId))
+
+
 @app.route('/delete_tour/<int:tourId>', methods=['GET', 'POST'])
 def delete_t(tourId):
     if check_spam() is False:
@@ -2334,7 +2369,6 @@ def games_manage():
         return ban_error()
     error = None
     response = getFromWebService('/games/list/all')
-    print response
     all_games = []
     for i in range(1, response.get('Count') + 1):
         all_games.append(response.get(str(i)))

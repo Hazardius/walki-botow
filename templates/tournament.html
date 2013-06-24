@@ -18,8 +18,9 @@
       <dd>{{ tour.End }}
     <dt>Start of tournament:
       <dd>{{ tour.Start }}
+    <br /><br />
     {% if regState %}
-      <dt>State of registration: <b>OPEN</b>
+      <dt>State of registration: <b>OPEN</b><br /><br />
       {% if isPlay == False %}
         {% if tour.RegType == "Invitation" %}
           {% if cATA %}
@@ -39,28 +40,29 @@
         {% endif %}
       {% endif %}
     {% else %}
-      <dt>State of registration: <b>CLOSED</b>
+      <dt>State of registration: <b>CLOSED</b><br /><br />
     {% endif %}
     {% for player in plList %}
       <li><b>{{ player.Login }}:</b> {{ player.Points }} points.
     {% else %}
       <li><em>No players yet. Be first!</em>
     {% endfor %}
+    <br /><br />
     {% if cATA %}
-      <dt><form method="link"
+      <dd><form method="link"
         action="{{ url_for('add_tour_admin', tourId=tourId) }}">
         <dt><input type="submit" value="Add Tournament Admin!">
       </form>
-      <dt><form method="link"
+      <dd><form method="link"
         action="{{ url_for('edit_tournament', tourId=tourId) }}">
         <dt><input type="submit" value="Edit Tournament!">
       </form>
-<!--
-      <dt><form method="link"
-        action="{{ url_for('add_tour_admin', tourId=tourId) }}">
-        <dt><input type="submit" value="Add/Change Tournament Default Bot!">
-      </form>
--->
+      <dd>Send game server:
+        <form action="{{ url_for('update_def_tcode', tourId=tourId) }}"
+          method=post class=send-code enctype=multipart/form-data >
+          <dd><input type="file" name="file" required>
+          <dt><input type=submit value="Add/Change Tournament Default Bot!">
+        </form>
     {% endif %}
     {% if playState %}
       {% if isPlay %}
@@ -68,7 +70,7 @@
       {% endif %}
     {% endif %}
     {% if 'isSU' in session %}
-      <a href="{{ url_for('delete_t', tourId=tourId) }}">
+      <dt><a href="{{ url_for('delete_t', tourId=tourId) }}">
         Delete this tournament!</a><br />
     {% endif %}
     <br />
