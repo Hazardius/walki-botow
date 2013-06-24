@@ -336,7 +336,10 @@ def sendFileToWebService(filename, subpage):
         response = requests.post(WEBSERVICE_IP + "/Flask" + subpage, data,
             headers={'Content-Type': 'application/octet-stream'},
             auth=AUTH_DATA)
+        app.logger.debug('SendFile response: ' + str(response))
+        app.logger.debug('SendFile content: ' + str(response.content))
         data = response.json()
+        app.logger.debug('Data: ' + str(data))
     except URLError, e:
         if hasattr(e, 'reason'):
             error = e.reason
@@ -2320,8 +2323,9 @@ def send_code_t(tourID):
 
 @app.route('/game_man', methods=['GET', 'POST'])
 def games_manage():
-    if check_spam() is False:
-        return spam_error()
+    if 'redirected' not in session:
+        if check_spam() is False:
+            return spam_error()
     if 'Adding games servers' not in session['permissions']:
         return ban_error()
     if check_ws() is False:
@@ -2330,6 +2334,7 @@ def games_manage():
         return ban_error()
     error = None
     response = getFromWebService('/games/list/all')
+    print response
     all_games = []
     for i in range(1, response.get('Count') + 1):
         all_games.append(response.get(str(i)))
@@ -2379,6 +2384,41 @@ def add_game():
             error = "File name is incorrect!"
     return render_template('add_game.html', cMessages=check_messages(),
         username=session['username'], error=error)
+
+
+@app.route('/serverUp/<gameName>', methods=['POST'])
+def send_server(gameName):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    gameName = sanitize_login(gameName)
+    codeFile = request.files['file']
+    if codeFile and allowed_jarFile(codeFile.filename):
+        filename = secure_filename(codeFile.filename)
+        locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+            filename)
+        locFilePath = os.path.normpath(locFilePath)
+        codeFile.save(locFilePath)
+        response = sendFileToWebService(locFilePath, "/games/" + gameName)
+        if response.get('Status') is True:
+            os.remove(locFilePath)
+            flash("Server uploaded for game " + gameName + "!")
+            session['redirected'] = True
+            return redirect(url_for('games_manage'))
+        else:
+            error = response.get('Message')
+        os.remove(locFilePath)
+    else:
+        error = 'File format not valid!'
+    if error is None:
+        error = "Empty error! No message from WS!"
+    flash(error)
+    session['redirected'] = True
+    return redirect(url_for('games_manage'))
 
 # main help - groups and permissions
 
