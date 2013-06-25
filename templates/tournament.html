@@ -57,7 +57,8 @@
         action="{{ url_for('edit_tournament', tourId=tourId) }}">
         <dt><input type="submit" value="Edit Tournament!">
       </form>
-      <dd>Send game server:
+      <dd>Send default bot code<br />
+        (remember - if it's Java code, file must be named after the main class):
         <form action="{{ url_for('update_def_tcode', tourId=tourId) }}"
           method=post class=send-code enctype=multipart/form-data >
           <dd><input type="file" name="file" required>

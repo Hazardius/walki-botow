@@ -13,8 +13,13 @@
               <dd><input type="file" name="file" required>
             <dd><input type=submit value=Send server>
         </form>
+        <dd>Send game test bot:
+        <form action="{{ url_for('send_test_bot', gameName=game.Name) }}"
+          method=post class=send-code enctype=multipart/form-data >
+              <dd><input type="file" name="file" required>
+            <dd><input type=submit value=Send server>
+        </form>
 <!--
-        <dd><a href="{{ url_for('new_tournament') }}">Send game test-bot</a>
         <dd><a href="">Send game help</a>
 -->
       </li>

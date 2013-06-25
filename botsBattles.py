@@ -131,6 +131,17 @@ def sanitize_login(value):
     return soup.renderContents()
 
 
+#def sanitize_login2(value):
+    #import re as re
+    #value = unicode(value)
+    #regex = re.compile(u'^\w+', re.U)
+    #print value
+    #if not regex.match(value):
+        #return value
+    #else:
+        #return "ERROR"
+
+
 @app.route('/show_file/<filename>')
 def show_file(filename):
     if 'isSU' not in session:
@@ -2123,6 +2134,8 @@ def delete_t(tourId):
         return ban_error()
     if check_ws() is False:
         return ws_error()
+    if 'isSU' not in session:
+        return ban_error()
     error = None
     if request.method == 'POST':
         if 'iamsure' in request.form:
@@ -2454,6 +2467,42 @@ def send_server(gameName):
     session['redirected'] = True
     return redirect(url_for('games_manage'))
 
+
+@app.route('/testBotUp/<gameName>', methods=['POST'])
+def send_test_bot(gameName):
+    if check_spam() is False:
+        return spam_error()
+    if check_ws() is False:
+        return ws_error()
+    if is_ban() is True:
+        return ban_error()
+    error = None
+    gameName = sanitize_login(gameName)
+    codeFile = request.files['file']
+    if codeFile and allowed_codeFile(codeFile.filename):
+        filename = secure_filename(codeFile.filename)
+        locFilePath = os.path.join(app.config['UPLOAD_FOLDER'],
+            filename)
+        locFilePath = os.path.normpath(locFilePath)
+        codeFile.save(locFilePath)
+        response = sendFileToWebService(locFilePath, "/games/" + gameName + "/"
+            + filename + "/bot")
+        if response.get('Status') is True:
+            os.remove(locFilePath)
+            flash("Test bot uploaded for game " + gameName + "!")
+            session['redirected'] = True
+            return redirect(url_for('games_manage'))
+        else:
+            error = response.get('Message')
+        os.remove(locFilePath)
+    else:
+        error = 'File format not valid!'
+    if error is None:
+        error = "Empty error! No message from WS!"
+    flash(error)
+    session['redirected'] = True
+    return redirect(url_for('games_manage'))
+
 # main help - groups and permissions
 
 
@@ -2489,10 +2538,10 @@ def helpGP():
 
 #@app.route('/secret', methods=['GET', 'POST'])
 #def secret():
-    #request = getFromWebService("/games/list")
-    #print request
+    #response = sanitize_login2(request.form['testowy'])
+    #print response
     #return render_template('message.html', username=session['username'],
-        #message=request, cMessages=check_messages())
+        #message=response, cMessages=check_messages())
 
 # app start
 
