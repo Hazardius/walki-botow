@@ -723,8 +723,11 @@ def view_news(newsId):
                 info = field.text
             oneNews.update({shortTag: info})
         oneNews.update({'id': newsId})
-    return render_template('info.html', username=session['username'],
-        cMessages=check_messages(), error=error, entry=oneNews)
+    if "username" in session:
+        return render_template('info.html', username=session['username'],
+            cMessages=check_messages(), error=error, entry=oneNews)
+    else:
+        return render_template('info.html', entry=oneNews, error=error)
 
 
 @app.route('/add_news', methods=['GET', 'POST'])
@@ -826,7 +829,7 @@ def edit_news(newsId):
         }
         response = putToWebService(payload, "/news/update")
         if response.get('Status') is True:
-            flash("New news successfully created!")
+            flash("News successfully edited!")
             session['redirected'] = True
             return redirect(url_for('news'))
         else:
@@ -1704,7 +1707,7 @@ def send_code(idG, game):
                 else:
                     error = response
             else:
-                error = "File name wrong!"
+                error = "File name wrong! Or You tried to send empty code!"
         elif request.form['codeForm'] == 'file':
             codeFile = request.files['file']
             if codeFile and allowed_codeFile(codeFile.filename):
