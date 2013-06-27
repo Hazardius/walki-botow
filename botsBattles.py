@@ -1063,7 +1063,6 @@ def post_box():
             nextOne = response.get(str(i))
             if nextOne is not None:
                 messages.append(dict(nextOne))
-        print messages
         return render_template('post_box.html', username=session['username'],
             cMessages=check_messages(), messages=messages)
     else:
@@ -1839,6 +1838,8 @@ def tournament(tourId):
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
+        if (tour.CurrPlayers == tour.MaxPlayers):
+            playState = False
         playersScoresRes = getFromWebService("/games/tournaments/" + str(tourId)
             + "/scores")
         if playersScoresRes.get('Status') is True:
@@ -2325,6 +2326,7 @@ def register_into_tour(invId):
         "ID": invId
     }
     response = postToWebService(payload, "/games/tournaments/registry")
+    print response
     if response.get('Status') is True:
         flash("You accepted this invitation.")
         session['redirected'] = True
