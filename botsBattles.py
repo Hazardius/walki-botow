@@ -1940,11 +1940,15 @@ def new_tournament():
                         "/new")
                     if response.get('Status') is True:
                         tourID = response.get('ID')
+                        if int(request.form['maxPl']) < 8:
+                            maxPl = 8
+                        else:
+                            maxPl = int(request.form['maxPl'])
                         payload = {
                             "RegBegin": str(bDateTimeO).split('+')[0],
                             "RegEnd": str(eDateTimeO).split('+')[0],
                             "RegType": sanitize_html(request.form['regType']),
-                            "MaxPlayers": request.form['maxPl'],
+                            "MaxPlayers": maxPl,
                             "Start": str(sDateTimeO).split('+')[0],
                             "TourID": tourID,
                             "Type": sanitize_html(request.form['tourType'])
@@ -2326,7 +2330,6 @@ def register_into_tour(invId):
         "ID": invId
     }
     response = postToWebService(payload, "/games/tournaments/registry")
-    print response
     if response.get('Status') is True:
         flash("You accepted this invitation.")
         session['redirected'] = True
