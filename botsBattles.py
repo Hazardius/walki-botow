@@ -1838,7 +1838,7 @@ def tournament(tourId):
             for i in range(1, admList.get('Count') + 1):
                 if admList.get(str(i)) == session['username']:
                     cATA = True
-        if (tour.CurrPlayers == tour.MaxPlayers):
+        if (tour.get("CurrPlayers") == tour.get("MaxPlayers")):
             playState = False
         playersScoresRes = getFromWebService("/games/tournaments/" + str(tourId)
             + "/scores")
