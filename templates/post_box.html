@@ -3,11 +3,19 @@
   <ul class=messages>
     {% for message in messages %}
       <li><h2>{{ message.Type }}</h2>{{ message.GameName }} {{ message.Sender }}
-      {% if message.Type == "Invitation" %}
+      {% if message.Type == "InvitationD" %}
         <form method="link" action="{{ url_for('new_duel', invId=message.ID) }}">
           <input type="submit" value="Accept!">
         </form>
         <form method="link" action="{{ url_for('no_duel', invId=message.ID) }}">
+          <input type="submit" value="Decline!">
+        </form>
+      {% endif %}
+      {% if message.Type == "InvitationT" %}
+        <form method="link" action="{{ url_for('accept_inv', invId=message.ID) }}">
+          <input type="submit" value="Accept!">
+        </form>
+        <form method="link" action="{{ url_for('no_inv', invId=message.ID) }}">
           <input type="submit" value="Decline!">
         </form>
       {% endif %}
