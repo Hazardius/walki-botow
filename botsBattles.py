@@ -2315,16 +2315,15 @@ def accept_inv(invId):
         return ws_error()
     if is_ban() is True:
         return ban_error()
-    return register_tour(invId)
+    return register_into_tour(invId)
 
 
-def register_tour(invId):
+def register_into_tour(invId):
     error = None
     payload = {
         "ID": invId
     }
-    response = postToWebService(payload, "/games/tournaments/" + tourId +
-        "/registry")
+    response = postToWebService(payload, "/games/tournaments/registry")
     if response.get('Status') is True:
         flash("You accepted this invitation.")
         session['redirected'] = True
