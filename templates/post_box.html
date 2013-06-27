@@ -15,7 +15,7 @@
           <form method="link" action="{{ url_for('accept_inv', invId=message.ID) }}">
             <input type="submit" value="Accept!">
           </form>
-          <form method="link" action="{{ url_for('no_inv', invId=message.ID) }}">
+          <form method="link" action="{{ url_for('no_duel', invId=message.ID) }}">
             <input type="submit" value="Decline!">
           </form>
         {% endif %}
